@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kreator Postaci - Cień Władcy Demonów</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;600;700&display=swap">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Zestaw ikon (linie, bez wypełnień) - jedna definicja, użycie przez <use href="#icon-..."> -->
+    <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <symbol id="icon-dice" viewBox="0 0 24 24">
+                <rect x="4" y="4" width="16" height="16" rx="3"/>
+                <circle cx="8.5" cy="8.5" r="1.1" style="fill:currentColor;stroke:none"/>
+                <circle cx="12" cy="12" r="1.1" style="fill:currentColor;stroke:none"/>
+                <circle cx="15.5" cy="15.5" r="1.1" style="fill:currentColor;stroke:none"/>
+            </symbol>
+            <symbol id="icon-target" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8"/>
+                <circle cx="12" cy="12" r="4.5"/>
+                <circle cx="12" cy="12" r="1" style="fill:currentColor;stroke:none"/>
+            </symbol>
+            <symbol id="icon-sparkle" viewBox="0 0 24 24">
+                <path d="M12 3 L14 10 L21 12 L14 14 L12 21 L10 14 L3 12 L10 10 Z"/>
+            </symbol>
+            <symbol id="icon-orb" viewBox="0 0 24 24">
+                <circle cx="12" cy="10" r="6.5"/>
+                <path d="M7 19 H17"/>
+                <path d="M9 16.5 L8 19 M15 16.5 L16 19"/>
+            </symbol>
+            <symbol id="icon-bolt" viewBox="0 0 24 24">
+                <path d="M12.5 2 L4 14 H10 L9 22 L20 9 H13.5 Z"/>
+            </symbol>
+            <symbol id="icon-heart" viewBox="0 0 24 24">
+                <path d="M12 20 C4 14 2 9.5 5.2 6.8 7.6 4.8 11 5.6 12 8 13 5.6 16.4 4.8 18.8 6.8 22 9.5 20 14 12 20 Z"/>
+            </symbol>
+            <symbol id="icon-book" viewBox="0 0 24 24">
+                <path d="M12 5.5 C10 4 6.5 3.6 3.5 4.3 V17.3 C6.5 16.6 10 17 12 18.5 C14 17 17.5 16.6 20.5 17.3 V4.3 C17.5 3.6 14 4 12 5.5 Z"/>
+                <path d="M12 5.5 V18.5"/>
+            </symbol>
+            <symbol id="icon-swords" viewBox="0 0 24 24">
+                <path d="M3 3 L21 21 M21 3 L3 21"/>
+                <path d="M6 6 L8 4 M18 6 L16 4 M6 18 L8 20 M18 18 L16 20"/>
+            </symbol>
+            <symbol id="icon-cart" viewBox="0 0 24 24">
+                <path d="M4 5 H6 L8 16 H18 L20 8 H8.5"/>
+                <circle cx="10" cy="19" r="1.4" style="fill:currentColor;stroke:none"/>
+                <circle cx="17" cy="19" r="1.4" style="fill:currentColor;stroke:none"/>
+            </symbol>
+            <symbol id="icon-stall" viewBox="0 0 24 24">
+                <path d="M3 9 L12 3 L21 9"/>
+                <path d="M4 9 V19 M20 9 V19"/>
+                <path d="M4 19 H20 M4 13 H20"/>
+            </symbol>
+            <symbol id="icon-purse" viewBox="0 0 24 24">
+                <path d="M8 9 C8 5.5 9.8 3.3 12 3.3 C14.2 3.3 16 5.5 16 9"/>
+                <path d="M5.5 9 H18.5 L17.3 20 C17.2 20.6 16.7 21 16.1 21 H7.9 C7.3 21 6.8 20.6 6.7 20 Z"/>
+                <circle cx="12" cy="14" r="2.1"/>
+            </symbol>
+            <symbol id="icon-backpack" viewBox="0 0 24 24">
+                <path d="M7 8 C7 5 9 3.5 12 3.5 C15 3.5 17 5 17 8 V19.5 C17 20.3 16.3 21 15.5 21 H8.5 C7.7 21 7 20.3 7 19.5 Z"/>
+                <path d="M9.5 8 V6 C9.5 5 10 4.3 12 4.3 C14 4.3 14.5 5 14.5 6 V8"/>
+                <path d="M9 12 H15 M9 16 H15"/>
+            </symbol>
+            <symbol id="icon-check" viewBox="0 0 24 24">
+                <path d="M4 13 L9.5 18.5 L20 6"/>
+            </symbol>
+            <symbol id="icon-x" viewBox="0 0 24 24">
+                <path d="M5 5 L19 19 M19 5 L5 19"/>
+            </symbol>
+            <symbol id="icon-warning" viewBox="0 0 24 24">
+                <path d="M12 3.5 L21.5 20 H2.5 Z"/>
+                <path d="M12 9.5 V14.5"/>
+                <circle cx="12" cy="17.3" r="0.9" style="fill:currentColor;stroke:none"/>
+            </symbol>
+            <symbol id="icon-scroll" viewBox="0 0 24 24">
+                <path d="M6 4 C4 4 4 7 6 7 H18 C20 7 20 4 18 4 Z"/>
+                <path d="M6 20 C4 20 4 17 6 17 H18 C20 17 20 20 18 20 Z"/>
+                <path d="M6 7 V17 M18 7 V17"/>
+                <path d="M9 10.5 H15 M9 13.5 H15"/>
+            </symbol>
+            <symbol id="icon-page" viewBox="0 0 24 24">
+                <path d="M7 3 H14 L18 7 V21 H7 Z"/>
+                <path d="M14 3 V7 H18"/>
+                <path d="M9.5 12 H15.5 M9.5 15.5 H15.5"/>
+            </symbol>
+            <symbol id="icon-folder" viewBox="0 0 24 24">
+                <path d="M3.5 6 H9 L11 8.5 H20.5 V18.5 H3.5 Z"/>
+            </symbol>
+            <symbol id="icon-mask" viewBox="0 0 24 24">
+                <path d="M4 9 C4 5 7.5 3 12 3 C16.5 3 20 5 20 9 C20 14 16.5 18 12 18 C7.5 18 4 14 4 9 Z"/>
+                <path d="M7.5 9 C8.2 8 9.8 8 10.5 9"/>
+                <path d="M13.5 9 C14.2 8 15.8 8 16.5 9"/>
+                <path d="M9.5 13 C10.5 14 13.5 14 14.5 13"/>
+            </symbol>
+            <symbol id="icon-briefcase" viewBox="0 0 24 24">
+                <path d="M9 7 V5.5 C9 4.7 9.7 4 10.5 4 H13.5 C14.3 4 15 4.7 15 5.5 V7"/>
+                <rect x="3.5" y="7" width="17" height="12" rx="1.8"/>
+                <path d="M3.5 12.5 H20.5"/>
+            </symbol>
+            <symbol id="icon-refresh" viewBox="0 0 24 24">
+                <path d="M5 11 A7 7 0 0 1 17.5 6.8 M19 4.5 V8 H15.5"/>
+                <path d="M19 13 A7 7 0 0 1 6.5 17.2 M5 19.5 V16 H8.5"/>
+            </symbol>
+            <symbol id="icon-strength" viewBox="0 0 24 24">
+                <path d="M5 20 V13 C5 10 7 8 9 8 C9 6 10.5 5 12 5 C14 5 15 6.5 15 8.5 C17 8.5 18.5 10 18.5 12.5 C18.5 16 16.5 18 13.5 18 H9"/>
+                <path d="M5 20 H9 V17"/>
+            </symbol>
+            <symbol id="icon-speech" viewBox="0 0 24 24">
+                <path d="M4 5 H20 V15 H10 L6 19 V15 H4 Z"/>
+                <path d="M8 9 H16 M8 12 H13"/>
+            </symbol>
+            <symbol id="icon-column" viewBox="0 0 24 24">
+                <path d="M4 4 H20 M5 6 H19 M5 20 H19 M4 22 H20"/>
+                <path d="M7 6 V20 M11 6 V20 M13 6 V20 M17 6 V20"/>
+            </symbol>
+            <symbol id="icon-fork" viewBox="0 0 24 24">
+                <path d="M12 21 V13 M12 13 L5 4 M12 13 L19 4"/>
+                <circle cx="12" cy="13" r="1" style="fill:currentColor;stroke:none"/>
+            </symbol>
+            <symbol id="icon-torch" viewBox="0 0 24 24">
+                <path d="M12 3 C14 6 15 8 13 10 C15 10.5 16 12.5 14.5 14.5 C16 14 17 16 15.5 17.8 C14 19.5 10 19.5 8.5 17.8 C7 16 8 14 9.5 14.5 C8 12.5 9 10.5 11 10 C9 8 10 6 12 3 Z"/>
+                <path d="M9 21 H15"/>
+            </symbol>
+            <symbol id="icon-question" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M9.5 9.3 C9.5 7.8 10.6 6.8 12 6.8 C13.4 6.8 14.5 7.8 14.5 9.2 C14.5 11 12 11.3 12 13.5"/>
+                <circle cx="12" cy="16.3" r="0.9" style="fill:currentColor;stroke:none"/>
+            </symbol>
+            <symbol id="icon-plus-circle" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 8 V16 M8 12 H16"/>
+            </symbol>
+            <symbol id="icon-compass" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M15.5 8.5 L13 13 L8.5 15.5 L11 11 Z"/>
+            </symbol>
+            <symbol id="icon-keyboard" viewBox="0 0 24 24">
+                <rect x="3" y="6" width="18" height="12" rx="1.6"/>
+                <path d="M6 9.3 H7.2 M9 9.3 H10.2 M12 9.3 H13.2 M15 9.3 H16.2 M6 12.3 H7.2 M9 12.3 H10.2 M12 12.3 H13.2 M15 12.3 H16.2 M8 15.3 H16"/>
+            </symbol>
+            <symbol id="icon-info" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 11 V16.5"/>
+                <circle cx="12" cy="7.7" r="0.9" style="fill:currentColor;stroke:none"/>
+            </symbol>
+            <symbol id="icon-undo" viewBox="0 0 24 24">
+                <path d="M7 7 L3.5 10.5 L7 14"/>
+                <path d="M3.5 10.5 H14 C17.5 10.5 20 13 20 16 C20 18 19 19.5 17.5 20.3"/>
+            </symbol>
+            <symbol id="icon-chevron-left" viewBox="0 0 24 24"><path d="M15 4 L7 12 L15 20"/></symbol>
+            <symbol id="icon-chevron-right" viewBox="0 0 24 24"><path d="M9 4 L17 12 L9 20"/></symbol>
+            <symbol id="icon-chevron-up" viewBox="0 0 24 24"><path d="M4 15 L12 7 L20 15"/></symbol>
+            <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="M4 9 L12 17 L20 9"/></symbol>
+            <symbol id="icon-shield" viewBox="0 0 24 24">
+                <path d="M12 3 L19 6 V11 C19 16 15.5 19.5 12 21 C8.5 19.5 5 16 5 11 V6 Z"/>
+            </symbol>
+            <symbol id="icon-eye" viewBox="0 0 24 24">
+                <path d="M2.5 12 C5 7 9 5 12 5 C15 5 19 7 21.5 12 C19 17 15 19 12 19 C9 19 5 17 2.5 12 Z"/>
+                <circle cx="12" cy="12" r="2.6"/>
+            </symbol>
+            <symbol id="icon-pulse" viewBox="0 0 24 24">
+                <path d="M2 12 H7 L9.5 6 L13 18 L15 12 H22"/>
+            </symbol>
+            <symbol id="icon-speed" viewBox="0 0 24 24">
+                <path d="M5 6 L11 12 L5 18 M13 6 L19 12 L13 18"/>
+            </symbol>
+            <symbol id="icon-ruler" viewBox="0 0 24 24">
+                <rect x="3" y="9" width="18" height="6" rx="1"/>
+                <path d="M6 9 V12 M9 9 V11 M12 9 V12 M15 9 V11 M18 9 V12"/>
+            </symbol>
+            <symbol id="icon-tip" viewBox="0 0 24 24">
+                <path d="M12 3 C8.5 3 6.5 5.5 6.5 8.5 C6.5 11 8 12 9 13.5 C9.5 14.5 9.5 15 9.5 15.5 H14.5 C14.5 15 14.5 14.5 15 13.5 C16 12 17.5 11 17.5 8.5 C17.5 5.5 15.5 3 12 3 Z"/>
+                <path d="M9 16 H15 M10 19 H14"/>
+            </symbol>
+            <symbol id="icon-person" viewBox="0 0 24 24">
+                <circle cx="12" cy="6.5" r="3"/>
+                <path d="M5 20 C5 15.5 8 13 12 13 C16 13 19 15.5 19 20"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <!-- Boczne menu: nowa postać / wczytaj postać / wylosuj postać -->
+    <nav class="side-menu" id="side-menu" aria-label="Menu postaci">
+        <button type="button" class="side-menu-btn" id="btn-new-character" data-tooltip="Nowa postać — resetuje wszystkie ustawienia i wraca do Kroku 1, by stworzyć zupełnie nową postać" aria-label="Nowa postać"><svg class="icon"><use href="#icon-plus-circle"></use></svg></button>
+        <button type="button" class="side-menu-btn" id="btn-load-character" data-tooltip="Wczytaj postać — pokazuje listę postaci zapisanych w pamięci tej przeglądarki" aria-label="Wczytaj postać"><svg class="icon"><use href="#icon-folder"></use></svg></button>
+        <button type="button" class="side-menu-btn" id="btn-randomize-character" data-tooltip="Wylosuj postać — wybierz poziom, resztę (wszystkie kroki) losuje kreator i od razu pokazuje podsumowanie w Kroku 8" aria-label="Wylosuj postać"><svg class="icon"><use href="#icon-dice"></use></svg></button>
+    </nav>
+
+    <!-- Przewinięcie na samą górę: strony albo otwartego popupu (zob. initializeScrollTopButton()) -->
+    <button type="button" class="scroll-top-btn" id="btn-scroll-top" hidden title="Przewiń na górę" aria-label="Przewiń na górę"><svg class="icon"><use href="#icon-chevron-up"></use></svg></button>
+
+    <div class="header">
+        <h1><svg class="icon"><use href="#icon-swords"></use></svg> Kreator Postaci</h1>
+        <h2>Cień Władcy Demonów</h2>
+        <p><em>Stwórz postać krok po kroku lub wybierz opcje losowe</em></p>
+        
+        <!-- Przycisk Pomocy -->
+        <button id="btn-help" class="btn-help" aria-label="Otwórz pomoc" title="Pomoc (F1)">
+            <svg class="icon"><use href="#icon-question"></use></svg> POMOC
+        </button>
+    </div>
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" id="breadcrumbs">
+        <div class="breadcrumb-item active" data-step="1">1. Pochodzenie</div>
+        <div class="breadcrumb-item" data-step="2">2. Poziom i Atrybuty</div>
+        <div class="breadcrumb-item" data-step="3">3. Ścieżki</div>
+        <div class="breadcrumb-item" data-step="4">4. Rozwój Atrybutów</div>
+        <div class="breadcrumb-item" data-step="5">5. Profesje i Kurioza</div>
+        <div class="breadcrumb-item" data-step="6">6. Magia</div>
+        <div class="breadcrumb-item" data-step="7">7. Ekwipunek</div>
+        <div class="breadcrumb-item" data-step="8">8. Podgląd i Eksport</div>
+    </nav>
+
+    <div id="error" class="error" style="display: none;"></div>
+
+    <!-- Krok 1: Wybór Pochodzenia -->
+    <div id="step-1" class="step active">
+        <div class="section">
+            <div class="quick-random-fill">
+                <div class="quick-fill-actions">
+                    <button type="button" class="btn-primary" id="btn-randomize-step-1">
+                        <svg class="icon"><use href="#icon-dice"></use></svg> Losuj postać
+                    </button>
+                    <button type="button" class="btn-secondary" id="btn-import-character">
+                        <svg class="icon"><use href="#icon-folder"></use></svg> Importuj postać
+                    </button>
+                    <input type="file" id="import-character-file" accept="application/json,.json" hidden>
+                </div>
+                <p class="hint">Wybierze losowe pochodzenie i wylosuje wszystkie jego tabele (przeszłość, wygląd itd.) za jednym kliknięciem, albo zaimportuje wcześniej wyeksportowaną postać z pliku JSON.</p>
+                <div id="import-feedback" class="import-feedback" style="display: none;"></div>
+            </div>
+
+            <h3><svg class="icon"><use href="#icon-mask"></use></svg> Krok 1: Wybór Pochodzenia</h3>
+            <div class="flex-row-between">
+                <p>Wybierz pochodzenie swojej postaci. Każde pochodzenie ma unikalne cechy i modyfikatory atrybutów.</p>
+                <button type="button" class="section-reset-btn" id="btn-reset-origin" title="Wyczyść wybór pochodzenia">Wyczyść wybór</button>
+            </div>
+
+            <div id="origin-tiles" class="tiles-container">
+                <!-- Kafelki będą generowane przez JavaScript -->
+            </div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" style="visibility: hidden;">
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                </button>
+                <button id="btn-next-1" class="btn-primary" onclick="nextStep(1)" disabled>
+                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Krok 2: Wybór Atrybutów i Poziomu -->
+    <div id="step-2" class="step">
+        <div class="section">
+            <h3><svg class="icon"><use href="#icon-bolt"></use></svg> Krok 2: Atrybuty i Poziom Postaci</h3>
+            <p>Określ wartości atrybutów swojej postaci i wybierz poziom rozwoju.</p>
+
+            <div id="selected-origin-info" class="origin-summary">
+                <!-- Informacje o wybranym pochodzeniu -->
+            </div>
+
+            <!-- Sekcja poziomu postaci (0-10) -->
+            <div class="level-section">
+                <div class="flex-row-between">
+                    <h4>Poziom Postaci (0-10)</h4>
+                    <button type="button" class="section-reset-btn" id="btn-reset-level" title="Wróć do poziomu 0">Wyczyść wybór</button>
+                </div>
+                <div class="level-selector">
+                    <!-- Poziom 0 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="0" checked>
+                        <div class="level-card">
+                            <div class="level-number">0</div>
+                            <div class="level-info">
+                                <strong>Początkujący</strong>
+                                <small>Postać początkowa</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 1 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="1">
+                        <div class="level-card">
+                            <div class="level-number">1</div>
+                            <div class="level-info">
+                                <strong>Nowicjusz</strong>
+                                <small>Wybierz ścieżkę nowicjusza</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 2 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="2">
+                        <div class="level-card">
+                            <div class="level-number">2</div>
+                            <div class="level-info">
+                                <strong>Nowicjusz</strong>
+                                <small>Korzyści ścieżki nowicjusza</small>
+                            </div>
+                        </div>
+                    </label>
+                    <!-- Poziom 3 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="3">
+                        <div class="level-card">
+                            <div class="level-number">3</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Wybierz ścieżkę ekspercką</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 4 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="4">
+                        <div class="level-card">
+                            <div class="level-number">4</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Korzyści z pochodzenia</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 5 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="5">
+                        <div class="level-card">
+                            <div class="level-number">5</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Korzyści ścieżki nowicjusza</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 6 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="6">
+                        <div class="level-card">
+                            <div class="level-number">6</div>
+                            <div class="level-info">
+                                <strong>Ekspert</strong>
+                                <small>Korzyści ścieżki eksperckiej</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 7 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="7">
+                        <div class="level-card">
+                            <div class="level-number">7</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Wybierz ścieżkę mistrzowską</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 8 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="8">
+                        <div class="level-card">
+                            <div class="level-number">8</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Korzyści ścieżki nowicjusza</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 9 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="9">
+                        <div class="level-card">
+                            <div class="level-number">9</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Korzyści ścieżki eksperckiej</small>
+                            </div>
+                        </div>
+                    </label>
+                    
+                    <!-- Poziom 10 -->
+                    <label class="level-option">
+                        <input type="radio" name="poziom" value="10">
+                        <div class="level-card">
+                            <div class="level-number">10</div>
+                            <div class="level-info">
+                                <strong>Mistrz</strong>
+                                <small>Korzyści ścieżki mistrzowskiej</small>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Sekcja korzyści poziomu (zwijana, domyślnie zwinięta) -->
+            <div id="level-benefits-section" class="level-benefits-section collapsible-section collapsed" style="display: none;">
+                <div class="collapsible-section-header" id="level-benefits-header" role="button" tabindex="0" aria-expanded="false" aria-controls="level-benefits-body">
+                    <h4><svg class="icon"><use href="#icon-target"></use></svg> Korzyści Poziomu</h4>
+                    <span class="collapsible-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
+                </div>
+                <div class="collapsible-section-body" id="level-benefits-body">
+                    <div class="benefit-category">
+                        <p>Korzyści postaci od poziomu 1 do poziomu <span id="selected-level-name">0</span> (włącznie):</p>
+                        <div id="level-benefits-content">
+                            <!-- Korzyści będą wyświetlane dynamicznie, poziom po poziomie -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sekcja korzyści z pochodzenia (tylko dla poziomu 4) -->
+            <div id="origin-benefits-section" class="level-benefits-section" style="display: none;">
+                <h4><svg class="icon"><use href="#icon-column"></use></svg> Korzyści z Pochodzenia (Poziom 4)</h4>
+                <div class="benefit-category">
+                    <p>Na poziomie 4 zyskujesz korzyści wynikające z twojego pochodzenia.</p>
+                    <div id="origin-benefits-content">
+                        <!-- Korzyści będą wyświetlane dynamicznie -->
+                    </div>
+                </div>
+            </div>
+
+        <div class="form-group attribute-mode-toggle">
+            <label>
+                <input type="checkbox" id="default-attributes" checked>
+                <span>Użyj domyślnych wartości atrybutów (bazujących na pochodzeniu)</span>
+            </label>
+        </div>
+
+        <div id="custom-attributes" class="level-benefits-section" style="display: none;">
+            <div class="flex-row-between">
+                <h4>Zmiana wartości atrybutów pochodzenia:</h4>
+                <button type="button" class="section-reset-btn" id="btn-reset-swap" title="Wyczyść zamianę atrybutów">Wyczyść</button>
+            </div>
+            <p class="hint">Możesz jeden raz obniżyć wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu o 1. Suma atrybutów (pula) się nie zmienia.</p>
+            <div class="attribute-swap-row">
+                <div class="form-group">
+                    <label for="attribute-decreased">Obniż o 1:</label>
+                    <select id="attribute-decreased">
+                        <option value="">-- brak zmiany --</option>
+                        <option value="sila">Siła</option>
+                        <option value="zrecznosc">Zręczność</option>
+                        <option value="intelekt">Intelekt</option>
+                        <option value="wola">Wola</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="attribute-increased">Podnieś o 1:</label>
+                    <select id="attribute-increased">
+                        <option value="">-- brak zmiany --</option>
+                        <option value="sila">Siła</option>
+                        <option value="zrecznosc">Zręczność</option>
+                        <option value="intelekt">Intelekt</option>
+                        <option value="wola">Wola</option>
+                    </select>
+                </div>
+            </div>
+            <p id="attribute-pool-info" class="hint"></p>
+            <input type="hidden" id="strength-base" value="10">
+            <input type="hidden" id="agility-base" value="10">
+            <input type="hidden" id="intellect-base" value="10">
+            <input type="hidden" id="will-base" value="10">
+        </div>
+
+        <!-- Sekcja bonusu do atrybutu z pochodzenia (np. Człowiek, Elf) -->
+        <div id="origin-attribute-choice-section" class="level-benefits-section" style="display: none;">
+            <div class="flex-row-between">
+                <h4><svg class="icon"><use href="#icon-target"></use></svg> Bonus do atrybutu z pochodzenia</h4>
+                <button type="button" class="section-reset-btn" id="btn-reset-origin-attribute-choice" title="Wyczyść wybór bonusu do atrybutu">Wyczyść</button>
+            </div>
+            <p id="origin-attribute-choice-hint" class="hint"></p>
+            <div id="origin-attribute-choice-selects" class="attribute-swap-row">
+                <!-- Selecty generowane dynamicznie na podstawie pochodzenia -->
+            </div>
+        </div>
+
+        <!-- Sekcja zasobów (złoto i kurioza) -->
+        <div id="wealth-section" class="level-benefits-section" style="display: none;">
+            <h4><svg class="icon"><use href="#icon-purse"></use></svg> Zasoby na wyższym poziomie</h4>
+            <div class="benefit-category">
+                <p>Za każdy poziom powyżej 0: 2k6 srebrników.</p>
+                <p>Poziomy wyboru ścieżek (1, 3, 7): dodatkowe kurioza.</p>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <button id="btn-roll-wealth" class="btn-secondary"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj srebrniki</button>
+                    <span id="wealth-summary">Srebrniki: 0 (nie wylosowano)</span>
+                    <span id="curios-summary" style="margin-left:10px;">Kurioza: 0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="calculated-attributes" class="calculated-attributes">
+            <h4>Obliczone atrybuty (z modyfikatorami pochodzenia):</h4>
+            <div class="attributes-grid">
+                <div class="attribute-display">
+                    <label>Siła:</label>
+                    <span class="attribute-value" id="strength-final">10</span>
+                    <span class="modifier" id="strength-mod">+0</span>
+                </div>
+                <div class="attribute-display">
+                    <label>Zręczność:</label>
+                    <span class="attribute-value" id="agility-final">10</span>
+                    <span class="modifier" id="agility-mod">+0</span>
+                </div>
+                <div class="attribute-display">
+                    <label>Intelekt:</label>
+                    <span class="attribute-value" id="intellect-final">10</span>
+                    <span class="modifier" id="intellect-mod">+0</span>
+                </div>
+                <div class="attribute-display">
+                    <label>Wola:</label>
+                    <span class="attribute-value" id="will-final">10</span>
+                    <span class="modifier" id="will-mod">+0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-navigation">
+            <button class="btn-secondary" onclick="prevStep(2)">
+                <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+            </button>
+            <button id="btn-next-2" class="btn-primary" onclick="nextStep(2)" disabled>
+                Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+    <!-- Krok 3: Wybór Ścieżek -->
+    <div id="step-3" class="step">
+        <div class="section">
+            <h3><svg class="icon"><use href="#icon-fork"></use></svg> Krok 3: Wybór Ścieżek</h3>
+            <p>Wybierz ścieżki rozwoju swojej postaci zgodnie z wybranym poziomem. Wszystkie szczegóły widać w kafelkach poniżej.</p>
+
+            <!-- Sekcja ścieżek - kafelki w zwijanych sekcjach (akordeon) -->
+            <div class="path-section" id="path-section-1" data-path-level="1">
+                <div class="path-section-header">
+                    <h4>Ścieżka Nowicjusza (poziom 1)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-path="nowicjusz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <span class="path-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
+                </div>
+                <div id="path-grid-1" class="tiles-container"></div>
+                <div id="path-summary-1" class="inline-summary"></div>
+            </div>
+
+            <div class="path-section" id="path-section-3" data-path-level="3">
+                <div class="path-section-header">
+                    <h4>Ścieżka Ekspercka (poziom 3)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-path="ekspert" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <span class="path-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
+                </div>
+                <div id="path-grid-3" class="tiles-container"></div>
+                <div id="path-summary-3" class="inline-summary"></div>
+            </div>
+
+            <div class="path-section" id="path-section-7" data-path-level="7">
+                <div class="path-section-header">
+                    <h4>Ścieżka Mistrzowska (poziom 7)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-path="mistrz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <span class="path-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
+                </div>
+                <div id="path-grid-7" class="tiles-container"></div>
+                <div id="path-summary-7" class="inline-summary"></div>
+            </div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(3)">
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                </button>
+                <button id="btn-next-3" class="btn-primary" onclick="nextStep(3)" disabled>
+                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Krok 4: Rozwój Atrybutów -->
+    <div id="step-4" class="step">
+        <div class="section">
+            <h3><svg class="icon"><use href="#icon-strength"></use></svg> Krok 4: Rozwój Atrybutów</h3>
+            <p>Niektóre ścieżki przy wyborze pozwalają zwiększyć wartości atrybutów. Rozdaj poniższe punkty zgodnie z opisanymi opcjami.</p>
+
+            <div id="attribute-slots" class="slots-container">
+                <!-- Sloty zwiększenia atrybutów będą generowane przez JavaScript -->
+            </div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(4)">
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                </button>
+                <button id="btn-next-4" class="btn-primary" onclick="nextStep(4)" disabled>
+                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Krok 5: Profesje i Kurioza -->
+    <div id="step-5" class="step">
+        <div class="section">
+            <h3><svg class="icon"><use href="#icon-mask"></use></svg> Krok 5: Profesje i Kurioza</h3>
+            <p>Wybierz profesje i kurioza dla swojej postaci zgodnie z dostępnymi opcjami.</p>
+
+            <!-- Sekcja Profesji -->
+            <div class="professions-section">
+                <div class="flex-row-between">
+                    <h4><svg class="icon"><use href="#icon-briefcase"></use></svg> Profesje</h4>
+                    <div class="list-controls">
+                        <button id="btn-randomize-professions" class="btn-primary small"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj pozostałe</button>
+                        <button type="button" id="btn-reset-professions" class="btn-secondary small" title="Wyczyść wszystkie profesje i języki, by wybrać je ponownie"><svg class="icon"><use href="#icon-refresh"></use></svg> Resetuj wybór</button>
+                    </div>
+                </div>
+                <p class="hint">Dostępne profesje i języki zależą od Twojego pochodzenia i wybranych ścieżek. Rozdaj poniższe sloty zgodnie z opisanymi opcjami.</p>
+                <div id="professions-slots" class="slots-container">
+                    <!-- Sloty profesji będą generowane przez JavaScript -->
+                </div>
+                <div class="selected-professions" id="selected-professions">
+                    <h5>Wybrane Profesje:</h5>
+                    <div id="professions-list"></div>
+                </div>
+            </div>
+
+            <!-- Sekcja Języków -->
+            <div class="languages-section">
+                <h4><svg class="icon"><use href="#icon-speech"></use></svg> Języki</h4>
+                <div id="languages-known-summary" class="inline-summary"></div>
+                <div id="language-slots" class="slots-container">
+                    <!-- Sloty językowe będą generowane przez JavaScript -->
+                </div>
+            </div>
+
+            <!-- Sekcja Kuriozów -->
+            <div class="curios-section">
+                <div class="flex-row-between">
+                    <h4><svg class="icon"><use href="#icon-orb"></use></svg> Kurioza (<span id="curios-count">0</span> do wyboru)</h4>
+                    <div class="list-controls">
+                        <button id="btn-randomize-curios" class="btn-primary small"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj</button>
+                        <button id="btn-toggle-curios" class="btn-secondary small" data-expanded="false">Rozwiń</button>
+                        <button type="button" class="section-reset-btn" id="btn-reset-curios" title="Wyczyść wybrane kurioza">Wyczyść</button>
+                    </div>
+                </div>
+                <div class="curios-grid" id="curios-grid" style="display: none;">
+                    <!-- Kafelki kuriozów będą generowane przez JavaScript -->
+                </div>
+                <div class="selected-curios" id="selected-curios">
+                    <h5>Wybrane Kurioza:</h5>
+                    <div id="curios-list"></div>
+                </div>
+            </div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(5)">
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                </button>
+                <button id="btn-next-5" class="btn-primary" onclick="nextStep(5)" disabled>
+                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Krok 6: Magia - tradycje i zaklęcia (opcjonalnie) -->
+    <div id="step-6" class="step">
+        <div class="section">
+            <h3><svg class="icon"><use href="#icon-sparkle"></use></svg> Krok 6: Magia - tradycje i zaklęcia (opcjonalnie)</h3>
+            <p>Poniżej znajdują się wyłącznie korzyści magiczne faktycznie przyznane przez twoje pochodzenie i wybrane ścieżki na obecnym poziomie postaci, zgodnie z zasadami podręcznika. Ten krok jest opcjonalny - możesz go pominąć i przejść dalej bez rozwiązania wszystkich kart.</p>
+
+            <div class="flex-row-between">
+                <div id="known-traditions-hint" class="hint"></div>
+                <button type="button" class="section-reset-btn" id="btn-reset-magic" title="Wyczyść wszystkie wybory magii">Wyczyść</button>
+            </div>
+
+            <div id="magic-slots-container"></div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(6)">
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                </button>
+                <button id="btn-next-6" class="btn-primary" onclick="nextStep(6)">
+                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup wyboru tradycji/zaklęcia (Krok 6) -->
+    <div id="magic-picker-overlay" class="modal-overlay" hidden>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h4 id="magic-picker-title">Wybierz</h4>
+                <button type="button" class="modal-close-btn" id="magic-picker-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+            </div>
+            <div class="modal-body" id="magic-picker-body"></div>
+        </div>
+    </div>
+
+    <!-- Krok 7: Ekwipunek -->
+    <div id="step-7" class="step">
+        <div class="section">
+            <h3><svg class="icon"><use href="#icon-backpack"></use></svg> Krok 7: Ekwipunek</h3>
+            <p>Ustal początkowe wyposażenie swojej postaci na podstawie Zamożności (PG, "Początkowe wyposażenie"), a następnie odwiedź sklep, by sprzedać zbędne przedmioty za połowę ceny i kupić inne z pełnego katalogu. Kurioza są ustalane osobno w Kroku 5.</p>
+
+            <div class="flex-row-between">
+                <h4><svg class="icon"><use href="#icon-purse"></use></svg> Zamożność</h4>
+                <div class="list-controls">
+                    <button type="button" class="btn-primary small" id="btn-randomize-wealth"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj (3k6)</button>
+                    <button type="button" class="section-reset-btn" id="btn-reset-wealth" title="Wyczyść wybraną zamożność i ekwipunek">Wyczyść</button>
+                </div>
+            </div>
+            <p class="hint">Wybierz zamożność ręcznie, klikając kafelek, albo wylosuj ją rzutem 3k6 zgodnie z zasadami podręcznika.</p>
+            <p id="wealth-roll" class="hint"></p>
+            <div id="wealth-grid" class="picker-tile-grid"></div>
+
+            <div id="starting-gear-section"></div>
+
+            <div id="shop-section"></div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(7)">
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                </button>
+                <button id="btn-next-7" class="btn-primary" onclick="nextStep(7)">
+                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup katalogu sklepu (Krok 7: Ekwipunek) -->
+    <div id="equipment-picker-overlay" class="modal-overlay" hidden>
+        <div class="modal-box modal-box-large">
+            <div class="modal-header">
+                <h4 id="equipment-picker-title">Katalog przedmiotów</h4>
+                <button type="button" class="modal-close-btn" id="equipment-picker-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+            </div>
+            <div class="modal-body" id="equipment-picker-body"></div>
+        </div>
+    </div>
+
+    <!-- Popup listy postaci zapisanych w cache przeglądarki (boczne menu) -->
+    <div id="load-character-overlay" class="modal-overlay" hidden>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h4>Wczytaj postać</h4>
+                <button type="button" class="modal-close-btn" id="load-character-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+            </div>
+            <div class="modal-body" id="load-character-body"></div>
+        </div>
+    </div>
+
+    <!-- Popup wyboru poziomu przed losowaniem całej postaci (boczne menu) -->
+    <div id="randomize-character-overlay" class="modal-overlay" hidden>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h4><svg class="icon"><use href="#icon-dice"></use></svg> Wylosuj postać</h4>
+                <button type="button" class="modal-close-btn" id="randomize-character-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+            </div>
+            <div class="modal-body">
+                <p class="hint">Wybierz poziom postaci - to jedyna rzecz, którą wybierasz. Wszystko inne (pochodzenie, ścieżki, atrybuty, profesje, kurioza, wyposażenie...) zostanie wylosowane.</p>
+                <div id="randomize-level-grid" class="picker-tile-grid"></div>
+                <div class="step-navigation">
+                    <button type="button" class="btn-primary" id="btn-randomize-character-confirm"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj postać</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Krok 8: Podgląd i Eksport -->
+    <div id="step-8" class="step">
+        <div class="section">
+            <h3><svg class="icon"><use href="#icon-scroll"></use></svg> Krok 8: Podgląd i Eksport</h3>
+
+            <div class="final-actions">
+                <button type="button" class="btn-secondary" id="btn-save-character" title="Zapisz postać w pamięci przeglądarki (nadpisuje ten sam zapis, jeśli postać była już zapisana lub wczytana)">
+                    <svg class="icon"><use href="#icon-folder"></use></svg> Zapisz postać
+                </button>
+                <button type="button" class="btn-secondary" id="btn-promote-character" title="Awans - podnosi poziom postaci o 1 i pokazuje, co trzeba wybrać na nowym poziomie">
+                    <svg class="icon"><use href="#icon-bolt"></use></svg> Awans
+                </button>
+                <span id="final-actions-feedback" class="final-actions-feedback"></span>
+            </div>
+
+            <div id="missing-items-warning"></div>
+
+            <p>Kompletna karta twojej postaci ze wszystkimi wybranymi opcjami. Gdy wszystko się zgadza, wyeksportuj ją do pliku JSON.</p>
+
+            <div class="form-group">
+                <label for="character-name">Imię postaci (opcjonalnie)</label>
+                <input type="text" id="character-name" placeholder="np. Aldric Volkov" maxlength="60" autocomplete="off">
+            </div>
+
+            <div id="character-preview" class="character-preview">
+                <!-- Podgląd postaci -->
+            </div>
+
+            <div class="export-section">
+                <h4>Eksport Postaci</h4>
+                <button id="btn-export-json" class="btn-export" onclick="exportJSON()">
+                    <svg class="icon"><use href="#icon-page"></use></svg> Eksportuj do JSON
+                </button>
+            </div>
+
+            <div class="step-navigation">
+                <button class="btn-secondary" onclick="prevStep(8)">
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Pomocy -->
+    <div id="help-lightbox" class="help-lightbox" role="dialog" 
+         aria-labelledby="help-title" aria-modal="true" style="display: none;">
+        <div class="help-backdrop" onclick="closeHelp()"></div>
+        <div class="help-modal">
+            <div class="help-header">
+                <h3 id="help-title"><svg class="icon"><use href="#icon-book"></use></svg> Pomoc - Kreator Postaci</h3>
+                <button class="help-close" onclick="closeHelp()" aria-label="Zamknij pomoc">
+                    <svg class="icon"><use href="#icon-x"></use></svg>
+                </button>
+            </div>
+            
+            <div class="help-tabs" role="tablist">
+                <button class="help-tab active" role="tab" 
+                        aria-selected="true" aria-controls="tab-start"
+                        onclick="switchHelpTab('start')">
+                    <svg class="icon"><use href="#icon-torch"></use></svg> Szybki Start
+                </button>
+                <button class="help-tab" role="tab" 
+                        aria-selected="false" aria-controls="tab-glossary"
+                        onclick="switchHelpTab('glossary')">
+                    <svg class="icon"><use href="#icon-book"></use></svg> Słownik
+                </button>
+                <button class="help-tab" role="tab" 
+                        aria-selected="false" aria-controls="tab-faq"
+                        onclick="switchHelpTab('faq')">
+                    <svg class="icon"><use href="#icon-question"></use></svg> FAQ
+                </button>
+                <button class="help-tab" role="tab" 
+                        aria-selected="false" aria-controls="tab-shortcuts"
+                        onclick="switchHelpTab('shortcuts')">
+                    <svg class="icon"><use href="#icon-keyboard"></use></svg> Skróty
+                </button>
+            </div>
+            
+            <div class="help-content" id="help-content" role="tabpanel">
+                <!-- Treść zakładek ładowana dynamicznie przez JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Import modułu treści pomocy -->
+    <script src="help-content.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
