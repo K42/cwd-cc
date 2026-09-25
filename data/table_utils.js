@@ -1,1 +1,170 @@
-import e from"./origin_tables.js";function a(a,r){const o=e[a];if(!o)throw new Error(`Nie znaleziono pochodzenia: ${a}`);let n,t,i=null;for(const e of Object.keys(o)){if(e.toLowerCase().replace(/\s+/g,"_").replace(/ą/g,"a").replace(/ć/g,"c").replace(/ę/g,"e").replace(/ł/g,"l").replace(/ń/g,"n").replace(/ó/g,"o").replace(/ś/g,"s").replace(/ź/g,"z").replace(/ż/g,"z")===r){i=o[e];break}}if(!i)throw new Error(`Nie znaleziono tabeli ${r} dla pochodzenia ${a}`);if("k20"===i.typ)n=Math.floor(20*Math.random())+1,t=i.wyniki[n];else if("3k6"===i.typ)n=Math.floor(6*Math.random())+1+Math.floor(6*Math.random())+1+Math.floor(6*Math.random())+1,t=i.wyniki[n];else if("k6"===i.typ)n=Math.floor(6*Math.random())+1,t=i.wyniki[n];else{if("k3"!==i.typ)throw new Error(`Nieznany typ tabeli: ${i.typ}`);n=Math.floor(3*Math.random())+1,t=i.wyniki[n]}if(!t)throw new Error(`Nie znaleziono wyniku dla rzutu ${n} w tabeli ${r}`);return{rzut:n,wynik:t.wynik,efekt:t.efekt||"Brak efektu mechanicznego"}}function r(a){const r=e[a];return r?Object.keys(r).map(e=>({nazwa:r[e].nazwa,typ:r[e].typ,opis:r[e].opis,klucz:e})):[]}function o(a,r){const o=e[a];if(!o)throw new Error(`Nie znaleziono pochodzenia: ${a}`);let n=null;for(const e of Object.keys(o)){if(e.toLowerCase().replace(/\s+/g,"_").replace(/ą/g,"a").replace(/ć/g,"c").replace(/ę/g,"e").replace(/ł/g,"l").replace(/ń/g,"n").replace(/ó/g,"o").replace(/ś/g,"s").replace(/ź/g,"z").replace(/ż/g,"z")===r){n=o[e];break}}if(!n)throw new Error(`Nie znaleziono tabeli ${r} dla pochodzenia ${a}`);return{nazwa:n.nazwa,typ:n.typ,opis:n.opis,wyniki:n.wyniki}}function n(a){const r=e[a];return!!(r&&Object.keys(r).length>0)}function t(){return Object.keys(e).map(e=>({id:e,nazwa:e.charAt(0).toUpperCase()+e.slice(1),ma_tabele:n(e),tabele:r(e)}))}export{a as rollTable,r as getAvailableTables,o as getTableDetails,n as hasTables,t as getOriginsWithTables};
+/**
+ * Narzędzia do obsługi tabel losowania dla pochodzeń
+ */
+
+import ORIGIN_TABLES from './origin_tables.js';
+
+/**
+ * Losuje wynik z tabeli dla danego pochodzenia
+ * @param {string} originId - ID pochodzenia
+ * @param {string} tableName - Nazwa tabeli
+ * @returns {Object} Wynik losowania z rzutem, wynikiem i efektem
+ */
+function rollTable(originId, tableName) {
+  const origin = ORIGIN_TABLES[originId];
+  if (!origin) {
+    throw new Error(`Nie znaleziono pochodzenia: ${originId}`);
+  }
+  
+  // Znajdź tabelę po znormalizowanym kluczu
+  let table = null;
+  
+  for (const key of Object.keys(origin)) {
+    const normalizedKey = key.toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/ą/g, 'a')
+      .replace(/ć/g, 'c')
+      .replace(/ę/g, 'e')
+      .replace(/ł/g, 'l')
+      .replace(/ń/g, 'n')
+      .replace(/ó/g, 'o')
+      .replace(/ś/g, 's')
+      .replace(/ź/g, 'z')
+      .replace(/ż/g, 'z');
+    
+    if (normalizedKey === tableName) {
+      table = origin[key];
+      break;
+    }
+  }
+  
+  if (!table) {
+    throw new Error(`Nie znaleziono tabeli ${tableName} dla pochodzenia ${originId}`);
+  }
+
+  let roll;
+  let result;
+
+  // Określ typ rzutu na podstawie typu tabeli
+  if (table.typ === 'k20') {
+    roll = Math.floor(Math.random() * 20) + 1;
+    result = table.wyniki[roll];
+  } else if (table.typ === '3k6') {
+    roll = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
+    result = table.wyniki[roll];
+  } else if (table.typ === 'k6') {
+    roll = Math.floor(Math.random() * 6) + 1;
+    result = table.wyniki[roll];
+  } else if (table.typ === 'k3') {
+    roll = Math.floor(Math.random() * 3) + 1;
+    result = table.wyniki[roll];
+  } else {
+    throw new Error(`Nieznany typ tabeli: ${table.typ}`);
+  }
+
+  if (!result) {
+    throw new Error(`Nie znaleziono wyniku dla rzutu ${roll} w tabeli ${tableName}`);
+  }
+
+  return {
+    rzut: roll,
+    wynik: result.wynik,
+    efekt: result.efekt || 'Brak efektu mechanicznego'
+  };
+}
+
+/**
+ * Pobiera listę dostępnych tabel dla danego pochodzenia
+ * @param {string} originId - ID pochodzenia
+ * @returns {Array} Lista dostępnych tabel
+ */
+function getAvailableTables(originId) {
+  const origin = ORIGIN_TABLES[originId];
+  if (!origin) {
+    return [];
+  }
+
+  return Object.keys(origin).map(tableName => ({
+    nazwa: origin[tableName].nazwa,
+    typ: origin[tableName].typ,
+    opis: origin[tableName].opis,
+    klucz: tableName // Dodaj klucz tabeli dla API
+  }));
+}
+
+/**
+ * Pobiera szczegóły tabeli
+ * @param {string} originId - ID pochodzenia
+ * @param {string} tableName - Nazwa tabeli
+ * @returns {Object} Szczegóły tabeli
+ */
+function getTableDetails(originId, tableName) {
+  const origin = ORIGIN_TABLES[originId];
+  if (!origin) {
+    throw new Error(`Nie znaleziono pochodzenia: ${originId}`);
+  }
+
+  // Znajdź tabelę po znormalizowanym kluczu
+  let table = null;
+  
+  for (const key of Object.keys(origin)) {
+    const normalizedKey = key.toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/ą/g, 'a')
+      .replace(/ć/g, 'c')
+      .replace(/ę/g, 'e')
+      .replace(/ł/g, 'l')
+      .replace(/ń/g, 'n')
+      .replace(/ó/g, 'o')
+      .replace(/ś/g, 's')
+      .replace(/ź/g, 'z')
+      .replace(/ż/g, 'z');
+    
+    if (normalizedKey === tableName) {
+      table = origin[key];
+      break;
+    }
+  }
+  
+  if (!table) {
+    throw new Error(`Nie znaleziono tabeli ${tableName} dla pochodzenia ${originId}`);
+  }
+
+  return {
+    nazwa: table.nazwa,
+    typ: table.typ,
+    opis: table.opis,
+    wyniki: table.wyniki
+  };
+}
+
+/**
+ * Sprawdza czy pochodzenie ma tabele losowania
+ * @param {string} originId - ID pochodzenia
+ * @returns {boolean} True jeśli pochodzenie ma tabele
+ */
+function hasTables(originId) {
+  const origin = ORIGIN_TABLES[originId];
+  return !!(origin && Object.keys(origin).length > 0);
+}
+
+/**
+ * Pobiera wszystkie dostępne pochodzenia z tabelami
+ * @returns {Array} Lista pochodzeń z tabelami
+ */
+function getOriginsWithTables() {
+  return Object.keys(ORIGIN_TABLES).map(originId => ({
+    id: originId,
+    nazwa: originId.charAt(0).toUpperCase() + originId.slice(1),
+    ma_tabele: hasTables(originId),
+    tabele: getAvailableTables(originId)
+  }));
+}
+
+export {
+  rollTable,
+  getAvailableTables,
+  getTableDetails,
+  hasTables,
+  getOriginsWithTables
+};

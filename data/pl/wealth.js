@@ -1,0 +1,146 @@
+/**
+ * Tabela Zamożność i początkowe wyposażenie (PG, "Początkowe wyposażenie",
+ * str. 25-26). Zamożność ustala się rzutem 3k6; wynik porównuje się z tą
+ * tabelą, by określić styl życia postaci i jej startowy ekwipunek.
+ *
+ * Każdy poziom zamożności ma listę `przedmioty` - albo bezpośrednie
+ * odwołanie do katalogu (`id` z equipment.js, opcjonalnie `ilosc`), albo
+ * wymuszony wybór jednego wariantu (`wybor`: tablica id-ów katalogowych),
+ * albo pozycję czysto opisową bez odpowiednika w katalogu (`tekst`) - taką
+ * jak "sakwa podróżna" czy "bochenek chleba", zbyt drobną, by miała własną
+ * cenę w Rozdziale 6, więc nie da się jej sprzedać w sklepie.
+ *
+ * `pieniadze` opisuje rzut na startową gotówkę: `kosci` (zapis k-kowy) i
+ * `jednostka` (waluta, zob. PELNE_NAZWY_WALUT w equipment.js/logic).
+ *
+ * `wyborDodatkowy` (tylko Komfort/Dobrobyt) to dodatkowy, jednorazowy wybór
+ * "jedno z poniższych": tarcza, darmowe zaklęcie kręgu 0 zapisane na zwoju
+ * (PG: "zwój z wybraną przez MG inkantacją kręgu 0" - w tym kreatorze gracz
+ * wybiera je sam, tak jak przy poznawaniu tradycji) albo jeden z trzech
+ * zestawów narzędziowych.
+ */
+
+const WEALTH = {
+  nedza: {
+    id: 'nedza',
+    nazwa: 'Nędza',
+    zakres3k6: [3, 4],
+    opis: 'Żyjesz na ulicy bez grosza przy duszy.',
+    przedmioty: [
+      { wybor: ['palka', 'proca'], opisWyboru: 'z 20 kamieniami (jeśli proca)' },
+      { id: 'lachmany' }
+    ],
+    pieniadze: { kosci: '1k6', jednostka: 'okr' }
+  },
+  ubostwo: {
+    id: 'ubostwo',
+    nazwa: 'Ubóstwo',
+    zakres3k6: [5, 8],
+    opis: 'Żyjesz w podłych warunkach; nigdy nie wiesz, czy kolejnego dnia nie będziesz głodny.',
+    przedmioty: [
+      { wybor: ['kostur', 'palka', 'proca'], opisWyboru: 'z 20 kamieniami (jeśli proca)' },
+      { id: 'polatane_ubranie' },
+      { tekst: 'Sakwa podróżna' },
+      { tekst: 'Bochenek chleba' },
+      { id: 'buklak' },
+      { id: 'hubka_i_krzesiwo' },
+      { id: 'swieca' }
+    ],
+    pieniadze: { kosci: '2k6', jednostka: 'okr' }
+  },
+  klasa_srednia: {
+    id: 'klasa_srednia',
+    nazwa: 'Klasa średnia',
+    zakres3k6: [9, 13],
+    opis: 'Zarabiasz wystarczająco dużo, by pokryć wszystkie bieżące wydatki.',
+    przedmioty: [
+      { id: 'noz_lub_sztylet' },
+      { wybor: ['kostur', 'palka', 'proca'], opisWyboru: 'z 20 kamieniami (jeśli proca)' },
+      { id: 'ubranie_zwykle' },
+      { id: 'plecak' },
+      { id: 'racje_na_tydzien' },
+      { id: 'buklak' },
+      { id: 'hubka_i_krzesiwo' },
+      { id: 'pochodnia', ilosc: 2 }
+    ],
+    pieniadze: { kosci: '1k6', jednostka: 'md' }
+  },
+  komfort: {
+    id: 'komfort',
+    nazwa: 'Komfort',
+    zakres3k6: [14, 16],
+    opis: 'Żyjesz na dobrej stopie i zarabiasz na tyle dużo, by móc co nieco odłożyć.',
+    przedmioty: [
+      { id: 'noz_lub_sztylet' },
+      { wybor: ['kostur', 'palka', 'proca'], opisWyboru: 'z 20 kamieniami (jeśli proca)' },
+      { id: 'wytworne_ubranie' },
+      { id: 'plecak' },
+      { id: 'peleryna' },
+      { id: 'racje_na_tydzien' },
+      { id: 'buklak' },
+      { id: 'lina_zwoj' },
+      { id: 'hubka_i_krzesiwo' },
+      { id: 'pochodnia', ilosc: 2 },
+      { id: 'eliksir_leczenia' }
+    ],
+    pieniadze: { kosci: '2k6', jednostka: 'md' },
+    wyborDodatkowy: {
+      opis: 'Do tego jedno z poniższych:',
+      opcje: [
+        { typ: 'przedmiot', id: 'mala_tarcza', etykieta: 'Mała tarcza' },
+        { typ: 'zwoj_zaklecie', etykieta: 'Zwój z zaklęciem kręgu 0 (wybierasz sam, zamiast MG)' },
+        { typ: 'przedmiot', id: 'zestaw_uzdrowiciela', etykieta: 'Zestaw uzdrowiciela' },
+        { typ: 'przedmiot', id: 'zestaw_pisarski', etykieta: 'Zestaw pisarski' },
+        { typ: 'przedmiot', id: 'zestaw_narzedzi', etykieta: 'Narzędzia' }
+      ]
+    }
+  },
+  dobrobyt: {
+    id: 'dobrobyt',
+    nazwa: 'Dobrobyt',
+    zakres3k6: [17, 17],
+    opis: 'Żyjesz w luksusie. Stać cię na eleganckie ubrania i wszelkie wygody.',
+    przedmioty: [
+      { id: 'noz_lub_sztylet' },
+      { id: 'ubranie_dworzanina' },
+      { id: 'plecak' },
+      { id: 'peleryna' },
+      { id: 'racje_na_tydzien' },
+      { id: 'buklak' },
+      { id: 'lina_zwoj' },
+      { id: 'hubka_i_krzesiwo' },
+      { id: 'latarnia' },
+      { id: 'flaszka_oleju', ilosc: 2 },
+      { id: 'eliksir_leczenia' }
+    ],
+    pieniadze: { kosci: '1k6', jednostka: 'sr' },
+    wyborDodatkowy: {
+      opis: 'Do tego jedno z poniższych:',
+      opcje: [
+        { typ: 'przedmiot', id: 'duza_tarcza', etykieta: 'Tarcza' },
+        { typ: 'zwoj_zaklecie', etykieta: 'Zwój z zaklęciem kręgu 0 (wybierasz sam, zamiast MG)' },
+        { typ: 'przedmiot', id: 'zestaw_uzdrowiciela', etykieta: 'Zestaw uzdrowiciela' },
+        { typ: 'przedmiot', id: 'zestaw_pisarski', etykieta: 'Zestaw pisarski' },
+        { typ: 'przedmiot', id: 'zestaw_narzedzi', etykieta: 'Narzędzia' }
+      ]
+    }
+  },
+  bogactwo: {
+    id: 'bogactwo',
+    nazwa: 'Bogactwo',
+    zakres3k6: [18, 18],
+    opis: 'Niczego ci nie brakuje. Masz służących i posiadłość lub zamek w najlepszej części miasta.',
+    przedmioty: [
+      { id: 'noz_lub_sztylet' },
+      { id: 'stroj_szlachcica' },
+      { id: 'peleryna' },
+      { id: 'racje_na_tydzien' },
+      { id: 'buklak' },
+      { id: 'eliksir_leczenia' }
+    ],
+    pieniadze: { kosci: '2k6', jednostka: 'sr' },
+    dodatkowyOpis: 'Masz także osobistego posługacza, ochroniarza i trzy konie z siodłami (poza mechaniką ekwipunku - to zasoby narracyjne, nie przedmioty do sprzedania).'
+  }
+};
+
+export { WEALTH };

@@ -3,31 +3,151 @@
    Paleta i kształty ujednolicone z https://kamilherman.pl/demon/bm/
    ========================================================== */
 
+/* ----------------------------------------------------------
+   Kierunek wizualny: "przemoknięty popiół".
+   Świat gry jest brudny i smutny, więc paleta jest odsączona z
+   nasycenia, a podłoże ma zimny, zielonawo-szary odcień wilgotnego
+   kamienia zamiast ciepłego brązu. Akcenty są zmatowiałe: mosiądz
+   pokryty nalotem i zaschnięta krew, nie złoto i czerwień.
+
+   Kontrast trzymamy niżej niż w typowym interfejsie - celowo, bo
+   liczy się klimat. Wyjątkiem jest tekst ciągły (opisy zaklęć,
+   talentów, pomoc), który zostaje czytelny: jasność --ink i rozmiary
+   w .picker-tile-description oraz .help-content są dobrane tak, żeby
+   dłuższe fragmenty dało się przeczytać bez wysiłku.
+
+   Typografia w trzech rolach:
+   - Grenze Gotisch - nagłówki; zwężona, bliska teksturze pisma
+     gotyckiego, ale bez jego nieczytelności;
+   - Grenze - interfejs i tekst ciągły; szryfta o zużytych,
+     nierównych kształtach z tej samej rodziny, więc trzyma spójność;
+   - Courier Prime - liczby, ceny, rzuty i statystyki; maszynopis
+     odbija urzędowy, beznamiętny ton spisów i rejestrów.
+
+   Kształt: zero zaokrągleń, płaskie wypełnienia bez połysku, włosowe
+   linie i lekkie ziarno. Karty mają być stemplowane, nie wyklejane.
+   ---------------------------------------------------------- */
+
 :root {
-    /* Paleta */
-    --bg-0: #0c0a09;
-    --bg-1: #14110f;
-    --bg-2: #1c1816;
-    --bg-3: #2a2421;
-    --bg-4: #3a322c;
-    --ink: #e9dcc4;
-    --ink-dim: #a89b82;
-    --ink-mute: #756954;
-    --blood: #8b1e1e;
-    --blood-bright: #c0392b;
-    --gold: #b08d3a;
-    --gold-bright: #d4ac4c;
-    --parchment: #d9c89b;
-    --success: #6b8e6f;
-    --success-bright: #8fb393;
-    --info: #5f8a9e;
-    --info-bright: #a9c8d6;
-    --border: #3a322c;
-    --border-strong: #5a4d3e;
-    --shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    /* Podłoże - czerń z zielono-szarym nalotem, nie brąz */
+    --bg-0: #0d0f0d;
+    --bg-1: #131511;
+    --bg-2: #1a1c18;
+    --bg-3: #24261f;
+    --bg-4: #31332b;
+
+    /* Atrament - kość, odsączona z ciepła */
+    --ink: #c8c3b3;
+    --ink-dim: #8d8979;
+    --ink-mute: #635f4f;
+
+    /* Akcenty - zaschnięta krew i mosiądz z nalotem */
+    --blood: #6d2521;
+    --blood-bright: #8e3a2e;
+    --gold: #8a7645;
+    --gold-bright: #a99259;
+    --parchment: #b7ac8f;
+    --success: #5b6e57;
+    --success-bright: #7d9078;
+    --info: #556e74;
+    --info-bright: #86a1a6;
+
+    --border: #2d2f28;
+    --border-strong: #494b40;
+
+    /* Przezroczyste podkłady. Wcześniej te same wartości były wpisane
+       liczbowo w kilkudziesięciu miejscach arkusza, więc zmiana palety
+       ich nie ruszała i akcenty się rozjeżdżały. Teraz to też tokeny. */
+    --gold-wash: rgba(138, 118, 69, 0.10);
+    --gold-wash-strong: rgba(138, 118, 69, 0.17);
+    --blood-wash: rgba(109, 37, 33, 0.16);
+    --blood-wash-strong: rgba(109, 37, 33, 0.26);
+    --success-wash: rgba(91, 110, 87, 0.15);
+    --info-wash: rgba(85, 110, 116, 0.15);
+    --scrim: rgba(6, 7, 6, 0.82);
+
+    /* Cień jest twardy i przesunięty, jak niedokładny odbitek stempla,
+       zamiast miękkiej poświaty. */
+    --shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+    --shadow-lift: 0 3px 0 rgba(0, 0, 0, 0.6);
     --focus-ring: 0 0 0 2px var(--gold-bright);
-    --radius: 4px;
-    --radius-lg: 6px;
+
+    /* Surowo znaczy bez zaokrągleń. Zmienne zostają, żeby nie trzeba
+       było ruszać 92 miejsc w arkuszu. */
+    --radius: 0;
+    --radius-lg: 0;
+
+    /* Miara wiersza tekstu ciągłego.
+       Wiersz czyta się wygodnie przy 60-75 znakach; powyżej ~85 oko gubi
+       początek następnej linii. W Grenze przy 18 px jeden "ch" (szerokość
+       zera) odpowiada 1,27 znaku przeciętnej szerokości, więc 55ch to około
+       70 znaków. Token stosujemy WYŁĄCZNIE do tekstu ciągłego - siatki,
+       tabele i kafelki mają zostać szerokie. */
+    --miara: 55ch;
+
+    /* Ziarno nakładane na płaskie płaszczyzny, żeby nie wyglądały jak
+       plastik. Szum z filtru SVG, bez pliku z obrazkiem. */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* Atrybut `hidden` musi zawsze wygrywać, niezależnie od tego, jaką klasę ma
+   dany element. Bez tego np. `.picker-tile { display: flex }` (specyficzność
+   taka sama jak `[hidden]` z arkusza przeglądarki, ale zadeklarowana później)
+   bije natywne chowanie - element dostaje `hidden`, ale wciąż jest widoczny.
+   Kod w script.js konsekwentnie chowa elementy przez `el.hidden = true`
+   (zob. filtr ścieżek w Kroku 3), więc ta reguła musi obowiązywać globalnie. */
+[hidden] {
+    display: none !important;
+}
+
+/* ----------------------------------------------------------
+   Miara wiersza
+
+   Ograniczamy szerokość WYŁĄCZNIE tam, gdzie leci tekst ciągły. Siatki
+   kafelków, tabele ekwipunku, paski filtrów i rzędy podręczników zostają
+   pełnej szerokości - tam długi wiersz nie przeszkadza, bo nie czyta się
+   go od lewej do prawej.
+
+   Bloki wyśrodkowane dostają margin-inline: auto, żeby po przycięciu nie
+   przykleiły się do lewej krawędzi.
+   ---------------------------------------------------------- */
+
+.section > p,
+.section > .flex-row-between > p,
+.hint,
+.tile-description,
+.origin-tile .description,
+.origin-summary p,
+.talent-description,
+.spell-description,
+.expanded-description,
+.slot-description,
+.magic-slot-desc,
+.picker-tile-description,
+.table-description,
+.trait-item,
+.preview-section p,
+.missing-items-warning li,
+.path-benefit-item p,
+.help-content p,
+.help-content li,
+.modal-body > p {
+    max-width: var(--miara);
+}
+
+/* Ramki wewnątrz pomocy trzymają tę samą kolumnę co tekst, inaczej jedne
+   elementy sięgałyby krawędzi panelu, a inne kończyły się w pół drogi. */
+.help-tip,
+.help-content ul,
+.help-content ol {
+    max-width: var(--miara);
+}
+
+/* Konteksty wyśrodkowane - bez tego przycięty akapit zostałby przy lewej. */
+.quick-random-fill .hint,
+.header p,
+.picker-results-count {
+    margin-inline: auto;
 }
 
 /* Ikony (linie, bez wypełnień) - zob. sprite <symbol> w index.html */
@@ -44,51 +164,110 @@
     stroke-linejoin: round;
 }
 
-/* Basic Layout and Typography */
-body {
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 20px;
-    background:
-        radial-gradient(ellipse at top, rgba(139, 30, 30, 0.08), transparent 60%),
-        radial-gradient(ellipse at bottom right, rgba(176, 141, 58, 0.05), transparent 50%),
-        var(--bg-0);
-    color: var(--ink);
-    line-height: 1.5;
+/* ----------------------------------------------------------
+   Typografia i podłoże
+   ---------------------------------------------------------- */
+
+/* Korzeń skali typograficznej.
+   Grenze ma wysokość x równą 45,4/100 stopnia pisma, a Inter - 50,8/100
+   (zmierzone na glifie "x"). Krój jest więc optycznie o 11% drobniejszy przy
+   tym samym stopniu. Pierwsza wersja tego designu kompensowała to
+   podniesieniem 16 -> 16,5 px, czyli o 3% - za mało, przez co tekst wydawał
+   się mniejszy niż przed zmianą kroju.
+
+   18 px daje wysokość x 8,17 px wobec 8,13 px dla Inter przy 16 px, czyli
+   praktycznie dokładny parytet z pierwotnym wyglądem.
+
+   Cała skala (również rozmiary zapisane w pikselach) została przemnożona
+   przez 18/16 = 1,125, żeby proporcje między tekstem ciągłym a drobnymi
+   etykietami zostały takie, jak zaprojektowano. */
+html {
+    font-size: 18px;
 }
 
-h1, h2, h3, h4, h5 {
-    font-family: 'Cinzel', 'Inter', system-ui, sans-serif;
+:root {
+    --font-display: 'Grenze Gotisch', 'Grenze', Georgia, 'Times New Roman', serif;
+    --font-body: 'Grenze', Georgia, 'Times New Roman', serif;
+    --font-data: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+}
+
+body {
+    font-family: var(--font-body);
+    /* Szerokość dobrana pod dwukolumnową siatkę ścieżek: przy 1120 px każda
+       kolumna mieści około 68 znaków, czyli mieści się w wygodnej mierze.
+       Przy dotychczasowych 860 px kolumna miała 49 znaków - opisy talentów
+       łamały się na tyle krótko, że czytało się je poszarpanie. Tekst ciągły
+       nie rozjeżdża się razem ze stroną, bo ogranicza go --miara. */
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 20px;
+    /* Płaska czerń z ziarnem i jedną plamą wilgoci - bez kolorowych
+       poświat, które wcześniej rozjaśniały górę i prawy dolny róg. */
+    background:
+        var(--grain),
+        radial-gradient(ellipse at 50% 0%, rgba(109, 37, 33, 0.07), transparent 55%),
+        var(--bg-0);
+    background-attachment: fixed, fixed, fixed;
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
     color: var(--parchment);
     margin: 0 0 0.5em 0;
-    letter-spacing: 0.02em;
-    line-height: 1.25;
+    /* Krój jest zwężony, więc rozstrzelenie liter odbiera mu zbitość
+       i upodabnia do napisu wybitego w kamieniu. */
+    letter-spacing: 0.05em;
+    line-height: 1.15;
+    font-weight: 500;
 }
-h3 { font-size: 1.1rem; color: var(--gold-bright); margin-top: 1em; }
-h4 { font-size: 1rem; color: var(--gold); margin-top: 1em; }
-h5 { font-size: 0.9rem; color: var(--gold); }
+h1 { font-size: 2.1rem; letter-spacing: 0.08em; }
+h2 { font-size: 1.35rem; color: var(--ink-dim); font-weight: 400; }
+h3 { font-size: 1.3rem; color: var(--gold-bright); margin-top: 1em; }
+h4 { font-size: 1.12rem; color: var(--gold); margin-top: 1em; }
+h5 { font-size: 1rem; color: var(--gold); }
+h6 { font-size: 0.95rem; color: var(--parchment); }
+
+/* Liczby, ceny, rzuty i statystyki idą maszynopisem - inny rejestr niż
+   opisy, a przy okazji cyfry same się pionują w kolumnach. */
+.attribute-value, .attr-value, .attr-mod, .mech-value, .level-number,
+.attribute-stepper-count, .roll-dice, .black-magic-roll-result,
+.source-row-count, .picker-results-count, .equipment-table td,
+.help-step-number, .shortcuts-table kbd {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+}
 
 .header {
     position: relative;
     text-align: center;
-    margin-bottom: 30px;
-    padding: 20px 15px 15px;
-    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    margin-bottom: 26px;
+    padding: 28px 15px 20px;
+    /* Winieta zamiast karty: nagłówek nie jest pudełkiem, tylko kartą
+       tytułową odciętą od resztu podwójną linią. */
+    background: var(--grain), var(--bg-1);
+    border: 0;
+    border-bottom: 1px solid var(--border-strong);
+    box-shadow: 0 3px 0 -1px var(--bg-0), 0 4px 0 -1px var(--border);
+    border-radius: 0;
 }
 
 .header em { color: var(--ink-dim); }
 
 .section {
-    background: var(--bg-1);
+    background: var(--grain), var(--bg-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
+    /* Rozdział sekcji niesie lewa szyna i włosowa ramka, a nie zaokrąglony
+       kontur z cieniem. Dzięki temu strona wygląda na złożoną z płacht, nie
+       z kafelków. */
+    border-left: 3px solid var(--border-strong);
     box-shadow: var(--shadow);
-    padding: 20px;
-    margin: 15px 0;
+    padding: 22px;
+    margin: 16px 0;
 }
 
 .form-group {
@@ -97,7 +276,7 @@ h5 { font-size: 0.9rem; color: var(--gold); }
 
 .attribute-mode-toggle {
     background: var(--bg-2);
-    border: 2px solid var(--gold);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     padding: 14px 18px;
@@ -123,9 +302,10 @@ h5 { font-size: 0.9rem; color: var(--gold); }
 
 .quick-random-fill {
     background: var(--bg-2);
-    border: 2px solid var(--gold);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blood);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
+    box-shadow: none;
     padding: 16px 18px;
     margin-bottom: 20px;
     text-align: center;
@@ -157,13 +337,13 @@ h5 { font-size: 0.9rem; color: var(--gold); }
 
 .import-feedback.error {
     color: var(--blood-bright);
-    background: rgba(139, 30, 30, 0.15);
+    background: var(--blood-wash);
     border: 1px solid var(--blood);
 }
 
 .import-feedback.success {
     color: var(--success-bright);
-    background: rgba(107, 142, 111, 0.15);
+    background: var(--success-wash);
     border: 1px solid var(--success);
 }
 
@@ -183,22 +363,95 @@ h5 { font-size: 0.9rem; color: var(--gold); }
     min-width: 160px;
 }
 
+/* Etykiety są drobne, wyciszone i rozstrzelone - mają opisywać pole, nie
+   konkurować z nagłówkiem sekcji. */
 label {
     display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: var(--gold);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    color: var(--ink-mute);
+}
+
+/* Pola wyboru rysujemy sami - domyślne, systemowo niebieskie kwadraty były
+   jedynym elementem interfejsu spoza tego świata. Zaznaczenie to wypełnienie
+   mosiądzem i wybity znak, bez zaokrągleń. */
+input[type="checkbox"],
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    flex-shrink: 0;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-0);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.12s, background 0.12s;
+}
+
+input[type="checkbox"]:hover:not(:disabled),
+input[type="radio"]:hover:not(:disabled) {
+    border-color: var(--gold);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background: var(--gold);
+    border-color: var(--gold-bright);
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 0;
+    width: 4px;
+    height: 9px;
+    border: solid var(--bg-0);
+    border-width: 0 2px 2px 0;
+    transform: rotate(42deg);
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: var(--bg-0);
+}
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 select, button, input {
     padding: 8px 12px;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius);
-    background: var(--bg-2);
+    background: var(--bg-0);
     color: var(--ink);
     font-family: inherit;
-    font-size: 15px;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    font-size: 17px;
+    /* Pola są wgłębione, przyciski wypukłe - to jedyne, co je różni na
+       płaskiej płaszczyźnie bez zaokrągleń i gradientów. */
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+button {
+    box-shadow: var(--shadow);
 }
 
 select:focus, input:focus {
@@ -210,22 +463,26 @@ select:focus, input:focus {
 button {
     background: var(--bg-3);
     cursor: pointer;
-    font-weight: bold;
+    font-family: var(--font-body);
+    font-weight: 500;
 }
 
 button:hover {
-    background: var(--border);
+    background: var(--bg-4);
     border-color: var(--gold);
     color: var(--gold-bright);
 }
 
+/* Wciśnięcie zjeżdża razem z cieniem - jak dociśnięcie pieczęci. */
 button:active {
-    transform: translateY(1px);
+    transform: translateY(2px);
+    box-shadow: none;
 }
 
 .character-preview {
-    background: var(--bg-1);
-    border: 1px solid var(--gold);
+    background: var(--grain), var(--bg-1);
+    border: 1px solid var(--border-strong);
+    border-top: 3px solid var(--gold);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     padding: 20px;
@@ -262,7 +519,7 @@ button:active {
 /* Przypomnienie wybranego pochodzenia na górze Kroku 2 */
 .origin-summary {
     background: var(--bg-2);
-    border-left: 4px solid var(--gold);
+    border-left: 3px solid var(--border-strong);
     padding: 15px;
     margin: 15px 0;
     border-radius: var(--radius);
@@ -363,7 +620,7 @@ button:active {
 
 .error {
     color: var(--blood-bright);
-    background: rgba(139, 30, 30, 0.15);
+    background: var(--blood-wash);
     border: 1px solid var(--blood);
     padding: 10px;
     border-radius: var(--radius);
@@ -420,12 +677,21 @@ button:active {
    wysokość tej części (rozciąga się razem z opisem/atrybutami, więc nigdy
    nie zostaje puste miejsce obok niej). Bez własnego border-radius: to
    overflow:hidden kafelka nadaje jej zaokrąglone rogi po lewej. */
+/* Ilustracje są w pełnym nasyceniu i na wyblakłym tle wyglądałyby jak
+   wklejone z innej strony. Przygaszamy je i odbieramy część koloru, żeby
+   należały do tego samego świata. Po najechaniu wracają bliżej oryginału. */
 .origin-thumb {
     width: 190px;
     flex-shrink: 0;
     align-self: stretch;
     object-fit: cover;
     background: var(--bg-1);
+    filter: saturate(0.45) brightness(0.72) contrast(1.05);
+    transition: filter 0.25s ease;
+}
+.origin-tile:hover .origin-thumb,
+.origin-tile.selected .origin-thumb {
+    filter: saturate(0.7) brightness(0.88) contrast(1.05);
 }
 
 /* Reszta treści górnej części - zawsze na prawo od miniatury */
@@ -466,24 +732,32 @@ button:active {
     border-color: var(--gold);
 }
 
+/* Podpowiedź na kafelku pochodzenia. Tekst przychodzi z atrybutu
+   data-hint ustawianego w script.js z pliku językowego - w CSS nie da się
+   wywołać t(), a wpisany tu na sztywno napis byłby jedynym tekstem
+   interfejsu poza warstwą tłumaczeń. */
 .origin-tile:hover::after {
-    content: 'Kliknij aby rozwinąć/zwinąć';
+    content: attr(data-hint);
     position: absolute;
     bottom: 5px;
     right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: var(--ink);
-    padding: 2px 6px;
+    background: var(--scrim);
+    color: var(--ink-dim);
+    padding: 2px 7px;
     border-radius: var(--radius);
-    font-size: 10px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     pointer-events: none;
     z-index: 5;
 }
 
 .origin-tile.selected {
-    border-color: var(--gold-bright);
-    background: linear-gradient(180deg, rgba(176, 141, 58, 0.12), var(--bg-2));
-    box-shadow: 0 0 10px rgba(176, 141, 58, 0.25);
+    border-color: var(--gold);
+    background: var(--bg-2);
+    /* Wybór znaczy szyna po lewej, nie poświata wokół. */
+    box-shadow: inset 3px 0 0 var(--gold);
 }
 
 /* Tile Header */
@@ -498,7 +772,7 @@ button:active {
 .tile-header h4 {
     margin: 0;
     color: var(--gold-bright);
-    font-size: 18px;
+    font-size: 20px;
     flex: 1;
 }
 
@@ -506,7 +780,7 @@ button:active {
 .origin-tile h4 {
     margin: 0 0 8px 0;
     color: var(--gold-bright);
-    font-size: 18px;
+    font-size: 20px;
 }
 
 /* Zawartość zwinięta */
@@ -515,7 +789,7 @@ button:active {
 }
 
 .tile-content-collapsed .description {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.4;
     margin-bottom: 15px;
     color: var(--ink);
@@ -529,7 +803,7 @@ button:active {
 }
 
 .expanded-description {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.6;
     margin-bottom: 20px;
     color: var(--ink);
@@ -544,12 +818,12 @@ button:active {
 }
 
 .tile-select-btn {
-    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    background: var(--gold);
     color: var(--bg-0);
     border: 1px solid var(--gold-bright);
     padding: 12px 24px;
     border-radius: var(--radius);
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
     transition: filter 0.15s ease;
@@ -572,7 +846,7 @@ button:active {
 
 /* Komunikat o wyborze pochodzenia */
 .selection-message {
-    background: linear-gradient(180deg, var(--success-bright), var(--success));
+    background: var(--success);
     color: var(--bg-0);
     padding: 12px 20px;
     border-radius: var(--radius);
@@ -589,12 +863,12 @@ button:active {
 }
 
 .message-icon {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
 }
 
 .message-text {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 500;
 }
 
@@ -622,7 +896,7 @@ button:active {
 .level-section h4 {
     margin: 0 0 15px 0;
     color: var(--gold);
-    font-size: 18px;
+    font-size: 20px;
 }
 
 /* Style dla sekcji obliczonych atrybutów (Krok 2) */
@@ -638,7 +912,7 @@ button:active {
 .calculated-attributes h4 {
     margin: 0 0 15px 0;
     color: var(--gold);
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .level-selector {
@@ -673,8 +947,8 @@ button:active {
 
 .level-option input[type="radio"]:checked + .level-card {
     border-color: var(--gold-bright);
-    background: linear-gradient(180deg, rgba(176, 141, 58, 0.12), var(--bg-2));
-    box-shadow: 0 0 10px rgba(176, 141, 58, 0.25);
+    background: var(--bg-2);
+    box-shadow: inset 3px 0 0 var(--gold);
 }
 
 .level-option input[type="radio"]:checked + .level-card::before {
@@ -690,22 +964,32 @@ button:active {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: bold;
 }
 
+/* Jedenaście numerów poziomów widać naraz - na krwistym tle robiła się z
+   tego ściana czerwieni. Numer jest teraz wybity w tle, a kolorem wyróżnia
+   się dopiero poziom wybrany (reguła niżej). */
 .level-number {
-    background: var(--blood);
-    color: var(--parchment);
+    background: var(--bg-0);
+    color: var(--ink-dim);
+    border: 1px solid var(--border-strong);
     width: 30px;
     height: 30px;
     border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
     margin: 0 auto 10px auto;
+}
+
+.level-option input:checked ~ .level-card .level-number {
+    background: var(--gold);
+    border-color: var(--gold-bright);
+    color: var(--bg-0);
 }
 
 .level-option input[type="radio"]:checked + .level-card .level-number {
@@ -716,14 +1000,14 @@ button:active {
 .level-info strong {
     display: block;
     color: var(--gold);
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 5px;
 }
 
 .level-info small {
     display: block;
     color: var(--ink-dim);
-    font-size: 10px;
+    font-size: 11px;
     line-height: 1.2;
 }
 
@@ -740,16 +1024,16 @@ button:active {
 .export-section h4 {
     margin: 0 0 15px 0;
     color: var(--gold);
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .btn-export {
-    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    background: var(--gold);
     color: var(--bg-0);
     border: 1px solid var(--gold-bright);
     padding: 12px 20px;
     border-radius: var(--radius);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: filter 0.15s ease;
@@ -783,7 +1067,7 @@ button:active {
 .path-section h4 {
     margin: 0 0 10px 0;
     color: var(--gold);
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .path-section-header {
@@ -800,7 +1084,7 @@ button:active {
 
 .path-section-toggle-icon {
     color: var(--gold);
-    font-size: 14px;
+    font-size: 16px;
     transition: transform 0.2s ease;
 }
 
@@ -814,7 +1098,7 @@ button:active {
 
 /* Zachowanie dla starych kafelków */
 .origin-tile .description {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.4;
     margin-bottom: 10px;
     color: var(--ink);
@@ -823,7 +1107,7 @@ button:active {
 .origin-tile .stats {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 13.5px;
     color: var(--gold);
     margin-top: 8px;
 }
@@ -844,24 +1128,28 @@ button:active {
     align-items: center;
 }
 
+/* Rozmiar to dana, nie ostrzeżenie - czerwień rezerwujemy na czarną magię
+   i splugawienie. */
 .origin-tile .size-badge {
-    background: var(--blood);
-    color: var(--parchment);
-    padding: 4px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: bold;
+    background: var(--bg-0);
+    color: var(--ink-dim);
+    border: 1px solid var(--border-strong);
+    padding: 3px 8px;
+    border-radius: 0;
+    font-family: var(--font-data);
+    font-size: 12.5px;
+    font-weight: 400;
 }
 
 /* Znacznik źródła - mniejszy i bardziej dyskretny */
 .origin-tile .source-badge {
-    background: rgba(176, 141, 58, 0.15);
-    color: rgba(212, 172, 76, 0.7);
+    background: var(--gold-wash-strong);
+    color: var(--gold-bright);
     padding: 3px 6px;
-    border-radius: 999px;
-    font-size: 9px;
+    border-radius: 0;
+    font-size: 10px;
     font-weight: normal;
-    border: 1px solid rgba(176, 141, 58, 0.3);
+    border: 1px solid var(--gold-wash-strong);
     letter-spacing: 0.5px;
     cursor: help;
 }
@@ -882,18 +1170,23 @@ button:active {
 .tile-section h5 {
     margin: 0 0 10px 0;
     color: var(--gold);
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
 }
 
+/* Wiersz atrybutu powtarza się po cztery razy na każdym z kilkunastu
+   kafelków - na czerwonym podkładzie cała lista pochodzeń robiła się
+   krwista i nie dało się w niej niczego wyróżnić. Teraz to zwykły,
+   ciemniejszy pasek. */
 .attribute-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 8px;
-    background: rgba(139, 30, 30, 0.25);
+    padding: 6px 9px;
+    background: var(--bg-0);
+    border-left: 2px solid var(--border-strong);
     border-radius: var(--radius);
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .attr-name {
@@ -910,7 +1203,7 @@ button:active {
 
 .attr-mod {
     color: var(--gold);
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: bold;
 }
 
@@ -926,19 +1219,20 @@ button:active {
     flex-direction: column;
     align-items: center;
     padding: 8px;
-    background: rgba(139, 30, 30, 0.25);
+    background: var(--bg-3);
+    border-left: 2px solid var(--border-strong);
     border-radius: var(--radius);
     text-align: center;
 }
 
 .mech-label {
-    font-size: 11px;
+    font-size: 12.5px;
     color: var(--gold);
     margin-bottom: 4px;
 }
 
 .mech-value {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     color: var(--gold-bright);
 }
@@ -955,9 +1249,9 @@ button:active {
     justify-content: space-between;
     align-items: center;
     padding: 6px 8px;
-    background: rgba(139, 30, 30, 0.25);
+    background: var(--bg-2);
     border-radius: var(--radius);
-    font-size: 12px;
+    font-size: 13.5px;
 }
 
 .cultural-label {
@@ -981,7 +1275,7 @@ button:active {
 
 .feature-item {
     padding: 8px;
-    background: rgba(139, 30, 30, 0.25);
+    background: var(--bg-2);
     border-radius: var(--radius);
     border-left: 3px solid var(--gold);
 }
@@ -990,14 +1284,14 @@ button:active {
     display: block;
     color: var(--gold-bright);
     font-weight: bold;
-    font-size: 12px;
+    font-size: 13.5px;
     margin-bottom: 4px;
 }
 
 .feature-desc {
     display: block;
     color: var(--ink);
-    font-size: 11px;
+    font-size: 12.5px;
     line-height: 1.3;
 }
 
@@ -1019,17 +1313,23 @@ button:active {
 }
 
 .btn-primary, .btn-secondary {
-    padding: 12px 24px;
+    padding: 11px 22px;
     border: 1px solid;
     border-radius: var(--radius);
-    font-size: 16px;
-    font-weight: bold;
+    /* Majuskuły z rozstrzeleniem - przycisk ma być stemplem, nie klawiszem.
+       Grenze w wersji majuskułowej jest przy tym węższa, więc zmieści się
+       tyle samo tekstu co wcześniej. */
+    font-family: var(--font-body);
+    font-size: 16.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
 .btn-primary {
-    background: linear-gradient(180deg, var(--blood), #6b1717);
+    background: var(--blood);
     color: var(--parchment);
     border-color: var(--blood-bright);
 }
@@ -1066,20 +1366,23 @@ button:active {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-    color: var(--bg-0);
-    border: 1px solid var(--gold-bright);
-    padding: 10px 20px;
+    background: transparent;
+    color: var(--ink-mute);
+    border: 1px solid var(--border-strong);
+    padding: 8px 14px;
     border-radius: var(--radius);
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
     cursor: pointer;
     transition: filter 0.15s ease;
     z-index: 100;
 }
 
 .btn-help:hover {
-    filter: brightness(1.1);
+    color: var(--gold-bright);
+    border-color: var(--gold);
 }
 
 /* Lightbox Overlay */
@@ -1102,7 +1405,7 @@ button:active {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: var(--scrim);
     cursor: pointer;
 }
 
@@ -1110,12 +1413,15 @@ button:active {
 .help-modal {
     position: relative;
     width: 90%;
-    max-width: 900px;
+    /* Pomoc to jeden długi tekst, więc okno dopasowujemy do miary wiersza,
+       a nie do szerokości ekranu. Przy 900 px przycięty akapit zostawiał po
+       prawej szeroki pusty pas i panel wyglądał na w połowie pusty. */
+    max-width: 760px;
     max-height: 85vh;
     background: var(--bg-1);
     border: 1px solid var(--gold);
     border-radius: var(--radius-lg);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 10px 40px var(--scrim);
     display: flex;
     flex-direction: column;
     animation: slideUp 0.3s ease;
@@ -1129,7 +1435,7 @@ button:active {
     align-items: center;
     padding: 20px 30px;
     border-bottom: 2px solid var(--border-strong);
-    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    background: var(--bg-2);
     border-top-left-radius: var(--radius-lg);
     border-top-right-radius: var(--radius-lg);
 }
@@ -1137,17 +1443,17 @@ button:active {
 .help-header h3 {
     margin: 0;
     color: var(--gold-bright);
-    font-size: 22px;
+    font-size: 25px;
 }
 
 .help-close {
-    background: var(--blood);
-    color: var(--parchment);
-    border: none;
-    width: 36px;
-    height: 36px;
+    background: transparent;
+    color: var(--ink-mute);
+    border: 1px solid var(--border-strong);
+    width: 34px;
+    height: 34px;
     border-radius: var(--radius);
-    font-size: 20px;
+    font-size: 22.5px;
     cursor: pointer;
     transition: all 0.15s;
     display: flex;
@@ -1156,8 +1462,9 @@ button:active {
 }
 
 .help-close:hover {
-    background: var(--gold-bright);
-    color: var(--bg-0);
+    background: transparent;
+    color: var(--blood-bright);
+    border-color: var(--blood);
 }
 
 /* Tabs Navigation */
@@ -1176,7 +1483,7 @@ button:active {
     border: none;
     color: var(--ink-dim);
     padding: 15px 20px;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.15s;
@@ -1185,14 +1492,14 @@ button:active {
 }
 
 .help-tab:hover {
-    background: rgba(176, 141, 58, 0.1);
+    background: var(--gold-wash);
     color: var(--gold);
 }
 
 .help-tab.active {
     color: var(--gold-bright);
     border-bottom-color: var(--gold-bright);
-    background: rgba(176, 141, 58, 0.15);
+    background: var(--gold-wash-strong);
 }
 
 /* Content Area */
@@ -1208,14 +1515,14 @@ button:active {
     color: var(--gold);
     margin-top: 0;
     margin-bottom: 15px;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .help-content h5 {
     color: var(--gold);
     margin-top: 20px;
     margin-bottom: 10px;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .help-content ul {
@@ -1229,8 +1536,8 @@ button:active {
 
 /* Komponenty treści pomocy */
 .help-step {
-    background: rgba(139, 30, 30, 0.15);
-    border-left: 4px solid var(--gold);
+    background: var(--bg-2);
+    border-left: 3px solid var(--border-strong);
     padding: 20px;
     margin: 20px 0;
     border-radius: var(--radius);
@@ -1244,7 +1551,7 @@ button:active {
 }
 
 .help-step-number {
-    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    background: var(--gold);
     color: var(--bg-0);
     width: 40px;
     height: 40px;
@@ -1252,7 +1559,7 @@ button:active {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 22.5px;
     font-weight: bold;
     flex-shrink: 0;
 }
@@ -1263,8 +1570,9 @@ button:active {
 }
 
 .help-tip {
-    background: rgba(176, 141, 58, 0.15);
-    border: 1px solid var(--gold);
+    background: var(--gold-wash-strong);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--gold);
     padding: 15px;
     border-radius: var(--radius);
     margin: 15px 0;
@@ -1278,13 +1586,13 @@ button:active {
 .glossary-item {
     margin: 15px 0;
     padding: 15px;
-    background: rgba(139, 30, 30, 0.15);
+    background: var(--bg-2);
     border-radius: var(--radius);
     border-left: 3px solid var(--gold);
 }
 
 .glossary-term {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     color: var(--gold-bright);
     margin-bottom: 10px;
@@ -1311,13 +1619,13 @@ button:active {
 .faq-item {
     margin: 15px 0;
     padding: 15px;
-    background: rgba(139, 30, 30, 0.15);
+    background: var(--bg-2);
     border-radius: var(--radius);
     border-left: 3px solid var(--gold);
 }
 
 .faq-question {
-    font-size: 15px;
+    font-size: 17px;
     font-weight: bold;
     color: var(--gold-bright);
     margin-bottom: 10px;
@@ -1353,7 +1661,7 @@ button:active {
 }
 
 .shortcuts-table tbody tr:hover {
-    background: rgba(176, 141, 58, 0.1);
+    background: var(--gold-wash);
 }
 
 kbd {
@@ -1362,9 +1670,9 @@ kbd {
     border-radius: var(--radius);
     padding: 3px 8px;
     font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 14.5px;
     color: var(--gold-bright);
-    box-shadow: 0 2px 0 rgba(139, 30, 30, 0.3);
+    box-shadow: 0 2px 0 var(--blood-wash-strong);
     display: inline-block;
     margin: 0 2px;
 }
@@ -1404,7 +1712,7 @@ kbd {
         top: 10px;
         right: 10px;
         padding: 8px 16px;
-        font-size: 12px;
+        font-size: 13.5px;
     }
 
     .help-tabs {
@@ -1412,7 +1720,7 @@ kbd {
     }
 
     .help-tab {
-        font-size: 12px;
+        font-size: 13.5px;
         padding: 12px 15px;
     }
 
@@ -1421,7 +1729,7 @@ kbd {
     }
 
     .shortcuts-table {
-        font-size: 13px;
+        font-size: 14.5px;
     }
 
     .shortcuts-table th,
@@ -1465,7 +1773,7 @@ kbd {
 .table-name {
     font-weight: bold;
     color: var(--gold-bright);
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .table-type {
@@ -1473,12 +1781,12 @@ kbd {
     color: var(--parchment);
     padding: 2px 6px;
     border-radius: var(--radius);
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: bold;
 }
 
 .table-description {
-    font-size: 12px;
+    font-size: 13.5px;
     color: var(--ink);
     margin-bottom: 10px;
     line-height: 1.3;
@@ -1492,7 +1800,7 @@ kbd {
     padding: 6px 12px;
     border-radius: var(--radius);
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: bold;
     transition: all 0.15s ease;
     width: 100%;
@@ -1510,7 +1818,7 @@ kbd {
     background: var(--bg-1);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    font-size: 12px;
+    font-size: 13.5px;
 }
 
 .roll-result-content {
@@ -1528,7 +1836,7 @@ kbd {
 
 .table-options label {
     display: block;
-    font-size: 12px;
+    font-size: 13.5px;
     color: var(--gold);
     margin-bottom: 5px;
     font-weight: bold;
@@ -1541,7 +1849,7 @@ kbd {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--ink);
-    font-size: 12px;
+    font-size: 13.5px;
     cursor: pointer;
 }
 
@@ -1571,7 +1879,7 @@ kbd {
     padding: 6px 12px;
     border-radius: var(--radius);
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: bold;
     transition: all 0.15s ease;
 }
@@ -1606,7 +1914,7 @@ kbd {
 .table-result-name {
     font-weight: bold;
     color: var(--gold-bright);
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .table-result-type {
@@ -1614,13 +1922,13 @@ kbd {
     color: var(--parchment);
     padding: 2px 6px;
     border-radius: var(--radius);
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: bold;
 }
 
 .table-result-content {
     color: var(--ink);
-    font-size: 12px;
+    font-size: 13.5px;
 }
 
 .table-result-roll {
@@ -1635,7 +1943,7 @@ kbd {
 }
 
 .table-result-effect {
-    font-size: 11px;
+    font-size: 12.5px;
     color: var(--gold);
     font-style: italic;
 }
@@ -1653,7 +1961,7 @@ kbd {
 
 .roll-result .error {
     color: var(--blood-bright);
-    background: rgba(139, 30, 30, 0.15);
+    background: var(--blood-wash);
     border: 1px solid var(--blood);
     padding: 8px;
     border-radius: var(--radius);
@@ -1678,27 +1986,32 @@ kbd {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--bg-1);
-    border: 1px solid var(--border);
-    color: var(--ink-dim);
-    padding: 6px 10px;
-    border-radius: 999px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mute);
+    padding: 5px 9px;
+    border-radius: 0;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     cursor: pointer;
     user-select: none;
-    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    transition: color .12s ease, border-color .12s ease;
 }
 
 .breadcrumb-item:hover {
-    background: var(--bg-2);
-    border-color: var(--gold);
-    color: var(--gold);
+    background: transparent;
+    border-bottom-color: var(--gold);
+    color: var(--ink-dim);
 }
 
 .breadcrumb-item.active {
-    background: var(--bg-2);
-    border-color: var(--gold-bright);
+    background: transparent;
+    /* Krok bieżący znaczy grubsza kreska pod spodem, nie obwódka. */
+    border-bottom: 2px solid var(--gold-bright);
     color: var(--gold-bright);
-    box-shadow: 0 0 0 2px rgba(176, 141, 58, 0.2);
+    box-shadow: none;
 }
 
 /* Style dla profesji, języków i kuriozów */
@@ -1744,11 +2057,11 @@ kbd {
     gap: 6px;
     font-weight: bold;
     color: var(--gold-bright);
-    font-size: 13px;
+    font-size: 14.5px;
 }
 
 .slot-description {
-    font-size: 12px;
+    font-size: 13.5px;
     color: var(--ink-dim);
     font-style: italic;
     margin-top: -4px;
@@ -1758,7 +2071,7 @@ kbd {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
-    font-size: 13px;
+    font-size: 14.5px;
 }
 
 .slot-mode-option {
@@ -1788,7 +2101,7 @@ kbd {
 
 .attribute-stepper-label {
     color: var(--ink);
-    font-size: 13px;
+    font-size: 14.5px;
     min-width: 60px;
 }
 
@@ -1798,7 +2111,7 @@ kbd {
     min-height: 0;
     padding: 0;
     line-height: 1;
-    font-size: 14px;
+    font-size: 16px;
     border-radius: var(--radius);
 }
 
@@ -1815,11 +2128,11 @@ kbd {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--ink-mute);
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: normal;
     padding: 2px 8px;
     min-height: 0;
-    border-radius: 999px;
+    border-radius: 0;
     cursor: pointer;
     margin-left: 8px;
 }
@@ -1827,7 +2140,7 @@ kbd {
 .section-reset-btn:hover {
     color: var(--blood-bright);
     border-color: var(--blood);
-    background: rgba(139, 30, 30, 0.12);
+    background: var(--blood-wash);
 }
 
 .slot-value-select {
@@ -1865,12 +2178,12 @@ kbd {
 .language-name {
     color: var(--parchment);
     font-weight: bold;
-    font-size: 13px;
+    font-size: 14.5px;
 }
 
 .language-flags {
     color: var(--ink-mute);
-    font-size: 11px;
+    font-size: 12.5px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -1879,13 +2192,145 @@ kbd {
    złotych akcentów resztowego UI */
 .source-tag {
     display: inline-block;
-    background: rgba(139, 30, 30, 0.18);
+    font-family: var(--font-data);
+    letter-spacing: 0.04em;
+    background: var(--blood-wash);
     color: var(--blood-bright);
     border: 1px solid var(--blood);
-    border-radius: 999px;
-    font-size: 10px;
+    border-radius: 0;
+    font-size: 11px;
     font-weight: normal;
     padding: 1px 7px;
+    white-space: nowrap;
+    cursor: help;
+}
+
+/* Filtr ścieżek w Kroku 3: szukanie tekstowe + chipy kategorii. */
+.path-filter-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.path-filter-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.path-category-filter-btn {
+    background: var(--bg-2);
+    color: var(--ink-dim);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 4px 12px;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.path-category-filter-btn:hover {
+    border-color: var(--border-strong);
+}
+
+.path-category-filter-btn.active {
+    background: var(--blood);
+    color: var(--ink);
+    border-color: var(--blood-bright);
+}
+
+/* Chipy kategorii wyświetlane na samym kafelku ścieżki. */
+.path-category-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 4px 0;
+}
+
+.path-category-chip {
+    background: var(--bg-1);
+    color: var(--ink-mute);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 1px 8px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* Lista podręczników w popupie filtra treści (boczne menu). */
+.source-bulk-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.source-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 12px 0;
+}
+
+.source-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.source-row.disabled-source {
+    opacity: 0.55;
+}
+
+.source-row-name {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.source-row-count {
+    color: var(--ink-mute);
+    font-size: 13.5px;
+    white-space: nowrap;
+}
+
+/* Wybór talentu z puli przyznanej przez ścieżkę (Krok 3). */
+.pool-grant-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.talent-option {
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Treść z dodatków bez polskiego wydania - tłumaczenie własne. Etykieta
+   towarzyszy etykiecie źródła, dlatego ma ten sam kształt, ale złotą
+   (żółtą) paletę, żeby odróżniała się od czerwonego znacznika podręcznika. */
+.beta-tag {
+    display: inline-block;
+    font-family: var(--font-data);
+    text-transform: uppercase;
+    background: var(--gold-wash-strong);
+    color: var(--gold-bright);
+    border: 1px solid var(--gold);
+    border-radius: 0;
+    font-size: 10px;
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
+    margin-left: 3px;
     white-space: nowrap;
     cursor: help;
 }
@@ -1907,8 +2352,8 @@ kbd {
 
 .curio-tile.selected {
     border-color: var(--gold-bright);
-    box-shadow: 0 0 10px rgba(176, 141, 58, 0.25);
-    background: linear-gradient(180deg, rgba(176, 141, 58, 0.12), var(--bg-2));
+    box-shadow: inset 3px 0 0 var(--gold);
+    background: var(--bg-2);
 }
 
 .tile-category {
@@ -1916,23 +2361,24 @@ kbd {
     background: var(--blood);
     color: var(--parchment);
     padding: 4px 8px;
-    border-radius: 999px;
-    font-size: 12px;
+    border-radius: 0;
+    font-size: 13.5px;
     font-weight: bold;
     margin-bottom: 8px;
 }
 
 .tile-title {
-    font-family: 'Cinzel', 'Inter', system-ui, sans-serif;
-    font-size: 18px;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 21.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     color: var(--gold-bright);
     margin-bottom: 8px;
 }
 
 .tile-description {
     color: var(--ink);
-    font-size: 14px;
+    font-size: 16px;
     margin-bottom: 10px;
 }
 
@@ -1945,7 +2391,7 @@ kbd {
 
 .btn-primary.small, .btn-secondary.small {
     padding: 6px 10px;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .selected-professions, .selected-curios {
@@ -1961,10 +2407,11 @@ kbd {
     align-items: center;
     gap: 6px;
     background: var(--bg-1);
-    border: 1px solid var(--gold);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--gold);
     color: var(--ink);
     padding: 8px 12px;
-    border-radius: 999px;
+    border-radius: 0;
     margin: 5px;
     position: relative;
 }
@@ -1977,7 +2424,7 @@ kbd {
     width: 16px;
     height: 16px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     padding: 0;
     display: inline-flex;
@@ -1994,7 +2441,8 @@ kbd {
 /* Style dla sekcji korzyści poziomu */
 .level-benefits-section {
     background: var(--bg-1);
-    border: 1px solid var(--gold);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--gold);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     padding: 20px;
@@ -2024,7 +2472,7 @@ kbd {
 
 .collapsible-section-toggle-icon {
     color: var(--gold);
-    font-size: 14px;
+    font-size: 16px;
     flex-shrink: 0;
     transition: transform 0.2s ease;
 }
@@ -2041,17 +2489,22 @@ kbd {
     margin-top: 16px;
 }
 
+/* Blok korzyści poziomu. Chłodny błękit był jedynym zimnym akcentem w
+   całym interfejsie i wyrywał się z palety - zostaje przygaszony mosiądz. */
 .benefit-category {
     background: var(--bg-2);
-    border-left: 4px solid var(--info);
-    padding: 15px;
-    margin: 15px 0;
+    border-left: 3px solid var(--border-strong);
+    padding: 14px 15px;
+    margin: 14px 0;
     border-radius: var(--radius);
 }
 
 .benefit-category h5 {
-    color: var(--info-bright);
+    color: var(--gold);
     margin: 0 0 10px 0;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
 }
 
 .known-spells-list {
@@ -2151,7 +2604,7 @@ kbd {
 }
 
 .magic-mode-option.active {
-    background: linear-gradient(180deg, rgba(176, 141, 58, 0.14), var(--bg-2));
+    background: var(--bg-2);
     border-color: var(--gold-bright);
 }
 
@@ -2193,8 +2646,32 @@ kbd {
     color: var(--gold-bright, var(--gold));
 }
 
+/* Wyjaśnienie w karcie magii, gdy nie ma z czego wybrać zaklęcia - ton
+   informacyjny (złoto), nie ostrzegawczy jak przy czarnej magii. */
+.magic-slot-blocked {
+    background: var(--gold-wash);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: 0.88em;
+    color: var(--ink-dim);
+}
+
+.magic-slot-blocked strong {
+    color: var(--ink);
+}
+
+.magic-slot-blocked ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.magic-slot-blocked li {
+    margin-bottom: 2px;
+}
+
 .black-magic-warning {
-    background: rgba(192, 57, 43, 0.12);
+    background: var(--blood-wash);
     border: 1px solid var(--blood-bright);
     border-radius: var(--radius);
     padding: 8px 10px;
@@ -2230,7 +2707,7 @@ kbd {
 
 /* Krok 8 - lista pominiętych wyborów (informacyjna, nigdy nie blokuje eksportu) */
 .missing-items-warning {
-    background: rgba(176, 141, 58, 0.10);
+    background: var(--gold-wash);
     border: 1px solid var(--gold);
     border-radius: var(--radius-lg);
     padding: 15px 18px;
@@ -2286,9 +2763,9 @@ kbd {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(180deg, rgba(176, 141, 58, 0.14), var(--bg-2));
+    background: var(--bg-2);
     border: 1px solid var(--gold-bright);
-    border-radius: 999px;
+    border-radius: 0;
     padding: 5px 6px 5px 12px;
     font-size: 0.9em;
 }
@@ -2301,7 +2778,7 @@ kbd {
     font-size: 1em;
     line-height: 1;
     padding: 3px 6px;
-    border-radius: 999px;
+    border-radius: 0;
 }
 
 .magic-picked-chip .chip-remove:hover {
@@ -2313,7 +2790,7 @@ kbd {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--scrim);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2341,8 +2818,9 @@ kbd {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
+    padding: 15px 18px;
+    background: var(--grain), var(--bg-2);
+    border-bottom: 1px solid var(--border-strong);
     flex-shrink: 0;
 }
 
@@ -2386,7 +2864,7 @@ kbd {
 .picker-filter-chip {
     background: var(--bg-2);
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: 0;
     color: var(--ink-dim);
     cursor: pointer;
     font-size: 0.82em;
@@ -2446,14 +2924,31 @@ kbd {
     transition: border-color 0.15s, background 0.15s;
 }
 
+/* Kafelki są przyciskami, a reguła button:hover przebarwia kolor tekstu.
+   Bez tego zastrzeżenia najechanie na kafelek ścieżki zamieniało cały jego
+   opis - kilkanaście linijek - na złoty, co wyglądało jak zaznaczenie
+   całości i gubiło hierarchię. Najechanie ma rozjaśniać obwódkę i tło,
+   nie treść. */
 .picker-tile:hover {
     border-color: var(--gold);
     background: var(--bg-3);
+    color: inherit;
+}
+.picker-tile:hover .picker-tile-description,
+.picker-tile:hover .picker-tile-meta,
+.picker-tile:hover .picker-tile-stats,
+.picker-tile:hover li,
+.picker-tile:hover p {
+    color: var(--ink);
+}
+.picker-tile:hover .benefit-category h5 {
+    color: var(--parchment);
 }
 
 .picker-tile.selected {
-    border-color: var(--gold-bright);
-    background: linear-gradient(180deg, rgba(176, 141, 58, 0.12), var(--bg-2));
+    border-color: var(--gold);
+    background: var(--bg-2);
+    box-shadow: inset 3px 0 0 var(--gold);
 }
 
 .picker-tile-header {
@@ -2606,7 +3101,7 @@ kbd {
     display: inline-block;
     background: var(--bg-2);
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: 0;
     padding: 3px 10px;
     font-size: 0.82em;
     color: var(--ink-mute);
@@ -2713,7 +3208,7 @@ kbd {
         flex-direction: row;
         background: var(--bg-1);
         border: 1px solid var(--border-strong);
-        border-radius: 999px;
+        border-radius: 0;
         padding: 6px;
         box-shadow: var(--shadow);
     }
@@ -2742,6 +3237,41 @@ kbd {
 
     .origin-thumb {
         width: 120px;
+    }
+}
+
+@media (max-width: 560px) {
+    /* Wstęp kroku dzieli rząd z przyciskiem "Wyczyść wybór". Na wąskim
+       ekranie zostawiało to akapitowi około 36 znaków w wierszu, więc tekst
+       łamał się co kilka słów. Układamy rząd pionowo. */
+    .flex-row-between {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .flex-row-between > button {
+        align-self: flex-end;
+    }
+
+    /* Nagłówek w jednej kolumnie: przycisk pomocy przestaje być pozycjonowany
+       bezwzględnie, bo na wąskim ekranie wchodził na tytuł. */
+    .header {
+        padding-top: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    .btn-help {
+        position: static;
+        order: -1;
+        align-self: flex-end;
+    }
+    h1 {
+        font-size: 1.7rem;
+        letter-spacing: 0.05em;
+    }
+    h2 {
+        font-size: 1.15rem;
     }
 }
 

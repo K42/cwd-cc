@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kreator Postaci - Cień Władcy Demonów</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;600;700&display=swap">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Trzy kroje, każdy w innej roli (zob. komentarz o typografii w styles.css):
+         Grenze Gotisch - nagłówki, zwężony, bliski teksturze; Grenze - interfejs
+         i tekst ciągły, zużyta szryfta; Courier Prime - liczby i dane, maszynopis. -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;500;600;700&family=Grenze:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -184,36 +188,37 @@
     </svg>
 
     <!-- Boczne menu: nowa postać / wczytaj postać / wylosuj postać -->
-    <nav class="side-menu" id="side-menu" aria-label="Menu postaci">
-        <button type="button" class="side-menu-btn" id="btn-new-character" data-tooltip="Nowa postać — resetuje wszystkie ustawienia i wraca do Kroku 1, by stworzyć zupełnie nową postać" aria-label="Nowa postać"><svg class="icon"><use href="#icon-plus-circle"></use></svg></button>
-        <button type="button" class="side-menu-btn" id="btn-load-character" data-tooltip="Wczytaj postać — pokazuje listę postaci zapisanych w pamięci tej przeglądarki" aria-label="Wczytaj postać"><svg class="icon"><use href="#icon-folder"></use></svg></button>
-        <button type="button" class="side-menu-btn" id="btn-randomize-character" data-tooltip="Wylosuj postać — wybierz poziom, resztę (wszystkie kroki) losuje kreator i od razu pokazuje podsumowanie w Kroku 8" aria-label="Wylosuj postać"><svg class="icon"><use href="#icon-dice"></use></svg></button>
+    <nav class="side-menu" id="side-menu" data-i18n-attr="aria-label:sideMenu.aria">
+        <button type="button" class="side-menu-btn" id="btn-new-character" data-i18n-attr="data-tooltip:sideMenu.newCharacterTooltip;aria-label:sideMenu.newCharacter"><svg class="icon"><use href="#icon-plus-circle"></use></svg></button>
+        <button type="button" class="side-menu-btn" id="btn-load-character" data-i18n-attr="data-tooltip:sideMenu.loadCharacterTooltip;aria-label:sideMenu.loadCharacter"><svg class="icon"><use href="#icon-folder"></use></svg></button>
+        <button type="button" class="side-menu-btn" id="btn-randomize-character" data-i18n-attr="data-tooltip:sideMenu.randomCharacterTooltip;aria-label:sideMenu.randomCharacter"><svg class="icon"><use href="#icon-dice"></use></svg></button>
+        <button type="button" class="side-menu-btn" id="btn-sources" data-i18n-attr="data-tooltip:sideMenu.sourcesTooltip;aria-label:sideMenu.sources"><svg class="icon"><use href="#icon-book"></use></svg></button>
     </nav>
 
     <!-- Przewinięcie na samą górę: strony albo otwartego popupu (zob. initializeScrollTopButton()) -->
-    <button type="button" class="scroll-top-btn" id="btn-scroll-top" hidden title="Przewiń na górę" aria-label="Przewiń na górę"><svg class="icon"><use href="#icon-chevron-up"></use></svg></button>
+    <button type="button" class="scroll-top-btn" id="btn-scroll-top" hidden data-i18n-attr="title:sideMenu.scrollTop;aria-label:sideMenu.scrollTop"><svg class="icon"><use href="#icon-chevron-up"></use></svg></button>
 
     <div class="header">
-        <h1><svg class="icon"><use href="#icon-swords"></use></svg> Kreator Postaci</h1>
-        <h2>Cień Władcy Demonów</h2>
-        <p><em>Stwórz postać krok po kroku lub wybierz opcje losowe</em></p>
-        
+        <h1><svg class="icon"><use href="#icon-swords"></use></svg> <span data-i18n="app.heading">Kreator Postaci</span></h1>
+        <h2 data-i18n="app.subheading">Cień Władcy Demonów</h2>
+        <p><em data-i18n="app.tagline">Stwórz postać krok po kroku lub wybierz opcje losowe</em></p>
+
         <!-- Przycisk Pomocy -->
-        <button id="btn-help" class="btn-help" aria-label="Otwórz pomoc" title="Pomoc (F1)">
-            <svg class="icon"><use href="#icon-question"></use></svg> POMOC
+        <button id="btn-help" class="btn-help" data-i18n-attr="aria-label:app.helpAria;title:app.helpTitle">
+            <svg class="icon"><use href="#icon-question"></use></svg> <span data-i18n="app.help">POMOC</span>
         </button>
     </div>
 
     <!-- Breadcrumbs -->
     <nav class="breadcrumbs" id="breadcrumbs">
-        <div class="breadcrumb-item active" data-step="1">1. Pochodzenie</div>
-        <div class="breadcrumb-item" data-step="2">2. Poziom i Atrybuty</div>
-        <div class="breadcrumb-item" data-step="3">3. Ścieżki</div>
-        <div class="breadcrumb-item" data-step="4">4. Rozwój Atrybutów</div>
-        <div class="breadcrumb-item" data-step="5">5. Profesje i Kurioza</div>
-        <div class="breadcrumb-item" data-step="6">6. Magia</div>
-        <div class="breadcrumb-item" data-step="7">7. Ekwipunek</div>
-        <div class="breadcrumb-item" data-step="8">8. Podgląd i Eksport</div>
+        <div class="breadcrumb-item active" data-step="1" data-i18n="breadcrumbs.step1">1. Pochodzenie</div>
+        <div class="breadcrumb-item" data-step="2" data-i18n="breadcrumbs.step2">2. Poziom i Atrybuty</div>
+        <div class="breadcrumb-item" data-step="3" data-i18n="breadcrumbs.step3">3. Ścieżki</div>
+        <div class="breadcrumb-item" data-step="4" data-i18n="breadcrumbs.step4">4. Rozwój Atrybutów</div>
+        <div class="breadcrumb-item" data-step="5" data-i18n="breadcrumbs.step5">5. Profesje i Kurioza</div>
+        <div class="breadcrumb-item" data-step="6" data-i18n="breadcrumbs.step6">6. Magia</div>
+        <div class="breadcrumb-item" data-step="7" data-i18n="breadcrumbs.step7">7. Ekwipunek</div>
+        <div class="breadcrumb-item" data-step="8" data-i18n="breadcrumbs.step8">8. Podgląd i Eksport</div>
     </nav>
 
     <div id="error" class="error" style="display: none;"></div>
@@ -224,21 +229,21 @@
             <div class="quick-random-fill">
                 <div class="quick-fill-actions">
                     <button type="button" class="btn-primary" id="btn-randomize-step-1">
-                        <svg class="icon"><use href="#icon-dice"></use></svg> Losuj postać
+                        <svg class="icon"><use href="#icon-dice"></use></svg> <span data-i18n="step1.randomCharacter">Losuj postać</span>
                     </button>
                     <button type="button" class="btn-secondary" id="btn-import-character">
-                        <svg class="icon"><use href="#icon-folder"></use></svg> Importuj postać
+                        <svg class="icon"><use href="#icon-folder"></use></svg> <span data-i18n="step1.importCharacter">Importuj postać</span>
                     </button>
                     <input type="file" id="import-character-file" accept="application/json,.json" hidden>
                 </div>
-                <p class="hint">Wybierze losowe pochodzenie i wylosuje wszystkie jego tabele (przeszłość, wygląd itd.) za jednym kliknięciem, albo zaimportuje wcześniej wyeksportowaną postać z pliku JSON.</p>
+                <p class="hint" data-i18n="step1.quickFillHint">Wybierze losowe pochodzenie i wylosuje wszystkie jego tabele (przeszłość, wygląd itd.) za jednym kliknięciem, albo zaimportuje wcześniej wyeksportowaną postać z pliku JSON.</p>
                 <div id="import-feedback" class="import-feedback" style="display: none;"></div>
             </div>
 
-            <h3><svg class="icon"><use href="#icon-mask"></use></svg> Krok 1: Wybór Pochodzenia</h3>
+            <h3><svg class="icon"><use href="#icon-mask"></use></svg> <span data-i18n="step1.heading">Krok 1: Wybór Pochodzenia</span></h3>
             <div class="flex-row-between">
-                <p>Wybierz pochodzenie swojej postaci. Każde pochodzenie ma unikalne cechy i modyfikatory atrybutów.</p>
-                <button type="button" class="section-reset-btn" id="btn-reset-origin" title="Wyczyść wybór pochodzenia">Wyczyść wybór</button>
+                <p data-i18n="step1.intro">Wybierz pochodzenie swojej postaci. Każde pochodzenie ma unikalne cechy i modyfikatory atrybutów.</p>
+                <button type="button" class="section-reset-btn" id="btn-reset-origin" data-i18n="common.clearChoice" data-i18n-attr="title:step1.resetTitle">Wyczyść wybór</button>
             </div>
 
             <div id="origin-tiles" class="tiles-container">
@@ -247,10 +252,10 @@
 
             <div class="step-navigation">
                 <button class="btn-secondary" style="visibility: hidden;">
-                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
                 </button>
                 <button id="btn-next-1" class="btn-primary" onclick="nextStep(1)" disabled>
-                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                    <span data-i18n="common.next">Dalej</span> <svg class="icon"><use href="#icon-chevron-right"></use></svg>
                 </button>
             </div>
         </div>
@@ -259,8 +264,8 @@
     <!-- Krok 2: Wybór Atrybutów i Poziomu -->
     <div id="step-2" class="step">
         <div class="section">
-            <h3><svg class="icon"><use href="#icon-bolt"></use></svg> Krok 2: Atrybuty i Poziom Postaci</h3>
-            <p>Określ wartości atrybutów swojej postaci i wybierz poziom rozwoju.</p>
+            <h3><svg class="icon"><use href="#icon-bolt"></use></svg> <span data-i18n="step2.heading">Krok 2: Atrybuty i Poziom Postaci</span></h3>
+            <p data-i18n="step2.intro">Określ wartości atrybutów swojej postaci i wybierz poziom rozwoju.</p>
 
             <div id="selected-origin-info" class="origin-summary">
                 <!-- Informacje o wybranym pochodzeniu -->
@@ -269,8 +274,8 @@
             <!-- Sekcja poziomu postaci (0-10) -->
             <div class="level-section">
                 <div class="flex-row-between">
-                    <h4>Poziom Postaci (0-10)</h4>
-                    <button type="button" class="section-reset-btn" id="btn-reset-level" title="Wróć do poziomu 0">Wyczyść wybór</button>
+                    <h4 data-i18n="step2.levelHeading">Poziom Postaci (0-10)</h4>
+                    <button type="button" class="section-reset-btn" id="btn-reset-level" data-i18n="common.clearChoice" data-i18n-attr="title:step2.levelResetTitle">Wyczyść wybór</button>
                 </div>
                 <div class="level-selector">
                     <!-- Poziom 0 -->
@@ -279,8 +284,8 @@
                         <div class="level-card">
                             <div class="level-number">0</div>
                             <div class="level-info">
-                                <strong>Początkujący</strong>
-                                <small>Postać początkowa</small>
+                                <strong data-i18n="step2.tierBeginner">Początkujący</strong>
+                                <small data-i18n="step2.levelCard.startingCharacter">Postać początkowa</small>
                             </div>
                         </div>
                     </label>
@@ -291,8 +296,8 @@
                         <div class="level-card">
                             <div class="level-number">1</div>
                             <div class="level-info">
-                                <strong>Nowicjusz</strong>
-                                <small>Wybierz ścieżkę nowicjusza</small>
+                                <strong data-i18n="step2.tierNovice">Nowicjusz</strong>
+                                <small data-i18n="step2.levelCard.chooseNovicePath">Wybierz ścieżkę nowicjusza</small>
                             </div>
                         </div>
                     </label>
@@ -303,8 +308,8 @@
                         <div class="level-card">
                             <div class="level-number">2</div>
                             <div class="level-info">
-                                <strong>Nowicjusz</strong>
-                                <small>Korzyści ścieżki nowicjusza</small>
+                                <strong data-i18n="step2.tierNovice">Nowicjusz</strong>
+                                <small data-i18n="step2.levelCard.novicePathBenefits">Korzyści ścieżki nowicjusza</small>
                             </div>
                         </div>
                     </label>
@@ -314,8 +319,8 @@
                         <div class="level-card">
                             <div class="level-number">3</div>
                             <div class="level-info">
-                                <strong>Ekspert</strong>
-                                <small>Wybierz ścieżkę ekspercką</small>
+                                <strong data-i18n="step2.tierExpert">Ekspert</strong>
+                                <small data-i18n="step2.levelCard.chooseExpertPath">Wybierz ścieżkę ekspercką</small>
                             </div>
                         </div>
                     </label>
@@ -326,8 +331,8 @@
                         <div class="level-card">
                             <div class="level-number">4</div>
                             <div class="level-info">
-                                <strong>Ekspert</strong>
-                                <small>Korzyści z pochodzenia</small>
+                                <strong data-i18n="step2.tierExpert">Ekspert</strong>
+                                <small data-i18n="step2.levelCard.originBenefits">Korzyści z pochodzenia</small>
                             </div>
                         </div>
                     </label>
@@ -338,8 +343,8 @@
                         <div class="level-card">
                             <div class="level-number">5</div>
                             <div class="level-info">
-                                <strong>Ekspert</strong>
-                                <small>Korzyści ścieżki nowicjusza</small>
+                                <strong data-i18n="step2.tierExpert">Ekspert</strong>
+                                <small data-i18n="step2.levelCard.novicePathBenefits">Korzyści ścieżki nowicjusza</small>
                             </div>
                         </div>
                     </label>
@@ -350,8 +355,8 @@
                         <div class="level-card">
                             <div class="level-number">6</div>
                             <div class="level-info">
-                                <strong>Ekspert</strong>
-                                <small>Korzyści ścieżki eksperckiej</small>
+                                <strong data-i18n="step2.tierExpert">Ekspert</strong>
+                                <small data-i18n="step2.levelCard.expertPathBenefits">Korzyści ścieżki eksperckiej</small>
                             </div>
                         </div>
                     </label>
@@ -362,8 +367,8 @@
                         <div class="level-card">
                             <div class="level-number">7</div>
                             <div class="level-info">
-                                <strong>Mistrz</strong>
-                                <small>Wybierz ścieżkę mistrzowską</small>
+                                <strong data-i18n="step2.tierMaster">Mistrz</strong>
+                                <small data-i18n="step2.levelCard.chooseMasterPath">Wybierz ścieżkę mistrzowską</small>
                             </div>
                         </div>
                     </label>
@@ -374,8 +379,8 @@
                         <div class="level-card">
                             <div class="level-number">8</div>
                             <div class="level-info">
-                                <strong>Mistrz</strong>
-                                <small>Korzyści ścieżki nowicjusza</small>
+                                <strong data-i18n="step2.tierMaster">Mistrz</strong>
+                                <small data-i18n="step2.levelCard.novicePathBenefits">Korzyści ścieżki nowicjusza</small>
                             </div>
                         </div>
                     </label>
@@ -386,8 +391,8 @@
                         <div class="level-card">
                             <div class="level-number">9</div>
                             <div class="level-info">
-                                <strong>Mistrz</strong>
-                                <small>Korzyści ścieżki eksperckiej</small>
+                                <strong data-i18n="step2.tierMaster">Mistrz</strong>
+                                <small data-i18n="step2.levelCard.expertPathBenefits">Korzyści ścieżki eksperckiej</small>
                             </div>
                         </div>
                     </label>
@@ -398,8 +403,8 @@
                         <div class="level-card">
                             <div class="level-number">10</div>
                             <div class="level-info">
-                                <strong>Mistrz</strong>
-                                <small>Korzyści ścieżki mistrzowskiej</small>
+                                <strong data-i18n="step2.tierMaster">Mistrz</strong>
+                                <small data-i18n="step2.levelCard.masterPathBenefits">Korzyści ścieżki mistrzowskiej</small>
                             </div>
                         </div>
                     </label>
@@ -409,12 +414,12 @@
             <!-- Sekcja korzyści poziomu (zwijana, domyślnie zwinięta) -->
             <div id="level-benefits-section" class="level-benefits-section collapsible-section collapsed" style="display: none;">
                 <div class="collapsible-section-header" id="level-benefits-header" role="button" tabindex="0" aria-expanded="false" aria-controls="level-benefits-body">
-                    <h4><svg class="icon"><use href="#icon-target"></use></svg> Korzyści Poziomu</h4>
+                    <h4><svg class="icon"><use href="#icon-target"></use></svg> <span data-i18n="step2.benefitsHeading">Korzyści Poziomu</span></h4>
                     <span class="collapsible-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
                 </div>
                 <div class="collapsible-section-body" id="level-benefits-body">
                     <div class="benefit-category">
-                        <p>Korzyści postaci od poziomu 1 do poziomu <span id="selected-level-name">0</span> (włącznie):</p>
+                        <p data-i18n-html="step2.benefitsUpToFull">Korzyści postaci od poziomu 1 do poziomu <span id="selected-level-name">0</span> (włącznie):</p>
                         <div id="level-benefits-content">
                             <!-- Korzyści będą wyświetlane dynamicznie, poziom po poziomie -->
                         </div>
@@ -424,9 +429,9 @@
 
             <!-- Sekcja korzyści z pochodzenia (tylko dla poziomu 4) -->
             <div id="origin-benefits-section" class="level-benefits-section" style="display: none;">
-                <h4><svg class="icon"><use href="#icon-column"></use></svg> Korzyści z Pochodzenia (Poziom 4)</h4>
+                <h4><svg class="icon"><use href="#icon-column"></use></svg> <span data-i18n="step2.originBenefitsHeading">Korzyści z Pochodzenia (Poziom 4)</span></h4>
                 <div class="benefit-category">
-                    <p>Na poziomie 4 zyskujesz korzyści wynikające z twojego pochodzenia.</p>
+                    <p data-i18n="step2.originBenefitsIntro">Na poziomie 4 zyskujesz korzyści wynikające z twojego pochodzenia.</p>
                     <div id="origin-benefits-content">
                         <!-- Korzyści będą wyświetlane dynamicznie -->
                     </div>
@@ -436,35 +441,35 @@
         <div class="form-group attribute-mode-toggle">
             <label>
                 <input type="checkbox" id="default-attributes" checked>
-                <span>Użyj domyślnych wartości atrybutów (bazujących na pochodzeniu)</span>
+                <span data-i18n="step2.useDefaultAttributes">Użyj domyślnych wartości atrybutów (bazujących na pochodzeniu)</span>
             </label>
         </div>
 
         <div id="custom-attributes" class="level-benefits-section" style="display: none;">
             <div class="flex-row-between">
-                <h4>Zmiana wartości atrybutów pochodzenia:</h4>
-                <button type="button" class="section-reset-btn" id="btn-reset-swap" title="Wyczyść zamianę atrybutów">Wyczyść</button>
+                <h4 data-i18n="step2.swapHeading">Zmiana wartości atrybutów pochodzenia:</h4>
+                <button type="button" class="section-reset-btn" id="btn-reset-swap" data-i18n="common.clear" data-i18n-attr="title:step2.swapResetTitle">Wyczyść</button>
             </div>
-            <p class="hint">Możesz jeden raz obniżyć wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu o 1. Suma atrybutów (pula) się nie zmienia.</p>
+            <p class="hint" data-i18n="step2.swapHint">Możesz jeden raz obniżyć wartość jednego atrybutu o 1 i podnieść wartość innego atrybutu o 1. Suma atrybutów (pula) się nie zmienia.</p>
             <div class="attribute-swap-row">
                 <div class="form-group">
-                    <label for="attribute-decreased">Obniż o 1:</label>
+                    <label for="attribute-decreased" data-i18n="step2.swapDecrease">Obniż o 1:</label>
                     <select id="attribute-decreased">
-                        <option value="">-- brak zmiany --</option>
-                        <option value="sila">Siła</option>
-                        <option value="zrecznosc">Zręczność</option>
-                        <option value="intelekt">Intelekt</option>
-                        <option value="wola">Wola</option>
+                        <option value="" data-i18n="step2.swapNoChange">-- brak zmiany --</option>
+                        <option value="sila" data-i18n="attributes.strength">Siła</option>
+                        <option value="zrecznosc" data-i18n="attributes.agility">Zręczność</option>
+                        <option value="intelekt" data-i18n="attributes.intellect">Intelekt</option>
+                        <option value="wola" data-i18n="attributes.will">Wola</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="attribute-increased">Podnieś o 1:</label>
+                    <label for="attribute-increased" data-i18n="step2.swapIncrease">Podnieś o 1:</label>
                     <select id="attribute-increased">
-                        <option value="">-- brak zmiany --</option>
-                        <option value="sila">Siła</option>
-                        <option value="zrecznosc">Zręczność</option>
-                        <option value="intelekt">Intelekt</option>
-                        <option value="wola">Wola</option>
+                        <option value="" data-i18n="step2.swapNoChange">-- brak zmiany --</option>
+                        <option value="sila" data-i18n="attributes.strength">Siła</option>
+                        <option value="zrecznosc" data-i18n="attributes.agility">Zręczność</option>
+                        <option value="intelekt" data-i18n="attributes.intellect">Intelekt</option>
+                        <option value="wola" data-i18n="attributes.will">Wola</option>
                     </select>
                 </div>
             </div>
@@ -478,8 +483,8 @@
         <!-- Sekcja bonusu do atrybutu z pochodzenia (np. Człowiek, Elf) -->
         <div id="origin-attribute-choice-section" class="level-benefits-section" style="display: none;">
             <div class="flex-row-between">
-                <h4><svg class="icon"><use href="#icon-target"></use></svg> Bonus do atrybutu z pochodzenia</h4>
-                <button type="button" class="section-reset-btn" id="btn-reset-origin-attribute-choice" title="Wyczyść wybór bonusu do atrybutu">Wyczyść</button>
+                <h4><svg class="icon"><use href="#icon-target"></use></svg> <span data-i18n="step2.originAttributeBonusHeading">Bonus do atrybutu z pochodzenia</span></h4>
+                <button type="button" class="section-reset-btn" id="btn-reset-origin-attribute-choice" data-i18n="common.clear" data-i18n-attr="title:step2.bonusResetTitle">Wyczyść</button>
             </div>
             <p id="origin-attribute-choice-hint" class="hint"></p>
             <div id="origin-attribute-choice-selects" class="attribute-swap-row">
@@ -489,38 +494,38 @@
 
         <!-- Sekcja zasobów (złoto i kurioza) -->
         <div id="wealth-section" class="level-benefits-section" style="display: none;">
-            <h4><svg class="icon"><use href="#icon-purse"></use></svg> Zasoby na wyższym poziomie</h4>
+            <h4><svg class="icon"><use href="#icon-purse"></use></svg> <span data-i18n="step2.resourcesHeading">Zasoby na wyższym poziomie</span></h4>
             <div class="benefit-category">
-                <p>Za każdy poziom powyżej 0: 2k6 srebrników.</p>
-                <p>Poziomy wyboru ścieżek (1, 3, 7): dodatkowe kurioza.</p>
+                <p data-i18n="step2.resourcesSilver">Za każdy poziom powyżej 0: 2k6 srebrników.</p>
+                <p data-i18n="step2.resourcesCurios">Poziomy wyboru ścieżek (1, 3, 7): dodatkowe kurioza.</p>
                 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                    <button id="btn-roll-wealth" class="btn-secondary"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj srebrniki</button>
-                    <span id="wealth-summary">Srebrniki: 0 (nie wylosowano)</span>
-                    <span id="curios-summary" style="margin-left:10px;">Kurioza: 0</span>
+                    <button id="btn-roll-wealth" class="btn-secondary"><svg class="icon"><use href="#icon-dice"></use></svg> <span data-i18n="step2.rollSilver">Losuj srebrniki</span></button>
+                    <span id="wealth-summary" data-i18n="step2.silverNotRolled">Srebrniki: 0 (nie wylosowano)</span>
+                    <span id="curios-summary" style="margin-left:10px;" data-i18n="step2.curiosSummaryZero">Kurioza: 0</span>
                 </div>
             </div>
         </div>
 
         <div id="calculated-attributes" class="calculated-attributes">
-            <h4>Obliczone atrybuty (z modyfikatorami pochodzenia):</h4>
+            <h4 data-i18n="attributes.calculatedHeading">Obliczone atrybuty (z modyfikatorami pochodzenia):</h4>
             <div class="attributes-grid">
                 <div class="attribute-display">
-                    <label>Siła:</label>
+                    <label data-i18n="attributes.strengthColon">Siła:</label>
                     <span class="attribute-value" id="strength-final">10</span>
                     <span class="modifier" id="strength-mod">+0</span>
                 </div>
                 <div class="attribute-display">
-                    <label>Zręczność:</label>
+                    <label data-i18n="attributes.agilityColon">Zręczność:</label>
                     <span class="attribute-value" id="agility-final">10</span>
                     <span class="modifier" id="agility-mod">+0</span>
                 </div>
                 <div class="attribute-display">
-                    <label>Intelekt:</label>
+                    <label data-i18n="attributes.intellectColon">Intelekt:</label>
                     <span class="attribute-value" id="intellect-final">10</span>
                     <span class="modifier" id="intellect-mod">+0</span>
                 </div>
                 <div class="attribute-display">
-                    <label>Wola:</label>
+                    <label data-i18n="attributes.willColon">Wola:</label>
                     <span class="attribute-value" id="will-final">10</span>
                     <span class="modifier" id="will-mod">+0</span>
                 </div>
@@ -529,7 +534,7 @@
 
         <div class="step-navigation">
             <button class="btn-secondary" onclick="prevStep(2)">
-                <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
             </button>
             <button id="btn-next-2" class="btn-primary" onclick="nextStep(2)" disabled>
                 Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
@@ -541,14 +546,23 @@
     <!-- Krok 3: Wybór Ścieżek -->
     <div id="step-3" class="step">
         <div class="section">
-            <h3><svg class="icon"><use href="#icon-fork"></use></svg> Krok 3: Wybór Ścieżek</h3>
-            <p>Wybierz ścieżki rozwoju swojej postaci zgodnie z wybranym poziomem. Wszystkie szczegóły widać w kafelkach poniżej.</p>
+            <h3><svg class="icon"><use href="#icon-fork"></use></svg> <span data-i18n="step3.heading">Krok 3: Wybór Ścieżek</span></h3>
+            <p data-i18n="step3.intro">Wybierz ścieżki rozwoju swojej postaci zgodnie z wybranym poziomem. Wszystkie szczegóły widać w kafelkach poniżej.</p>
+
+            <!-- Filtr ścieżek: szukanie tekstowe + kategorie tematyczne. Działa na
+                 wszystkich trzech siatkach naraz (zob. applyPathFilters() w script.js) -->
+            <div class="path-filter-bar">
+                <input type="text" id="path-filter-search" class="picker-search" placeholder="Szukaj ścieżki po nazwie lub opisie..." data-i18n-attr="placeholder:step3.searchPlaceholder">
+                <div id="path-filter-categories" class="path-filter-categories"></div>
+                <button type="button" class="btn-secondary small" id="path-filter-reset" hidden data-i18n="step3.resetFilter">Wyczyść filtr</button>
+                <p class="hint" id="path-filter-empty" hidden data-i18n="step3.filterEmpty">Żadna ścieżka nie spełnia filtra - zmień szukaną frazę albo odznacz kategorię.</p>
+            </div>
 
             <!-- Sekcja ścieżek - kafelki w zwijanych sekcjach (akordeon) -->
             <div class="path-section" id="path-section-1" data-path-level="1">
                 <div class="path-section-header">
-                    <h4>Ścieżka Nowicjusza (poziom 1)</h4>
-                    <button type="button" class="section-reset-btn" data-reset-path="nowicjusz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <h4 data-i18n="step3.novicePath">Ścieżka Nowicjusza (poziom 1)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-path="nowicjusz" data-i18n="common.clear" data-i18n-attr="title:step3.resetPathTitle">Wyczyść</button>
                     <span class="path-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
                 </div>
                 <div id="path-grid-1" class="tiles-container"></div>
@@ -557,8 +571,8 @@
 
             <div class="path-section" id="path-section-3" data-path-level="3">
                 <div class="path-section-header">
-                    <h4>Ścieżka Ekspercka (poziom 3)</h4>
-                    <button type="button" class="section-reset-btn" data-reset-path="ekspert" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <h4 data-i18n="step3.expertPath">Ścieżka Ekspercka (poziom 3)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-path="ekspert" data-i18n="common.clear" data-i18n-attr="title:step3.resetPathTitle">Wyczyść</button>
                     <span class="path-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
                 </div>
                 <div id="path-grid-3" class="tiles-container"></div>
@@ -567,8 +581,8 @@
 
             <div class="path-section" id="path-section-7" data-path-level="7">
                 <div class="path-section-header">
-                    <h4>Ścieżka Mistrzowska (poziom 7)</h4>
-                    <button type="button" class="section-reset-btn" data-reset-path="mistrz" title="Wyczyść wybór tej ścieżki">Wyczyść</button>
+                    <h4 data-i18n="step3.masterPath">Ścieżka Mistrzowska (poziom 7)</h4>
+                    <button type="button" class="section-reset-btn" data-reset-path="mistrz" data-i18n="common.clear" data-i18n-attr="title:step3.resetPathTitle">Wyczyść</button>
                     <span class="path-section-toggle-icon"><svg class="icon"><use href="#icon-chevron-down"></use></svg></span>
                 </div>
                 <div id="path-grid-7" class="tiles-container"></div>
@@ -577,10 +591,10 @@
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(3)">
-                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
                 </button>
                 <button id="btn-next-3" class="btn-primary" onclick="nextStep(3)" disabled>
-                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                    <span data-i18n="common.next">Dalej</span> <svg class="icon"><use href="#icon-chevron-right"></use></svg>
                 </button>
             </div>
         </div>
@@ -589,8 +603,8 @@
     <!-- Krok 4: Rozwój Atrybutów -->
     <div id="step-4" class="step">
         <div class="section">
-            <h3><svg class="icon"><use href="#icon-strength"></use></svg> Krok 4: Rozwój Atrybutów</h3>
-            <p>Niektóre ścieżki przy wyborze pozwalają zwiększyć wartości atrybutów. Rozdaj poniższe punkty zgodnie z opisanymi opcjami.</p>
+            <h3><svg class="icon"><use href="#icon-strength"></use></svg> <span data-i18n="step4.heading">Krok 4: Rozwój Atrybutów</span></h3>
+            <p data-i18n="step4.intro">Niektóre ścieżki przy wyborze pozwalają zwiększyć wartości atrybutów. Rozdaj poniższe punkty zgodnie z opisanymi opcjami.</p>
 
             <div id="attribute-slots" class="slots-container">
                 <!-- Sloty zwiększenia atrybutów będą generowane przez JavaScript -->
@@ -598,10 +612,10 @@
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(4)">
-                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
                 </button>
                 <button id="btn-next-4" class="btn-primary" onclick="nextStep(4)" disabled>
-                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                    <span data-i18n="common.next">Dalej</span> <svg class="icon"><use href="#icon-chevron-right"></use></svg>
                 </button>
             </div>
         </div>
@@ -610,31 +624,31 @@
     <!-- Krok 5: Profesje i Kurioza -->
     <div id="step-5" class="step">
         <div class="section">
-            <h3><svg class="icon"><use href="#icon-mask"></use></svg> Krok 5: Profesje i Kurioza</h3>
-            <p>Wybierz profesje i kurioza dla swojej postaci zgodnie z dostępnymi opcjami.</p>
+            <h3><svg class="icon"><use href="#icon-mask"></use></svg> <span data-i18n="step5.heading">Krok 5: Profesje i Kurioza</span></h3>
+            <p data-i18n="step5.intro">Wybierz profesje i kurioza dla swojej postaci zgodnie z dostępnymi opcjami.</p>
 
             <!-- Sekcja Profesji -->
             <div class="professions-section">
                 <div class="flex-row-between">
-                    <h4><svg class="icon"><use href="#icon-briefcase"></use></svg> Profesje</h4>
+                    <h4><svg class="icon"><use href="#icon-briefcase"></use></svg> <span data-i18n="step5.professionsHeading">Profesje</span></h4>
                     <div class="list-controls">
-                        <button id="btn-randomize-professions" class="btn-primary small"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj pozostałe</button>
-                        <button type="button" id="btn-reset-professions" class="btn-secondary small" title="Wyczyść wszystkie profesje i języki, by wybrać je ponownie"><svg class="icon"><use href="#icon-refresh"></use></svg> Resetuj wybór</button>
+                        <button id="btn-randomize-professions" class="btn-primary small"><svg class="icon"><use href="#icon-dice"></use></svg> <span data-i18n="step5.rollRemaining">Losuj pozostałe</span></button>
+                        <button type="button" id="btn-reset-professions" class="btn-secondary small" data-i18n-attr="title:step5.resetChoiceTitle"><svg class="icon"><use href="#icon-refresh"></use></svg> <span data-i18n="step5.resetChoice">Resetuj wybór</span></button>
                     </div>
                 </div>
-                <p class="hint">Dostępne profesje i języki zależą od Twojego pochodzenia i wybranych ścieżek. Rozdaj poniższe sloty zgodnie z opisanymi opcjami.</p>
+                <p class="hint" data-i18n="step5.slotsHint">Dostępne profesje i języki zależą od Twojego pochodzenia i wybranych ścieżek. Rozdaj poniższe sloty zgodnie z opisanymi opcjami.</p>
                 <div id="professions-slots" class="slots-container">
                     <!-- Sloty profesji będą generowane przez JavaScript -->
                 </div>
                 <div class="selected-professions" id="selected-professions">
-                    <h5>Wybrane Profesje:</h5>
+                    <h5 data-i18n="step5.selectedProfessions">Wybrane Profesje:</h5>
                     <div id="professions-list"></div>
                 </div>
             </div>
 
             <!-- Sekcja Języków -->
             <div class="languages-section">
-                <h4><svg class="icon"><use href="#icon-speech"></use></svg> Języki</h4>
+                <h4><svg class="icon"><use href="#icon-speech"></use></svg> <span data-i18n="step5.languagesHeading">Języki</span></h4>
                 <div id="languages-known-summary" class="inline-summary"></div>
                 <div id="language-slots" class="slots-container">
                     <!-- Sloty językowe będą generowane przez JavaScript -->
@@ -644,28 +658,28 @@
             <!-- Sekcja Kuriozów -->
             <div class="curios-section">
                 <div class="flex-row-between">
-                    <h4><svg class="icon"><use href="#icon-orb"></use></svg> Kurioza (<span id="curios-count">0</span> do wyboru)</h4>
+                    <h4><svg class="icon"><use href="#icon-orb"></use></svg> <span data-i18n-html="step5.curiosHeadingFull">Kurioza (<span id="curios-count">0</span> do wyboru)</span></h4>
                     <div class="list-controls">
-                        <button id="btn-randomize-curios" class="btn-primary small"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj</button>
-                        <button id="btn-toggle-curios" class="btn-secondary small" data-expanded="false">Rozwiń</button>
-                        <button type="button" class="section-reset-btn" id="btn-reset-curios" title="Wyczyść wybrane kurioza">Wyczyść</button>
+                        <button id="btn-randomize-curios" class="btn-primary small"><svg class="icon"><use href="#icon-dice"></use></svg> <span data-i18n="common.roll">Losuj</span></button>
+                        <button id="btn-toggle-curios" class="btn-secondary small" data-expanded="false" data-i18n="common.expand">Rozwiń</button>
+                        <button type="button" class="section-reset-btn" id="btn-reset-curios" data-i18n="common.clear" data-i18n-attr="title:step5.curiosResetTitle">Wyczyść</button>
                     </div>
                 </div>
                 <div class="curios-grid" id="curios-grid" style="display: none;">
                     <!-- Kafelki kuriozów będą generowane przez JavaScript -->
                 </div>
                 <div class="selected-curios" id="selected-curios">
-                    <h5>Wybrane Kurioza:</h5>
+                    <h5 data-i18n="step5.selectedCurios">Wybrane Kurioza:</h5>
                     <div id="curios-list"></div>
                 </div>
             </div>
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(5)">
-                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
                 </button>
                 <button id="btn-next-5" class="btn-primary" onclick="nextStep(5)" disabled>
-                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                    <span data-i18n="common.next">Dalej</span> <svg class="icon"><use href="#icon-chevron-right"></use></svg>
                 </button>
             </div>
         </div>
@@ -674,22 +688,22 @@
     <!-- Krok 6: Magia - tradycje i zaklęcia (opcjonalnie) -->
     <div id="step-6" class="step">
         <div class="section">
-            <h3><svg class="icon"><use href="#icon-sparkle"></use></svg> Krok 6: Magia - tradycje i zaklęcia (opcjonalnie)</h3>
-            <p>Poniżej znajdują się wyłącznie korzyści magiczne faktycznie przyznane przez twoje pochodzenie i wybrane ścieżki na obecnym poziomie postaci, zgodnie z zasadami podręcznika. Ten krok jest opcjonalny - możesz go pominąć i przejść dalej bez rozwiązania wszystkich kart.</p>
+            <h3><svg class="icon"><use href="#icon-sparkle"></use></svg> <span data-i18n="step6.heading">Krok 6: Magia - tradycje i zaklęcia (opcjonalnie)</span></h3>
+            <p data-i18n="step6.intro">Poniżej znajdują się wyłącznie korzyści magiczne faktycznie przyznane przez twoje pochodzenie i wybrane ścieżki na obecnym poziomie postaci, zgodnie z zasadami podręcznika. Ten krok jest opcjonalny - możesz go pominąć i przejść dalej bez rozwiązania wszystkich kart.</p>
 
             <div class="flex-row-between">
                 <div id="known-traditions-hint" class="hint"></div>
-                <button type="button" class="section-reset-btn" id="btn-reset-magic" title="Wyczyść wszystkie wybory magii">Wyczyść</button>
+                <button type="button" class="section-reset-btn" id="btn-reset-magic" data-i18n="common.clear" data-i18n-attr="title:step6.resetTitle">Wyczyść</button>
             </div>
 
             <div id="magic-slots-container"></div>
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(6)">
-                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
                 </button>
                 <button id="btn-next-6" class="btn-primary" onclick="nextStep(6)">
-                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                    <span data-i18n="common.next">Dalej</span> <svg class="icon"><use href="#icon-chevron-right"></use></svg>
                 </button>
             </div>
         </div>
@@ -699,8 +713,8 @@
     <div id="magic-picker-overlay" class="modal-overlay" hidden>
         <div class="modal-box">
             <div class="modal-header">
-                <h4 id="magic-picker-title">Wybierz</h4>
-                <button type="button" class="modal-close-btn" id="magic-picker-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+                <h4 id="magic-picker-title" data-i18n="common.choose">Wybierz</h4>
+                <button type="button" class="modal-close-btn" id="magic-picker-close" data-i18n-attr="title:common.close"><svg class="icon"><use href="#icon-x"></use></svg></button>
             </div>
             <div class="modal-body" id="magic-picker-body"></div>
         </div>
@@ -709,17 +723,17 @@
     <!-- Krok 7: Ekwipunek -->
     <div id="step-7" class="step">
         <div class="section">
-            <h3><svg class="icon"><use href="#icon-backpack"></use></svg> Krok 7: Ekwipunek</h3>
-            <p>Ustal początkowe wyposażenie swojej postaci na podstawie Zamożności (PG, "Początkowe wyposażenie"), a następnie odwiedź sklep, by sprzedać zbędne przedmioty za połowę ceny i kupić inne z pełnego katalogu. Kurioza są ustalane osobno w Kroku 5.</p>
+            <h3><svg class="icon"><use href="#icon-backpack"></use></svg> <span data-i18n="step7.heading">Krok 7: Ekwipunek</span></h3>
+            <p data-i18n="step7.intro">Ustal początkowe wyposażenie swojej postaci na podstawie Zamożności (PG, "Początkowe wyposażenie"), a następnie odwiedź sklep, by sprzedać zbędne przedmioty za połowę ceny i kupić inne z pełnego katalogu. Kurioza są ustalane osobno w Kroku 5.</p>
 
             <div class="flex-row-between">
-                <h4><svg class="icon"><use href="#icon-purse"></use></svg> Zamożność</h4>
+                <h4><svg class="icon"><use href="#icon-purse"></use></svg> <span data-i18n="step7.wealthHeading">Zamożność</span></h4>
                 <div class="list-controls">
-                    <button type="button" class="btn-primary small" id="btn-randomize-wealth"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj (3k6)</button>
-                    <button type="button" class="section-reset-btn" id="btn-reset-wealth" title="Wyczyść wybraną zamożność i ekwipunek">Wyczyść</button>
+                    <button type="button" class="btn-primary small" id="btn-randomize-wealth"><svg class="icon"><use href="#icon-dice"></use></svg> <span data-i18n="step7.rollWealth">Losuj (3k6)</span></button>
+                    <button type="button" class="section-reset-btn" id="btn-reset-wealth" data-i18n="common.clear" data-i18n-attr="title:step7.wealthResetTitle">Wyczyść</button>
                 </div>
             </div>
-            <p class="hint">Wybierz zamożność ręcznie, klikając kafelek, albo wylosuj ją rzutem 3k6 zgodnie z zasadami podręcznika.</p>
+            <p class="hint" data-i18n="step7.wealthHint">Wybierz zamożność ręcznie, klikając kafelek, albo wylosuj ją rzutem 3k6 zgodnie z zasadami podręcznika.</p>
             <p id="wealth-roll" class="hint"></p>
             <div id="wealth-grid" class="picker-tile-grid"></div>
 
@@ -729,10 +743,10 @@
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(7)">
-                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
                 </button>
                 <button id="btn-next-7" class="btn-primary" onclick="nextStep(7)">
-                    Dalej <svg class="icon"><use href="#icon-chevron-right"></use></svg>
+                    <span data-i18n="common.next">Dalej</span> <svg class="icon"><use href="#icon-chevron-right"></use></svg>
                 </button>
             </div>
         </div>
@@ -742,10 +756,32 @@
     <div id="equipment-picker-overlay" class="modal-overlay" hidden>
         <div class="modal-box modal-box-large">
             <div class="modal-header">
-                <h4 id="equipment-picker-title">Katalog przedmiotów</h4>
-                <button type="button" class="modal-close-btn" id="equipment-picker-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+                <h4 id="equipment-picker-title" data-i18n="step7.catalogHeading">Katalog przedmiotów</h4>
+                <button type="button" class="modal-close-btn" id="equipment-picker-close" data-i18n-attr="title:common.close"><svg class="icon"><use href="#icon-x"></use></svg></button>
             </div>
             <div class="modal-body" id="equipment-picker-body"></div>
+        </div>
+    </div>
+
+    <!-- Popup wyboru podręczników, z których kreator proponuje treść (boczne menu) -->
+    <div id="sources-overlay" class="modal-overlay" hidden>
+        <div class="modal-box modal-box-large">
+            <div class="modal-header">
+                <h4 data-i18n="modals.sourcesHeading">Podręczniki</h4>
+                <button type="button" class="modal-close-btn" id="sources-close" data-i18n-attr="title:common.close"><svg class="icon"><use href="#icon-x"></use></svg></button>
+            </div>
+            <div class="modal-body" id="sources-body"></div>
+        </div>
+    </div>
+
+    <!-- Popup wyboru talentu z puli przyznanej przez ścieżkę (Krok 3) -->
+    <div id="talent-pool-overlay" class="modal-overlay" hidden>
+        <div class="modal-box modal-box-large">
+            <div class="modal-header">
+                <h4 id="talent-pool-title" data-i18n="modals.talentHeading">Wybierz talent</h4>
+                <button type="button" class="modal-close-btn" id="talent-pool-close" data-i18n-attr="title:common.close"><svg class="icon"><use href="#icon-x"></use></svg></button>
+            </div>
+            <div class="modal-body" id="talent-pool-body"></div>
         </div>
     </div>
 
@@ -753,8 +789,8 @@
     <div id="load-character-overlay" class="modal-overlay" hidden>
         <div class="modal-box">
             <div class="modal-header">
-                <h4>Wczytaj postać</h4>
-                <button type="button" class="modal-close-btn" id="load-character-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+                <h4 data-i18n="modals.loadCharacterHeading">Wczytaj postać</h4>
+                <button type="button" class="modal-close-btn" id="load-character-close" data-i18n-attr="title:common.close"><svg class="icon"><use href="#icon-x"></use></svg></button>
             </div>
             <div class="modal-body" id="load-character-body"></div>
         </div>
@@ -764,14 +800,14 @@
     <div id="randomize-character-overlay" class="modal-overlay" hidden>
         <div class="modal-box">
             <div class="modal-header">
-                <h4><svg class="icon"><use href="#icon-dice"></use></svg> Wylosuj postać</h4>
-                <button type="button" class="modal-close-btn" id="randomize-character-close" title="Zamknij"><svg class="icon"><use href="#icon-x"></use></svg></button>
+                <h4><svg class="icon"><use href="#icon-dice"></use></svg> <span data-i18n="modals.randomCharacterHeading">Wylosuj postać</span></h4>
+                <button type="button" class="modal-close-btn" id="randomize-character-close" data-i18n-attr="title:common.close"><svg class="icon"><use href="#icon-x"></use></svg></button>
             </div>
             <div class="modal-body">
-                <p class="hint">Wybierz poziom postaci - to jedyna rzecz, którą wybierasz. Wszystko inne (pochodzenie, ścieżki, atrybuty, profesje, kurioza, wyposażenie...) zostanie wylosowane.</p>
+                <p class="hint" data-i18n="modals.randomCharacterIntro">Wybierz poziom postaci - to jedyna rzecz, którą wybierasz. Wszystko inne (pochodzenie, ścieżki, atrybuty, profesje, kurioza, wyposażenie...) zostanie wylosowane.</p>
                 <div id="randomize-level-grid" class="picker-tile-grid"></div>
                 <div class="step-navigation">
-                    <button type="button" class="btn-primary" id="btn-randomize-character-confirm"><svg class="icon"><use href="#icon-dice"></use></svg> Losuj postać</button>
+                    <button type="button" class="btn-primary" id="btn-randomize-character-confirm"><svg class="icon"><use href="#icon-dice"></use></svg> <span data-i18n="modals.randomCharacterConfirm">Losuj postać</span></button>
                 </div>
             </div>
         </div>
@@ -780,25 +816,25 @@
     <!-- Krok 8: Podgląd i Eksport -->
     <div id="step-8" class="step">
         <div class="section">
-            <h3><svg class="icon"><use href="#icon-scroll"></use></svg> Krok 8: Podgląd i Eksport</h3>
+            <h3><svg class="icon"><use href="#icon-scroll"></use></svg> <span data-i18n="step8.heading">Krok 8: Podgląd i Eksport</span></h3>
 
             <div class="final-actions">
-                <button type="button" class="btn-secondary" id="btn-save-character" title="Zapisz postać w pamięci przeglądarki (nadpisuje ten sam zapis, jeśli postać była już zapisana lub wczytana)">
-                    <svg class="icon"><use href="#icon-folder"></use></svg> Zapisz postać
+                <button type="button" class="btn-secondary" id="btn-save-character" data-i18n-attr="title:step8.saveCharacterTitle">
+                    <svg class="icon"><use href="#icon-folder"></use></svg> <span data-i18n="step8.saveCharacter">Zapisz postać</span>
                 </button>
-                <button type="button" class="btn-secondary" id="btn-promote-character" title="Awans - podnosi poziom postaci o 1 i pokazuje, co trzeba wybrać na nowym poziomie">
-                    <svg class="icon"><use href="#icon-bolt"></use></svg> Awans
+                <button type="button" class="btn-secondary" id="btn-promote-character" data-i18n-attr="title:step8.levelUpTitle">
+                    <svg class="icon"><use href="#icon-bolt"></use></svg> <span data-i18n="step8.levelUp">Awans</span>
                 </button>
                 <span id="final-actions-feedback" class="final-actions-feedback"></span>
             </div>
 
             <div id="missing-items-warning"></div>
 
-            <p>Kompletna karta twojej postaci ze wszystkimi wybranymi opcjami. Gdy wszystko się zgadza, wyeksportuj ją do pliku JSON.</p>
+            <p data-i18n="step8.intro">Kompletna karta twojej postaci ze wszystkimi wybranymi opcjami. Gdy wszystko się zgadza, wyeksportuj ją do pliku JSON.</p>
 
             <div class="form-group">
-                <label for="character-name">Imię postaci (opcjonalnie)</label>
-                <input type="text" id="character-name" placeholder="np. Aldric Volkov" maxlength="60" autocomplete="off">
+                <label for="character-name" data-i18n="step8.nameLabel">Imię postaci (opcjonalnie)</label>
+                <input type="text" id="character-name" placeholder="np. Aldric Volkov" data-i18n-attr="placeholder:step8.namePlaceholder" maxlength="60" autocomplete="off">
             </div>
 
             <div id="character-preview" class="character-preview">
@@ -806,15 +842,15 @@
             </div>
 
             <div class="export-section">
-                <h4>Eksport Postaci</h4>
+                <h4 data-i18n="step8.exportHeading">Eksport Postaci</h4>
                 <button id="btn-export-json" class="btn-export" onclick="exportJSON()">
-                    <svg class="icon"><use href="#icon-page"></use></svg> Eksportuj do JSON
+                    <svg class="icon"><use href="#icon-page"></use></svg> <span data-i18n="step8.exportJson">Eksportuj do JSON</span>
                 </button>
             </div>
 
             <div class="step-navigation">
                 <button class="btn-secondary" onclick="prevStep(8)">
-                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> Wstecz
+                    <svg class="icon"><use href="#icon-chevron-left"></use></svg> <span data-i18n="common.back">Wstecz</span>
                 </button>
             </div>
         </div>
@@ -826,8 +862,8 @@
         <div class="help-backdrop" onclick="closeHelp()"></div>
         <div class="help-modal">
             <div class="help-header">
-                <h3 id="help-title"><svg class="icon"><use href="#icon-book"></use></svg> Pomoc - Kreator Postaci</h3>
-                <button class="help-close" onclick="closeHelp()" aria-label="Zamknij pomoc">
+                <h3 id="help-title"><svg class="icon"><use href="#icon-book"></use></svg> <span data-i18n="help.heading">Pomoc - Kreator Postaci</span></h3>
+                <button class="help-close" onclick="closeHelp()" data-i18n-attr="aria-label:help.closeAria">
                     <svg class="icon"><use href="#icon-x"></use></svg>
                 </button>
             </div>
@@ -836,22 +872,22 @@
                 <button class="help-tab active" role="tab" 
                         aria-selected="true" aria-controls="tab-start"
                         onclick="switchHelpTab('start')">
-                    <svg class="icon"><use href="#icon-torch"></use></svg> Szybki Start
+                    <svg class="icon"><use href="#icon-torch"></use></svg> <span data-i18n="help.tabStart">Szybki Start</span>
                 </button>
                 <button class="help-tab" role="tab" 
                         aria-selected="false" aria-controls="tab-glossary"
                         onclick="switchHelpTab('glossary')">
-                    <svg class="icon"><use href="#icon-book"></use></svg> Słownik
+                    <svg class="icon"><use href="#icon-book"></use></svg> <span data-i18n="help.tabGlossary">Słownik</span>
                 </button>
                 <button class="help-tab" role="tab" 
                         aria-selected="false" aria-controls="tab-faq"
                         onclick="switchHelpTab('faq')">
-                    <svg class="icon"><use href="#icon-question"></use></svg> FAQ
+                    <svg class="icon"><use href="#icon-question"></use></svg> <span data-i18n="help.tabFaq">FAQ</span>
                 </button>
                 <button class="help-tab" role="tab" 
                         aria-selected="false" aria-controls="tab-shortcuts"
                         onclick="switchHelpTab('shortcuts')">
-                    <svg class="icon"><use href="#icon-keyboard"></use></svg> Skróty
+                    <svg class="icon"><use href="#icon-keyboard"></use></svg> <span data-i18n="help.tabShortcuts">Skróty</span>
                 </button>
             </div>
             
@@ -862,7 +898,6 @@
     </div>
 
     <!-- Import modułu treści pomocy -->
-    <script src="help-content.js"></script>
     <script type="module" src="script.js"></script>
 </body>
 </html>

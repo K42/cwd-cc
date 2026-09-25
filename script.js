@@ -1,1 +1,6631 @@
-import{buildCharacter as e,calculateBenefitsLevel as t}from"./logic/character.js";import{getPathsForLevel as n,calculateSlotsAttributes as i}from"./logic/paths.js";import{getOriginsListUi as a,getOriginTablesUi as o}from"./logic/origins.js";import{getProfessionsUi as s,getCuriosUi as r}from"./logic/professions-curios.js";import{LANGUAGES as c,calculateSlotsProfessionsAndLanguages as l}from"./logic/languages-professions.js";import{calculateSlotsMagic as d,calculateResolutionMagic as u,getTraditionsForCategory as p,getSpellsToLearning as y,getCircleZeroSpells as m,isBlackMagic as z,atomDescription as w,descriptionMagic as k}from"./logic/magic.js";import{TRADITIONS as b}from"./data/traditions.js";import{rollTable as g}from"./data/table_utils.js";import h from"./data/game-data.js";import f from"./data/spells.js";import j from"./data/equipment.js";import{WEALTH as v,getWealthForRoll as $}from"./data/wealth.js";import{RARITY_LABELS as E,CATEGORY_LABELS_EQ as I,getItem as B,priceOnCopperbits as S,formatPrice as L,formatCopperbits as x,priceBuybackCopperbits as N,calculateAtomsGear as M,getGuaranteedEntries as A,formatStatsItem as C,SORT_LABELS as P,sortItems as _,CONVERTER_TO_COPPERBITS as q}from"./logic/equipment.js";import{getSavedCharacters as T,saveCharacterToCache as O,generateSaveId as Z,clearSavedCharacters as W}from"./logic/saves.js";import{getTalentDescription as K}from"./logic/talents.js";function H(e){return`<svg class="icon"><use href="#icon-${e}"></use></svg>`}const J={1:"nowicjusz",3:"ekspert",7:"mistrz"},R={nowicjusz:1,ekspert:3,mistrz:7};let D=null,G=null,F=0,U=[],V={},Q={nowicjusz:"",ekspert:"",mistrz:""},Y={1:null,3:null,7:null},X=[],ee={},te={},ne=[],ie={},ae={},oe=new Set,se=[],re=[],ce=null,le=0,de=null,ue=null,pe=null,ye={},me=[],ze=[],we=new Set,ke="",be=null,ge=null,he=0;function fe(){const e=[...document.querySelectorAll(".modal-overlay:not([hidden])")].map(e=>e.querySelector(".modal-body")).find(Boolean);return e?{scroller:e,top:e.scrollTop}:{scroller:window,top:window.scrollY}}async function je(e,{keepSilverRoll:t=!1}={}){const n=F;F=e,function(e,t,{keepSilverRoll:n=!1}={}){if(e===t)return;e<1&&Q.nowicjusz&&Xe("nowicjusz");e<3&&Q.ekspert&&Xe("ekspert");e<7&&Q.mistrz&&Xe("mistrz");const a=new Set(i({pathNoviceId:Q.nowicjusz||null,pathExpertId:Q.ekspert||null,pathMasterId:Q.mistrz||null}).map(e=>e.id));Object.keys(te).forEach(e=>{a.has(e)||delete te[e]});const o=new Set(At().slots.map(e=>e.id));Object.keys(ee).forEach(e=>{o.has(e)||delete ee[e]});const{kurioza:s}=Mt();ne.length>s&&(ne=ne.slice(0,s));e<4&&G&&document.querySelectorAll(`input[name="origin-option-${G}"]`).forEach(e=>{e.checked=!1});const r=new Set(Yt().map(e=>e.id));if(Object.keys(ie).forEach(e=>{r.has(e)||delete ie[e]}),Object.keys(ae).forEach(e=>{r.has(e)||delete ae[e]}),!n){ce=null;const e=document.getElementById("wealth-summary");e&&(e.textContent="Srebrniki: 0 (nie wylosowano)")}}(e,n,{keepSilverRoll:t}),xe(e),Se(e),Le(e),Ne(e),Ae(e),ve(),await Ee(1),await Ee(3),await Ee(7),ct(),Zt(),Jt(),Xt(),mn(),Be(),Vt(),await ft(e),it(),gt()}function ve(){const e=F>=3,t=F>=7,n=document.getElementById("path-section-1"),i=document.getElementById("path-section-3"),a=document.getElementById("path-section-7"),o=document.getElementById("path-grid-3"),s=document.getElementById("path-summary-3"),r=document.getElementById("path-grid-7"),c=document.getElementById("path-summary-7"),l=0===F;n&&(n.style.display=l?"none":""),i&&(i.style.display=l?"none":""),a&&(a.style.display=l?"none":""),l||(o&&(o.style.opacity=e?"1":"0.5"),s&&(s.textContent=e?"":"Odblokuj wyborem poziomu 3 w Kroku 2"),r&&(r.style.opacity=t?"1":"0.5"),c&&(c.textContent=t?"":"Odblokuj wyborem poziomu 7 w Kroku 2")),$e(),Be()}function $e(){const e=[1,3,7],t={1:Q.nowicjusz,3:Q.ekspert,7:Q.mistrz},n=e.filter(e=>F>=e),i=n.find(e=>!t[e]);e.forEach(e=>{const t=document.getElementById(`path-section-${e}`);t&&(n.includes(e)?t.classList.toggle("collapsed",e!==i):t.classList.add("collapsed"))})}async function Ee(e){const t=`path-grid-${e}`,i=document.getElementById(t);if(!i)return;i.innerHTML="";let a=[];try{a=n(e)}catch(e){return void console.warn("Nie udało się załadować ścieżek:",e)}for(const t of a){const n=Ie(t,e);i.appendChild(n)}}function Ie(e,t){const n=F>=t,i=(1===t?Q.nowicjusz:3===t?Q.ekspert:Q.mistrz)===e.id,a=document.createElement("button");return a.type="button",a.className=`picker-tile path-tile${i?" selected":""}${n?"":" disabled"}`,n||(a.disabled=!0),a.dataset.pathId=e.id,a.dataset.pickLevel=t,a.innerHTML=`\n    <div class="picker-tile-header">\n      <span>${e.nazwa}</span>\n      ${i?`<span class="wealth-badge">${H("check")} Wybrano</span>`:""}\n    </div>\n    <div class="picker-tile-meta">${Ht(e.zrodlo||"PG")} Poziom wyboru ${t}</div>\n    <div class="tile-body">\n      ${function(e,t){const n=e.korzysci&&e.korzysci[t]||{},i=(n.talenty||[]).map(e=>`<li><strong>Talent:</strong> ${e.nazwa||e} – ${e.opis||""}</li>`).join(""),a=(n.zaklecia||[]).map(e=>`<li><strong>Magia:</strong> ${e.opis||e.nazwa||e}</li>`).join(""),o=n.mod_atrybuty?Object.entries(n.mod_atrybuty).map(([e,t])=>`${ot[e]||e}: ${t>0?"+":""}${t}`).join(", "):"",s=n.mod_drugorzedne?Object.entries(n.mod_drugorzedne).map(([e,t])=>`${st[e]||e}: ${t>0?"+":""}${t}`).join(", "):"",r=n.atrybuty_glowne?`<li><strong>Atrybuty:</strong> Zwiększ ${n.atrybuty_glowne.ilosc} dowolne o ${n.atrybuty_glowne.wartosc} (Krok 4)</li>`:"",c=(n.bieglosci||[]).map(e=>`<li><strong>Języki i profesje:</strong> ${e}</li>`).join(""),l=(n.sprzet||[]).map(e=>`<li><strong>Sprzęt:</strong> ${e}</li>`).join("");return`\n    <div class="benefit-category"><h5>Korzyści poziomu ${t}</h5>\n      <ul class="path-benefits">\n        ${r}\n        ${i}\n        ${a}\n        ${o?`<li><strong>Modyfikatory atrybutów:</strong> ${o}</li>`:""}\n        ${s?`<li><strong>Modyfikatory drugorzędne:</strong> ${s}</li>`:""}\n        ${c}\n        ${l}\n      </ul>\n    </div>`}(e,t)}\n    </div>\n  `,n&&a.addEventListener("click",n=>{n.preventDefault(),function({levelChoice:e,sciezka:t}){const n=J[e];n&&(Q[n]=t.id);const i=t.korzysci&&t.korzysci[e]||{};Y[e]={pathId:t.id,sciezkaNazwa:t.nazwa,levelChoice:e,pkt:i},function(e){if(e.mod_atrybuty)return void it();const t=G&&U.find(e=>e.id===G);if(t){lt({sila:parseInt(document.getElementById("strength-final").textContent),zrecznosc:parseInt(document.getElementById("agility-final").textContent),intelekt:parseInt(document.getElementById("intellect-final").textContent),wola:parseInt(document.getElementById("will-final").textContent)},t)}}(i),gt(),function(e,t){const n=document.getElementById(`path-summary-${e}`);if(!n)return;n.innerHTML=`<div class="inline-box">Wybrana ścieżka: <strong>${t.nazwa}</strong> – zastosowano korzyści poziomu ${e}</div>`}(e,t),$e(),Be(),ft(F)}({levelChoice:t,sciezka:e}),Ee(t)}),a}function Be(){const e=document.getElementById("btn-next-3");if(!e)return;if(0===F)return void(e.disabled=!1);const t=!!Q.nowicjusz,n=F>=3,i=F>=7,a=!!Q.ekspert,o=!!Q.mistrz,s=t&&(!n||a)&&(!i||o);e.disabled=!s}async function Se(e){}function Le(e){const t=document.getElementById("path-section-title");if(!t)return;t.textContent={1:"Ścieżka Nowicjusza",2:"Kontynuacja Nowicjusza",3:"Ścieżka Eksperta",4:"Kontynuacja Eksperta",5:"Ścieżka Mistrza",6:"Kontynuacja Mistrza",7:"Ścieżka Legendy",8:"Kontynuacja Legendy",9:"Wszystkie Ścieżki",10:"Wszystkie Ścieżki"}[e]||"Ścieżki"}function xe(e){ve()}function Ne(e){const t=document.getElementById("wealth-section");if(!t)return;t.style.display=e>0?"block":"none",le=Mt().kurioza;const n=document.getElementById("curios-summary");n&&(n.textContent=`Kurioza: ${le}`);const i=document.getElementById("wealth-summary");i&&null!=ce&&(i.textContent=`Srebrniki: ${ce}`)}function Me(e,t){const n=document.getElementById("wealth-summary");n&&(n.textContent=`Srebrniki: ${t} (rzuty: ${e.join(", ")})`)}function Ae(e){const t=document.getElementById("origin-benefits-section");t&&(t.style.display=e>=4?"block":"none",e>=4&&G&&(!function(){const e=document.getElementById("origin-benefits-content");if(!e||!G)return;const t=U.find(e=>e.id===G);if(!t||!t.poziom_4)return;const n=t.poziom_4,i=Qt();e.innerHTML=`\n    <div class="benefit-item">\n      <h5>Korzyści z Pochodzenia: ${t.nazwa} (Poziom 4)</h5>\n      <div class="origin-benefits-details">\n        ${parseInt(n.zdrowie.replace("+",""))>0?`\n        <div class="health-bonus">\n          <h6>${H("heart")} Bonus do Zdrowia</h6>\n          <p><strong>Zdrowie:</strong> +${n.zdrowie.replace("+","")}</p>\n        </div>\n        `:""}\n\n        <div class="options-selection">\n          <h6>${H("bolt")} Wybierz Opcję</h6>\n          <p>Wybierz jedną z poniższych opcji:</p>\n          <div class="options-list">\n            ${n.opcje.map(e=>`\n              <label class="option-choice">\n                <input type="radio" name="origin-option-${t.id}" value="${e}"${e===i?" checked":""}>\n                <span class="option-text">${e}</span>\n              </label>\n            `).join("")}\n          </div>\n        </div>\n        \n        <div class="talent-descriptions">\n          <h6>${H("book")} Opisy Talentów</h6>\n          ${o=n.opcje,o.map(e=>e.startsWith("talent ")?`\n        <div class="talent-description">\n          <strong>${e}:</strong> ${K(e)}\n        </div>\n      `:"1 zaklęcie"===e?'\n        <div class="spell-description">\n          <strong>1 zaklęcie:</strong> Uczysz się jednego zaklęcia z tradycji, którą już znasz.\n        </div>\n      ':"zwiększenie Zdrowia o 4"===e?'\n        <div class="spell-description">\n          <strong>Zwiększenie Zdrowia o 4:</strong> Podnosisz swoje Zdrowie o 4 punkty.\n        </div>\n      ':"").join("")}\n        </div>\n      </div>\n    </div>\n  `,a=t.id,document.querySelectorAll(`input[name="origin-option-${a}"]`).forEach(e=>{e.addEventListener("change",e=>{e.target.checked&&Ce()})});var a;var o}(),Ce()))}function Ce(){if(F<4||!G)return;const e=U.find(e=>e.id===G);if(!e||!e.poziom_4)return;const t=parseInt(e.poziom_4.zdrowie.replace("+","")),n={sila:parseInt(document.getElementById("strength-final").textContent),zrecznosc:parseInt(document.getElementById("agility-final").textContent),intelekt:parseInt(document.getElementById("intellect-final").textContent),wola:parseInt(document.getElementById("will-final").textContent)};lt({...n,zdrowie:n.sila+t},e)}async function Pe(){if(!U.length)return;const e=U[Math.floor(Math.random()*U.length)];if(e.tabele)for(const t of Object.keys(e.tabele))await Nt(e.id,t);_e(e.id)}function _e(e,{autoScroll:t=!0}={}){qe(),G=e,function(e){const t=document.querySelector(`[data-origin-id="${e}"]`);if(!t)return;t.querySelectorAll(".roll-result").forEach(t=>{const n=t.id.match(/roll-result-(\w+)-(\w+)/);if(n){const[,i,a]=n;if(i===e){const n=t.querySelector(".roll-result-content");if(n&&"none"!==n.style.display){const t=n.querySelector(".roll-dice"),i=n.querySelector(".roll-outcome");if(t&&i){const n=t.textContent.match(/(\d+)/),o=n?n[1]:"?",s=i.textContent,r=t.textContent.includes("Wybór")?"wybór":"losowanie";V[e]||(V[e]={}),V[e][a]={rzut:o,wynik:s,typ:r}}}}}})}(e),document.querySelectorAll(".origin-tile").forEach(e=>{e.classList.remove("selected")});const n=document.querySelector(`[data-origin-id="${e}"]`);n&&(n.classList.add("selected"),wt(),Je(),nt());const i=document.getElementById("btn-next-1");i&&(i.disabled=!1),function(e){const t=U.find(t=>t.id===e);if(!t)return;const n=document.createElement("div");n.className="selection-message",n.innerHTML=`\n        <div class="message-content">\n            <span class="message-icon">${H("check")}</span>\n            <span class="message-text">Wybrano pochodzenie: <strong>${t.nazwa}</strong></span>\n        </div>\n    `;const i=document.getElementById("step-1");if(i){const e=i.querySelector(".selection-message");e&&e.remove(),i.appendChild(n),setTimeout(()=>{n.parentNode&&n.remove()},3e3)}}(e),t&&requestAnimationFrame(()=>{i?.scrollIntoView({behavior:"smooth",block:"end"})})}function qe(){D=null,F=0,Q={nowicjusz:"",ekspert:"",mistrz:""},Y={1:null,3:null,7:null},X=[],ee={},te={},ne=[],ie={},ae={},oe=new Set,ce=null,le=0,V={},de=null,ue=null,pe=null,ye={},me=[],ze=[],we=new Set;const e=document.querySelectorAll('input[name="poziom"]');e.forEach(e=>{e.checked=!1});const t=Array.from(e).find(e=>"0"===e.value);t&&(t.checked=!0);const n=document.getElementById("curios-summary");n&&(n.textContent="Kurioza: 0");const i=document.getElementById("wealth-summary");i&&(i.textContent="Srebrniki: 0 (nie wylosowano)");const a=document.getElementById("path-summary-1");a&&(a.innerHTML="");const o=document.getElementById("path-summary-3");o&&(o.innerHTML="");const s=document.getElementById("path-summary-7");s&&(s.innerHTML="");const r=document.getElementById("default-attributes");r&&(r.checked=!0);const c=document.getElementById("custom-attributes");c&&(c.style.display="none"),["attribute-decreased","attribute-increased"].forEach(e=>{const t=document.getElementById(e);t&&(t.value="")}),["strength-base","agility-base","intellect-base","will-base"].forEach(e=>{const t=document.getElementById(e);t&&(t.value=10)});const l=document.getElementById("origin-benefits-content");l&&(l.innerHTML=""),Ne(0),Ae(0),ft(0),ve()}function Te(e){var t;document.querySelectorAll(".step").forEach(e=>{e.classList.remove("active")}),document.getElementById(`step-${e}`).classList.add("active"),t=e,document.querySelectorAll("#breadcrumbs .breadcrumb-item").forEach(e=>{parseFloat(e.getAttribute("data-step"))===t?e.classList.add("active"):e.classList.remove("active")}),8===e&&We()}function Oe(e){return JSON.stringify({wersjaEksportu:e.wersjaEksportu,wybory:e.wybory})}function Ze(){const e=$t();return!!e&&Oe(e)!==ge}function We(){const e=document.getElementById("btn-save-character"),t=document.getElementById("final-actions-feedback");if(!e)return;const n=Ze();e.disabled=!n,t&&(n?(t.className="final-actions-feedback",t.textContent=ge?"Masz niezapisane zmiany.":"Postać nie jest jeszcze zapisana."):(t.className="final-actions-feedback ok",t.textContent="Wszystkie zmiany zapisane."))}function Ke(){const e=document.getElementById("final-actions-feedback");if(!Ze())return e&&(e.className="final-actions-feedback ok",e.textContent="Brak zmian do zapisania."),void We();!function(){const e=$t();if(!e)return!1;const t=be||Z();return!!O(t,e)&&(be=t,ge=Oe(e),!0)}()?e&&(e.className="final-actions-feedback error",e.innerHTML=`${H("warning")} Nie udało się zapisać w pamięci przeglądarki (może być pełna albo zablokowana). Użyj "Eksportuj do JSON", żeby nie stracić postaci.`):(We(),e&&(e.className="final-actions-feedback ok",e.innerHTML=`${H("check")} Zapisano w pamięci przeglądarki.`))}async function He(){const e=document.getElementById("final-actions-feedback"),t=(t,n)=>{e&&(e.className=`final-actions-feedback ${t}`,e.textContent=n)};if(!G)return void t("","Najpierw wybierz pochodzenie w Kroku 1.");if(F>=10)return void t("","Postać jest już na 10 poziomie - to maksimum Tabeli Rozwoju.");const n=F+1,i=document.querySelector(`input[name="poziom"][value="${n}"]`);i&&(i.checked=!0),await je(n,{keepSilverRoll:!0});const a=ht();a.length>0?t("info",`Awans na poziom ${n}. Do wybrania: ${a.length} ${1===a.length?"rzecz":"rzeczy"} - lista poniżej.`):t("ok",`Awans na poziom ${n}. Ten poziom nie wymaga żadnych dodatkowych wyborów.`)}function Je(){if(!G)return;const e=U.find(e=>e.id===G);if(!e)return;document.getElementById("selected-origin-info").innerHTML=`\n        <h4>${e.nazwa}</h4>\n        <p><strong>Opis:</strong> ${e.opis}</p>\n        <p><strong>Rozmiar:</strong> ${e.rozmiar} | <strong>Prędkość:</strong> ${e.predkosc}</p>\n        <p><strong>Języki:</strong> ${pt(e.jezyki)}</p>\n        <p><strong>Modyfikatory atrybutów:</strong> \n            Siła ${e.atrybuty_bazowe.sila-10>=0?"+":""}${e.atrybuty_bazowe.sila-10}, \n            Zręczność ${e.atrybuty_bazowe.zrecznosc-10>=0?"+":""}${e.atrybuty_bazowe.zrecznosc-10}, \n            Intelekt ${e.atrybuty_bazowe.intelekt-10>=0?"+":""}${e.atrybuty_bazowe.intelekt-10}, \n            Wola ${e.atrybuty_bazowe.wola-10>=0?"+":""}${e.atrybuty_bazowe.wola-10}\n        </p>\n    `}function Re(e,t,n,i){const a={...e.atrybuty_bazowe};if(t&&n&&t!==n&&(a[t]-=1,a[n]+=1),e.wybor_atrybutu&&i){const t=e.wybor_atrybutu.wartosc||1;i.forEach(e=>{e&&void 0!==a[e]&&(a[e]+=t)})}return a}function De(e){const t=document.getElementById("origin-attribute-choice-section"),n=document.getElementById("origin-attribute-choice-selects"),i=document.getElementById("origin-attribute-choice-hint");if(!t||!n||!i)return;const a=e&&e.wybor_atrybutu;if(!a)return t.style.display="none",void(n.innerHTML="");t.style.display="block",i.textContent=`${e.nazwa}: ${a.opis}. Wybierz ${a.ilosc>1?`${a.ilosc} różne atrybuty`:"atrybut"}.`;const o=[["sila","Siła"],["zrecznosc","Zręczność"],["intelekt","Intelekt"],["wola","Wola"]];n.innerHTML=Array.from({length:a.ilosc},(e,t)=>{const n=`origin-attr-choice-${t}`;return`\n      <div class="form-group">\n        <label for="${n}">Atrybut ${t+1}:</label>\n        <select id="${n}" class="origin-attr-choice-select">${(e=>`\n    <option value="">-- brak wyboru --</option>\n    ${o.map(([t,n])=>`<option value="${t}" id="${e}-opt-${t}">${n}</option>`).join("")}\n  `)(n)}</select>\n      </div>\n    `}).join(""),document.querySelectorAll(".origin-attr-choice-select").forEach(e=>{e.addEventListener("change",()=>{Ge(),it()})}),Ge()}function Ge(){const e=Array.from(document.querySelectorAll(".origin-attr-choice-select")),t=e.map(e=>e.value).filter(Boolean);e.forEach(e=>{Array.from(e.options).forEach(n=>{n.disabled=!!n.value&&n.value!==e.value&&t.includes(n.value)})})}function Fe(){return Array.from(document.querySelectorAll(".origin-attr-choice-select")).map(e=>e.value).filter(Boolean)}function Ue(){document.querySelectorAll(".origin-attr-choice-select").forEach(e=>{e.value=""}),Ge(),it()}function Ve(){qe(),G=null,document.querySelectorAll(".origin-tile").forEach(e=>e.classList.remove("selected"));const e=document.getElementById("selected-origin-info");e&&(e.innerHTML="");const t=document.getElementById("step-1")?.querySelector(".selection-message");t&&t.remove();const n=document.getElementById("btn-next-1");n&&(n.disabled=!0)}function Qe(){const e=document.querySelector('input[name="poziom"][value="0"]');e&&(e.checked=!0,e.dispatchEvent(new Event("change",{bubbles:!0})))}function Ye(){const e=document.getElementById("attribute-decreased"),t=document.getElementById("attribute-increased");e&&(e.value=""),t&&(t.value=""),it()}function Xe(e){const t=R[e];if(!t)return;if(Y[t]){const e=Y[t];Y[t]=null,function(e){if((e.pkt||{}).mod_atrybuty)return void it();const t=G&&U.find(e=>e.id===G);t&&lt({sila:parseInt(document.getElementById("strength-final").textContent),zrecznosc:parseInt(document.getElementById("agility-final").textContent),intelekt:parseInt(document.getElementById("intellect-final").textContent),wola:parseInt(document.getElementById("will-final").textContent)},t)}(e)}Q[e]="";const n=document.getElementById(`path-summary-${t}`);n&&(n.innerHTML=""),ve(),Ee(t),gt(),Be(),ft(F)}function et(){ne=[],Jt(),Vt()}function tt(){ee={},Zt()}function nt(){if(!G)return;const e=U.find(e=>e.id===G);if(!e)return;De(e);at(Re(e,void 0,void 0,Fe()),e)}function it(){if(!G)return;const e=U.find(e=>e.id===G);if(!e)return;!function(e){const t=document.getElementById("attribute-decreased"),n=document.getElementById("attribute-increased"),i=document.getElementById("attribute-pool-info");if(!t||!n)return;const a=t.value,o=n.value;if(Array.from(t.options).forEach(e=>{e.disabled=!!e.value&&e.value===o}),Array.from(n.options).forEach(e=>{e.disabled=!!e.value&&e.value===a}),i&&e){const t=Object.values(e.atrybuty_bazowe).reduce((e,t)=>e+t,0);i.textContent=`Pula atrybutów pochodzenia: ${t} (suma się nie zmienia po zamianie).`}}(e);const t=Fe();let n;if(document.getElementById("default-attributes").checked)n=Re(e,void 0,void 0,t);else{const i=document.getElementById("attribute-decreased").value,a=document.getElementById("attribute-increased").value;n=Re(e,i,a,t)}const i=function(){const e={sila:0,zrecznosc:0,intelekt:0,wola:0};return Object.values(Y).forEach(t=>{const n=t&&t.pkt&&t.pkt.mod_atrybuty;n&&Object.entries(n).forEach(([t,n])=>{t in e&&(e[t]+=n)})}),e}();Object.entries(i).forEach(([e,t])=>{t&&(n[e]+=t)}),["sila","zrecznosc","intelekt","wola"].forEach(e=>{const t=document.getElementById(`${e}-base`);t&&(t.value=n[e])}),at(n,e)}function at(e,t){document.getElementById("strength-final").textContent=e.sila,document.getElementById("agility-final").textContent=e.zrecznosc,document.getElementById("intellect-final").textContent=e.intelekt,document.getElementById("will-final").textContent=e.wola,document.getElementById("strength-mod").textContent=dt(e.sila-10),document.getElementById("agility-mod").textContent=dt(e.zrecznosc-10),document.getElementById("intellect-mod").textContent=dt(e.intelekt-10),document.getElementById("will-mod").textContent=dt(e.wola-10),lt(e,t),document.getElementById("btn-next-2").disabled=!1}document.addEventListener("DOMContentLoaded",async()=>{await async function(){try{const t={pochodzenia:Object.keys(h.pochodzenia),sciezki:Object.keys(h.sciezki_nowicjuszy)};let n=[];try{n=a().pochodzenia||[]}catch(e){console.warn("Nie udało się załadować metadanych pochodzeń:",e)}U=await async function(t){const n=[],i=new Set(["PG","SP","RA","NW","GWP","GP","SUP","CS"]);for(const a of t)try{const t={...e({pochodzenie:a,atrybuty:{sila:10,zrecznosc:10,intelekt:10,wola:10}}).pochodzenie};if(!t||!t.zrodlo||!i.has(t.zrodlo))continue;try{const e=o(a);e&&(t.tabele=e)}catch(e){console.warn(`Nie udało się załadować tabel dla pochodzenia ${a}:`,e)}n.push(t)}catch(e){console.warn(`Nie udało się załadować danych dla pochodzenia ${a}:`,e)}return n}(t.pochodzenia,n),function(e){if(!Array.isArray(e))throw new Error("pochodzenia musi być tablicą");const t=document.getElementById("origin-tiles");if(!t)throw new Error("Element #origin-tiles nie został znaleziony");t.innerHTML="",e.forEach(e=>{const n=document.createElement("div");n.className="origin-tile compact",n.dataset.originId=e.id;const i=function(e){return{czlowiek:"Wszechstronni, zaradni i niezwykle liczni, ludzie zdominowali świat mimo prymitywnych początków, osiedlając się od gór po pustkowia.",automaton:"Mechaniczne istoty złożone z blachy, śrub i trybów, ożywione duszami wyrwanymi z Zaświatów.",goblin:"Wygnane przez Królową Faerie z krainy nieśmiertelnych, drobne i przemyślne istoty żyjące na śmietniskach i w kanałach ludzkich miast.",krasnolud:"Krzepcy, nieufni górnicy i rzemieślnicy mieszkający w wykutych w skale miastach, gdzie strzegą swoich skarbców przed siłami cienia.",odmieniec:"Magiczne podrzutki stworzone przez faerie, by ukryć porwanie ludzkiego dziecka, czasem żyjące na tyle długo, by stać się naprawdę sobą.",ork:"Stworzeni czarną magią z pojmanych jotunów żołnierze Imperium, którzy niedawno powstali przeciw swoim panom i utopili tron we krwi.",faun:"Potomkowie ludzi dotknięci magią faerie, o kozich nogach i rogach, nienależący w pełni ani do świata śmiertelników, ani do Pięknego Ludu.",niziol:"Niewielcy, pełni szczęścia osadnicy, których niewzruszona nieustraszoność wynika z wiary, że obecne życie jest tylko jednym z wielu.",chochlik:"Maleńkie, naturalnie niewidzialne faerie-psotniki, które dla zabawy płatają figle znacznie większym od siebie istotom.",elf:"Nieśmiertelni panowie i damy krain faerie, którzy z rzadka miewają potomstwo i dlatego czasem porywają śmiertelne dzieci.",hobgoblin:"Identyczni co do centymetra żołnierze stworzeni przez faerie z goblinów odartych z nieśmiertelności, wierzący, że wszyscy dzielą jedną duszę.",fomor:"Najbardziej ludzkie z zwierzoludzi, kozłogłowe istoty poniewierane przez własnych, silniejszych pobratymców jako mięso armatnie.",niedzwiedziadlo:"Potężne, niedźwiedziopodobne zwierzoludzie o niezwykłej sile, których najgroźniejsi łowcy głów zdobią pasy trofeami wrogów.",warg:"Zaciekłe, wilczogłowe zwierzoludzie służące jako brutalna siła napędowa armii, gotowe mordować równie chętnie sojuszników, co wrogów.",inkarnacja:"Bezcielesne fragmenty dawnych dżinnów, które zatraciły własną osobowość, wplatając swoje jestestwo w barierę chroniącą świat przed demonami.",kambion:"Potomkowie diabłów i ludzi skazani na Piekło od chwili narodzin, choć niektórzy walczą z mrokiem czającym się w ich sercach.",jotunn:"Olbrzymi z Mroźnego Bezdroża, którzy przez stulecia czekali na zemstę za niewolę i za przodków obróconych w orków."}[e.id]||"Nieznane pochodzenie."}(e),a=function(e){return{czlowiek:"Determinacja, zaradność i sama liczebność sprawiły, że ludzkość stała się największą i najbardziej rozprzestrzenioną populacją świata, a jej osady spotyka się od gór po moczary i pustkowia. Kolory skóry ludzi bywają zielone, niebieskie czy różowe, a wzrost i waga wahają się od 1 do ponad 2 metrów i od 25 do ponad 250 kilogramów. W plemiennej kulturze siła tkwi we wspólnocie, co bywa źródłem potęgi, ale też zarzewiem konfliktów między rywalizującymi grupami.",automaton:"Automatony zbudowano z blachy, śrub, drutów, sprężyn i trybów, a ożywia je magia wiążąca z ciałem duszę wyrwaną z Zaświatów - działa ona jednak tylko, gdy pracują wewnętrzne mechanizmy. Każdy nosi gdzieś na ciele klucz, którym trzeba go nakręcić; gdy mechanizm stanie, automaton zapada w uśpienie i staje się bezdusznym przedmiotem. Imię zwykle nadaje im stwórca, choć niektóre wybierają je same, opierając się na wspomnieniach duszy zamkniętej w ich wnętrzu.",goblin:"Dawno temu Królowa Faerie odebrała goblinom nieśmiertelność i wygnała ich do świata śmiertelników za przewinienia, które dziś pamięta już tylko ona. Żaden goblin nie wygląda jak drugi - świńskie ryje, wydatne kły, rogi czy wędrujące po ciele brodawki to tylko część ich fizycznych dziwactw. Wiele z nich ma przy tym osobliwe zwyczaje, jak przechowywanie obciętych paznokci w słoikach, by żadna wiedźma nie ukradła im imienia.",krasnolud:"Krasnoludy żyją w okazałych miastach wydrążonych pod górami, skąd wypuszczają się na wyprawy w głąb ziemi po złoto i srebro, które potem chomikują w wielkich skarbcach. Zarówno mężczyźni, jak i kobiety noszą wymyślne brody zaplatane w symbole klanów i zdobione srebrnymi pierścieniami. Gburowate i podejrzliwe z natury, powstrzymują własną chciwość przekonaniem, że nieustannie obserwują je duchy przodków - dlatego cenią honor nad wszystko, by nie przynieść wstydu swojemu klanowi.",odmieniec:"Faerie tworzą odmieńców z ożywionej magią ziemi, patyków i kamieni, by nadać im wygląd dziecka, które właśnie porwały - czar zwykle trwa tylko kilka tygodni, choć zdarza się, że utrzymuje się na tyle długo, że podrzutek wyrasta na prawdziwą osobę. Odarci z przebrania, odmieńcy mają pozbawione rysów twarze bez cech szczególnych, z wyjątkiem świecących zielono oczu. Ciągłe przybieranie cudzych tożsamości niszczy ich własną osobowość do tego stopnia, że wielu z nich nie pamięta, kim właściwie jest ani kim chciałoby być.",ork:"Parający się czarną magią czarodzieje Imperium stworzyli orków z pojmanych jotunów sprowadzonych na sąd przed Alabastrowy Tron, odzierając tych dumnych wojowników z człowieczeństwa mrocznymi zaklęciami - dlatego w żyłach orków wciąż płynie krew olbrzymów. Po stuleciach niewolniczej służby orki powstały przeciw swoim panom; plotki głoszą, że ich król Katorżnik gołymi rękami udusił cesarza. Ich plamista skóra, poznaczona bliznami i pęcherzami po wadliwej magii, w połączeniu z bestialskimi rysami twarzy budzi grozę na polach bitew całego Imperium.",faun:"Fauny zawdzięczają swój wygląd - kudłate nogi, kopyta i drobne rogi - domieszce krwi faerie lub śladom ich magii, nie zaś demonicznemu splugawieniu jak u zwierzoludzi, z którymi bywają mylone. Pośród Pięknego Ludu mają niski status błaznów, posłańców i zabawek dla elfich panów, dlatego wiele z nich żyje na mglistych granicach ukrytych królestw albo ucieka w odosobnione ludzkie osady. Ich ciekawość bywa zgubna, bo niektórzy podli magowie płacą wysoką cenę za faunią krew.",niziol:"Niziołczy osadnicy przybyli do Imperium około sześciuset lat temu z zachodu, zawierając pokój z lokalnymi władcami i płacąc za ziemię złotymi monetami o niecodziennym biciu - w zamian zachowali wolność w zarządzaniu własnymi sprawami. Wierzą, że obecne życie jest tylko jednym z wielu, co czyni ich niemal nieczułymi na strach i sprawia, że rzadko popełniają krytyczne błędy - inni odczytują to jako niezwykłe szczęście, a niektóre skażone mrokiem dusze trzymają niziołki jako żywe amulety na fart. Powstanie orków na południu zaczęło jednak niszczyć ich sielskie ziemie, zmuszając coraz więcej niziołków do szukania nowego, bezpieczniejszego domu.",chochlik:"Chochliki są naturalnie niewidzialne dla większości stworzeń - widzą je tylko dzieci, zwierzęta i istoty owładnięte szaleństwem, a samą zdolność tracą na chwilę w południe, o północy oraz o świcie i zmierzchu. Uwielbiają płatać figle, od podkradania drobiazgów po sprowadzanie drwali na obozowiska zwierzoludzi, tylko by zobaczyć, co się stanie. Ich mały wzrost i słodki głos bywają zgubne - bezwzględne gobliny czasem więzią je w klatkach, by sprzedać jako składnik mrocznych inkantacji.",elf:"Elfy żyją wiecznie, o ile nie padną ofiarą przemocy lub katastrofy, a gdy dorosną, przestają się starzeć i zachowują niezmienną postać aż do śmierci. Mając potomstwo raz lub dwa razy w całym swoim życiu, niekiedy porywają śmiertelne dzieci i wychowują je przez kilka lat - jeśli dziecko okaże się zbyt prostackie, porzucają je własnemu, okrutnemu losowi. Swoich prawdziwych imion strzegą w tajemnicy, przyjmując na co dzień przydomki takie jak Księżyc na Nocnym Niebie czy Zimowy Dech, by żaden wścibski śmiertelnik nie zdołał ich przyzwać.",hobgoblin:"Wysokie faerie stworzyły hobgobliny z goblinów, odbierając im nieśmiertelność i obdarzając siłą oraz odwagą potrzebną żołnierzom - w efekcie każdy hobgoblin mierzy dokładnie 164 centymetry i waży 75,3 kilograma, niezależnie od tego, jak dużo lub jak mało zjada. Wierzą, że wszyscy dzielą jedną duszę, więc nie boją się śmierci, dopóki żyje choć jeden z ich rodu, i przywołują imiona swoich panów - Królowej Faerie, Króla Goblinów czy Księcia Drozdów - gdy są zaskoczeni lub wściekli. Ich imię składa się z trzech liczb wyliczanych z imion przodków, a na co dzień zwracają się do siebie ostatnią z nich.",fomor:"Fomory stanowią większość armii zwierzoludzi, ale wargi traktują je jak mięso armatnie, biczując, by szły na czele szarży - ich krótkie, pełne grozy życie kończą zwykle albo wrogowie, albo własni pobratymcy, którzy z nudy je torturują lub zjadają, gdy nie ma nic innego pod ręką. Mierzą około półtora metra i mają w większości ludzkie ciała, jeśli nie liczyć kozich głów z rogami i wyłupiastych oczu, a swoje słabe zbroje wykonują ze skóry ofiar. Mimo swojej pozycji na dole hierarchii są zdolne do tej samej okrutnej zaciekłości co inni zwierzoludzie.",niedzwiedziadlo:"Niedźwiedzidła wyróżniają się wśród zwierzoludzi niezwykłą siłą i umiejętnością pochwycenia przeciwnika bez poświęcania na to akcji w walce. Najniebezpieczniejsze z nich, znane jako łowcy głów, ucinają głowy pokonanych wrogów i przywiązują je do pasa za włosy, często współpracując z armiami zwierzoludzi w zamian za najwyborniejszych niewolników. Podobnie jak inne istoty tego rodzaju, mówią mroczną mową i noszą ciężkie, utwardzone skórznie zdarte z ofiar.",warg:"Wargi poganiają słabszych pobratymców szczeknięciami i pogróżkami, a na wrogów opadają, szarpiąc ich na strzępy - wielu z nich spędza tyle samo czasu, mordując niewinnych, co szlachtując własnych sojuszników, którzy wejdą im w drogę. Ich humanoidalne ciała pokrywa nierówne, zwykle brązowe futro, a wilcze pyski pełne są ostrych zębów przydatnych do rozdzierania mięsa; nie dbając o własny ekwipunek, po każdej bitwie przetrząsają ciała ofiar w poszukiwaniu zamienników. Berserkowie pośród nich, gdy nie walczą, ryją sobie w skórze wzory połamanymi kośćmi zabitych wrogów.",inkarnacja:"Inkarnacje powstały, gdy liczne dżinny poświęciły się, by wykuć niewidzialną barierę odporną na demoniczne najazdy, i wplotły w nią swoje jestestwo tak głęboko, że zatraciły pamięć o tym, kim niegdyś były. Nie mając własnej fizycznej formy, muszą pożyczać ciała żywych, śmiertelnych istot - wchodzą do nich niczym podczas demonicznego opętania, spychając duszę gospodarza na bok, choć nie mogą wejść w faerie, trolle ani istoty bez duszy. Nie znając pojęć dobra i zła, robią to, co uznają za konieczne do ochrony rzeczywistości, nawet jeśli wymaga to poświęcenia niewinnych istot.",kambion:"Diabły uwodzą śmiertelników obietnicą bogactwa, władzy lub cielesnych przyjemności, a jeśli taka schadzka skończy się ciążą - wyłącznie w relacji z ludźmi - potomek zawsze okazuje się kambionem. Niemal identyczne ze swoimi śmiertelnymi rodzicami, wszystkie noszą jakiś znak zdradzający piekielne pochodzenie duszy, od subtelnego wzoru symboli na karku do wyrastających z czoła rogów. Ponieważ dusze zrodzone z mroku można oczyścić jedynie w Piekle, wiele kambionów poddaje się swojej złej naturze w nadziei na lepsze miejsce w piekielnej hierarchii, choć nieliczne trzymają te impulsy w karbach i zwracają wewnętrzny mrok przeciw samemu Piekłu.",jotunn:"W żyłach jotunów płynie krew olbrzymów, dzięki której dorastają do 2,5, a nawet 3 metrów wzrostu i ważą do 360 kilogramów, górując nawet nad najpotężniej zbudowanymi ludźmi. Wieki temu cesarscy żołnierze i magowie bitewni pokonali ich w wojnie, a z części jeńców czarną magią stworzono pierwsze orki, które przez stulecia służyły kolejnym cesarzom - dlatego jotunowie czekają na dzień, gdy Wielki Wilk pochłonie słońce i da im znak do podniesienia żagli po Imperium krwią. Wierzą w wyrd: nieodwołany, zapisany przez boga Grimnira los każdej istoty, dlatego przyjmują go bez oporu i gonią za chwałą aż do samego końca."}[e.id]||"Nieznane pochodzenie."}(e),o={sila:10,zrecznosc:10,intelekt:10,wola:10},s={sila:o.sila+(e.atrybuty_bazowe.sila-10),zrecznosc:o.zrecznosc+(e.atrybuty_bazowe.zrecznosc-10),intelekt:o.intelekt+(e.atrybuty_bazowe.intelekt-10),wola:o.wola+(e.atrybuty_bazowe.wola-10)},r=s.zrecznosc,c=s.sila,l=ut(e.cechy_specjalne);n.innerHTML=`\n            <div class="tile-top">\n            <img class="origin-thumb" src="assets/origins/${e.id}.jpg" alt="" loading="lazy" onerror="this.remove()">\n            <div class="tile-body">\n            <div class="tile-header">\n                <div class="badges-container">\n                    <div class="feature-desc">rozmiar:</div><div class="size-badge">${e.rozmiar}</div>\n                    ${e.zrodlo?`<div class="source-badge" title="${Kt[e.zrodlo]||e.zrodlo}">${e.zrodlo}</div>`:""}\n                </div>\n                <h4>${e.nazwa}</h4>\n            </div>\n\n            \x3c!-- Stan zwinięty --\x3e\n            <div class="tile-content-collapsed">\n                <div class="description">${i}</div>\n                <div class="attributes-grid">\n                    <div class="attribute-item">\n                        <span class="attr-name">Siła</span>\n                        <span class="attr-value">${e.atrybuty_bazowe.sila}</span>\n                        <span class="attr-mod">${dt(e.atrybuty_bazowe.sila-10)}</span>\n                    </div>\n                    <div class="attribute-item">\n                        <span class="attr-name">Zręczność</span>\n                        <span class="attr-value">${e.atrybuty_bazowe.zrecznosc}</span>\n                        <span class="attr-mod">${dt(e.atrybuty_bazowe.zrecznosc-10)}</span>\n                    </div>\n                    <div class="attribute-item">\n                        <span class="attr-name">Intelekt</span>\n                        <span class="attr-value">${e.atrybuty_bazowe.intelekt}</span>\n                        <span class="attr-mod">${dt(e.atrybuty_bazowe.intelekt-10)}</span>\n                    </div>\n                    <div class="attribute-item">\n                        <span class="attr-name">Wola</span>\n                        <span class="attr-value">${e.atrybuty_bazowe.wola}</span>\n                        <span class="attr-mod">${dt(e.atrybuty_bazowe.wola-10)}</span>\n                    </div>\n                </div>\n            </div>\n\n            \x3c!-- Górna część stanu rozwiniętego - obok obrazka, tak jak w stanie\n                 zwiniętym (ten sam układ: obrazek | opis + atrybuty) --\x3e\n            <div class="tile-content-expanded-top">\n                <div class="expanded-description">${a}</div>\n                <div class="tile-section attributes-section">\n                    <h5>${H("swords")} Atrybuty</h5>\n                    <div class="attributes-grid">\n                        <div class="attribute-item">\n                            <span class="attr-name">Siła</span>\n                            <span class="attr-value">${e.atrybuty_bazowe.sila}</span>\n                            <span class="attr-mod">${dt(e.atrybuty_bazowe.sila-10)}</span>\n                        </div>\n                        <div class="attribute-item">\n                            <span class="attr-name">Zręczność</span>\n                            <span class="attr-value">${e.atrybuty_bazowe.zrecznosc}</span>\n                            <span class="attr-mod">${dt(e.atrybuty_bazowe.zrecznosc-10)}</span>\n                        </div>\n                        <div class="attribute-item">\n                            <span class="attr-name">Intelekt</span>\n                            <span class="attr-value">${e.atrybuty_bazowe.intelekt}</span>\n                            <span class="attr-mod">${dt(e.atrybuty_bazowe.intelekt-10)}</span>\n                        </div>\n                        <div class="attribute-item">\n                            <span class="attr-name">Wola</span>\n                            <span class="attr-value">${e.atrybuty_bazowe.wola}</span>\n                            <span class="attr-mod">${dt(e.atrybuty_bazowe.wola-10)}</span>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            </div>\n            </div>\n\n            \x3c!-- Dolna część stanu rozwiniętego - na całą szerokość kafelka,\n                 pod obrazkiem, żadna sekcja tu nie jest zwężana przez jego kolumnę --\x3e\n            <div class="tile-content-expanded-extra">\n                <div class="tile-sections">\n                    <div class="tile-section mechanics-section">\n                        <h5>${H("dice")} Atrybuty drugorzędne</h5>\n                        <div class="mechanics-grid">\n                            <div class="mechanics-item">\n                                <span class="mech-label">Obrona:</span>\n                                <span class="mech-value">${r}</span>\n                            </div>\n                            <div class="mechanics-item">\n                                <span class="mech-label">Zdrowie:</span>\n                                <span class="mech-value">${c}</span>\n                            </div>\n                            <div class="mechanics-item">\n                                <span class="mech-label">Prędkość:</span>\n                                <span class="mech-value">${e.predkosc}</span>\n                            </div>\n                        </div>\n                    </div>\n\n                    <div class="tile-section cultural-section">\n                        <h5>${H("compass")} Kulturowe</h5>\n                        <div class="cultural-info">\n                            <div class="cultural-item">\n                                <span class="cultural-label">Języki:</span>\n                                <span class="cultural-value">${pt(e.jezyki)}</span>\n                            </div>\n                            <div class="cultural-item">\n                                <span class="cultural-label">Profesje:</span>\n                                <span class="cultural-value">${yt(e)}</span>\n                            </div>\n                        </div>\n                    </div>\n\n                    ${l?`\n                    <div class="tile-section features-section">\n                        <h5>${H("sparkle")} Cechy Specjalne</h5>\n                        <div class="features-list">\n                            ${l.map(e=>`\n                                <div class="feature-item">\n                                    <span class="feature-name">${e.nazwa}</span>\n                                    <span class="feature-desc">${e.opis}</span>\n                                </div>\n                            `).join("")}\n                        </div>\n                    </div>\n                    `:""}\n\n                    ${e.tabele&&Object.keys(e.tabele).length>0?`\n                    <div class="tile-section tables-section">\n                        <h5>${H("dice")} Tabele Losowania</h5>\n                        <div class="tables-grid">\n                            ${Object.entries(e.tabele).map(([t,n])=>`\n                                <div class="table-item">\n                                    <div class="table-header">\n                                        <span class="table-name">${n.nazwa}</span>\n                                        <span class="table-type">${n.typ}</span>\n                                    </div>\n                                    <div class="table-description">${n.opis}</div>\n\n                                    <div class="table-controls">\n                                        <div class="table-options">\n                                            <label for="table-select-${e.id}-${t}">Wybierz opcję:</label>\n                                            <select id="table-select-${e.id}-${t}" class="table-dropdown" data-origin-id="${e.id}" data-table-name="${t}">\n                                                <option value="">-- Wybierz opcję --</option>\n                                                ${n.opcje?n.opcje.map(e=>`\n                                                    <option value="${e.rzut}" data-wynik="${e.wynik}">${e.rzut}: ${e.wynik}</option>\n                                                `).join(""):""}\n                                            </select>\n                                        </div>\n\n                                        <div class="table-buttons">\n                                            <button class="roll-table-btn" data-origin-id="${e.id}" data-table-name="${t}">\n                                                ${H("dice")} Losuj\n                                            </button>\n                                            <button class="apply-selection-btn" data-origin-id="${e.id}" data-table-name="${t}" style="display: none;">\n                                                ${H("check")} Zastosuj wybór\n                                            </button>\n                                        </div>\n                                    </div>\n\n                                    <div class="roll-result" id="roll-result-${e.id}-${t}" style="display: none;">\n                                        \x3c!-- Wynik losowania będzie wyświetlany tutaj --\x3e\n                                    </div>\n                                </div>\n                            `).join("")}\n                        </div>\n                    </div>\n                    `:""}\n                </div>\n\n                \x3c!-- Przycisk wyboru --\x3e\n                <div class="tile-select-section">\n                    <button class="tile-select-btn" data-origin-id="${e.id}">\n                        Wybierz ${e.nazwa}\n                    </button>\n                </div>\n            </div>\n        `;n.querySelectorAll(".table-dropdown").forEach(e=>{e.addEventListener("change",e=>{e.stopPropagation();const t=e.target.dataset.originId,i=e.target.dataset.tableName,a=e.target.value,o=n.querySelector(`.apply-selection-btn[data-origin-id="${t}"][data-table-name="${i}"]`);a&&o?o.style.display="inline-block":o&&(o.style.display="none")})}),n.addEventListener("click",t=>{if(t.target.classList.contains("tile-select-btn")||t.target.closest(".tile-select-btn"))return t.stopPropagation(),void _e(e.id);if(t.target.classList.contains("roll-table-btn")||t.target.closest(".roll-table-btn")){t.stopPropagation();return void Nt(t.target.dataset.originId||t.target.closest(".roll-table-btn").dataset.originId,t.target.dataset.tableName||t.target.closest(".roll-table-btn").dataset.tableName)}if(t.target.classList.contains("apply-selection-btn")||t.target.closest(".apply-selection-btn")){t.stopPropagation();return void function(e,t){const n=document.getElementById(`table-select-${e}-${t}`),i=document.getElementById(`roll-result-${e}-${t}`),a=document.querySelector(`.apply-selection-btn[data-origin-id="${e}"][data-table-name="${t}"]`);if(!n||!i)return;const o=n.options[n.selectedIndex];if(!o||!o.value)return;const s=o.value,r=o.dataset.wynik;V[e]||(V[e]={});V[e][t]={rzut:s,wynik:r,typ:"wybór"},i.style.display="block",i.innerHTML=`\n    <div class="roll-result-content">\n      <div class="roll-dice">${H("target")} Wybór: ${s}</div>\n      <div class="roll-outcome">${r}</div>\n    </div>\n  `,a&&(a.style.display="none");n.selectedIndex=0}(t.target.dataset.originId||t.target.closest(".apply-selection-btn").dataset.originId,t.target.dataset.tableName||t.target.closest(".apply-selection-btn").dataset.tableName)}t.stopPropagation(),function(e){const t=document.querySelector(`[data-origin-id="${e}"]`);if(!t)return;const n=t.classList.contains("expanded");n?zt(t):(wt(),function(e){e.classList.remove("compact"),e.classList.add("expanded");const t=e.querySelector(".tile-content-collapsed"),n=e.querySelector(".tile-content-expanded-top"),i=e.querySelector(".tile-content-expanded-extra");t&&(t.style.display="none");n&&(n.style.display="block");i&&(i.style.display="block");const a=e.querySelector(".tile-header");requestAnimationFrame(()=>{a?.scrollIntoView({behavior:"smooth",block:"start"})})}(t))}(e.id)}),t.appendChild(n)})}(U);const i=document.getElementById("sciezka");i&&(i.innerHTML='<option value="">Brak ścieżki</option>',t.sciezki.forEach(e=>{const t=document.createElement("option");t.value=e,t.textContent=e.charAt(0).toUpperCase()+e.slice(1),i.appendChild(t)}))}catch(e){Et(`Nie można załadować opcji: ${e.message}`)}}(),await async function(){}(),function(){document.querySelectorAll('input[name="poziom"]').forEach(e=>{e.addEventListener("change",e=>je(parseInt(e.target.value)))}),xe(0),Se(0),Ne(0),Ae(0),ft(0);document.querySelectorAll("#breadcrumbs .breadcrumb-item").forEach(e=>{e.addEventListener("click",()=>{!function(e){if(2===e&&!G)return;if(3===e&&!G)return;if(4===e){if(0===F)return;const e=F>=3,t=F>=7;if(!Q.nowicjusz)return;if(e&&!Q.ekspert)return;if(t&&!Q.mistrz)return}if(5===e){if(!i({pathNoviceId:Q.nowicjusz||null,pathExpertId:Q.ekspert||null,pathMasterId:Q.mistrz||null}).every(rt))return}if(6===e||7===e||8===e){const{kurioza:e}=Mt(),{slots:t}=At();if(!t.every(e=>Rt(e)))return;if(ne.length<e)return}Te(e),3===e&&(ve(),Ee(1),Ee(3),Ee(7),Be());4===e&&ct();5===e&&(Zt(),Jt());6===e&&Xt();7===e&&mn();8===e&&gt()}(parseFloat(e.getAttribute("data-step")))})})}(),await async function(){try{document.querySelectorAll(".path-section-header").forEach(e=>{e.addEventListener("click",()=>{const t=e.closest(".path-section");t&&t.classList.toggle("collapsed")})}),ve(),await Ee(1),await Ee(3),await Ee(7),Be()}catch(e){console.warn("Nie udało się załadować ścieżek:",e)}}(),await async function(){try{const e=s();se=e.profesje;const t=r();re=t.kurioza}catch(e){console.warn("Nie udało się załadować profesji i kuriozów:",e)}}(),function(){const e=document.getElementById("btn-help");e&&e.addEventListener("click",St);document.addEventListener("keydown",e=>{if("Escape"===e.key){const e=document.getElementById("help-lightbox");e&&"flex"===e.style.display&&Lt()}}),document.addEventListener("keydown",e=>{"F1"===e.key&&(e.preventDefault(),St())});const t=document.getElementById("help-lightbox");t&&t.addEventListener("click",e=>{e.target===t&&Lt()})}();const t=document.getElementById("btn-toggle-curios"),l=document.getElementById("curios-grid");t&&l&&t.addEventListener("click",()=>{const e="true"===t.getAttribute("data-expanded");t.setAttribute("data-expanded",e?"false":"true"),t.textContent=e?"Rozwiń":"Zwiń",l.style.display=e?"none":"grid"});const d=document.getElementById("btn-randomize-professions");d&&d.addEventListener("click",()=>Ft());const u=document.getElementById("btn-randomize-curios");u&&u.addEventListener("click",()=>Ut());const p=document.getElementById("btn-roll-wealth");p&&p.addEventListener("click",()=>{if(F<=0)return;let e=0;const t=[];for(let n=0;n<2*F;n++){const n=Math.floor(6*Math.random())+1;t.push(n),e+=n}ce=e,Me(t,e),gt()}),document.getElementById("default-attributes").addEventListener("change",e=>{document.getElementById("custom-attributes").style.display=e.target.checked?"none":"block",e.target.checked?(document.getElementById("attribute-decreased").value="",document.getElementById("attribute-increased").value="",nt()):it()}),["attribute-decreased","attribute-increased"].forEach(e=>{document.getElementById(e).addEventListener("change",it)}),document.getElementById("btn-reset-origin")?.addEventListener("click",Ve),document.getElementById("btn-randomize-step-1")?.addEventListener("click",Pe),document.getElementById("btn-import-character")?.addEventListener("click",()=>{document.getElementById("import-character-file")?.click()}),document.getElementById("import-character-file")?.addEventListener("change",e=>{const t=e.target.files?.[0];t&&function(e){const t=new FileReader;t.onload=async e=>{let t;try{t=JSON.parse(e.target.result)}catch(e){return void It("error","Nie udało się odczytać pliku - to nie jest poprawny plik JSON.")}const i=function(e){if(!e||"object"!=typeof e||Array.isArray(e))return["Plik nie zawiera poprawnego obiektu JSON (oczekiwano danych postaci wyeksportowanych z tego kreatora)."];const t=[];e.wersjaEksportu!==vt&&t.push(`Nieobsługiwana wersja pliku (${e.wersjaEksportu??"brak"}) - ten kreator obsługuje wersję ${vt}.`);const i=e.wybory;if(!i||"object"!=typeof i||Array.isArray(i))return t.push('Plik nie zawiera wymaganej sekcji "wybory".'),t;i.pochodzenie&&"string"==typeof i.pochodzenie?U.some(e=>e.id===i.pochodzenie)||t.push(`Nieznane pochodzenie: "${i.pochodzenie}" nie istnieje w aktualnej bazie danych.`):t.push("Brak pochodzenia postaci w pliku.");("number"!=typeof i.poziom||!Number.isInteger(i.poziom)||i.poziom<0||i.poziom>10)&&t.push(`Nieprawidłowy poziom postaci: "${i.poziom}" (oczekiwano liczby całkowitej 0-10).`);const a=["sila","zrecznosc","intelekt","wola"];i.atrybutyGlowne&&"object"==typeof i.atrybutyGlowne&&["zmniejszony","zwiekszony"].forEach(e=>{const n=i.atrybutyGlowne[e];n&&!a.includes(n)&&t.push(`Nieznany atrybut w polu "atrybutyGlowne.${e}": "${n}".`)});Array.isArray(i.bonusoweAtrybutyPochodzenia)&&i.bonusoweAtrybutyPochodzenia.forEach(e=>{e&&!a.includes(e)&&t.push(`Nieznany bonusowy atrybut pochodzenia: "${e}".`)});if(i.sciezki&&"object"==typeof i.sciezki){const e={nowicjusz:1,ekspert:3,mistrz:7};Object.entries(e).forEach(([e,a])=>{const o=i.sciezki[e];o&&(n(a).some(e=>e.id===o)||t.push(`Nieznana ścieżka (${e}): "${o}" nie istnieje w aktualnej bazie danych.`))})}i.atrybutySloty&&"object"==typeof i.atrybutySloty&&Object.entries(i.atrybutySloty).forEach(([e,n])=>{Array.isArray(n)?n.forEach(n=>{a.includes(n)||t.push(`Nieznany atrybut "${n}" w slocie zwiększenia "${e}".`)}):t.push(`Nieprawidłowa struktura slotu atrybutów "${e}" (oczekiwano tablicy).`)});i.profesjeJezykiSloty&&"object"==typeof i.profesjeJezykiSloty&&Object.entries(i.profesjeJezykiSloty).forEach(([e,n])=>{n&&"object"==typeof n&&("profesja"===n.mode&&n.profesjaId&&!se.some(e=>e.id===n.profesjaId)?t.push(`Nieznana profesja: "${n.profesjaId}" (slot "${e}") nie istnieje w aktualnej bazie danych.`):"jezyk_nowy"!==n.mode&&"jezyk_pismo"!==n.mode||!n.jezyk||c[n.jezyk]||t.push(`Nieznany język: "${n.jezyk}" (slot "${e}") nie istnieje w aktualnej bazie danych.`))});Array.isArray(i.kurioza)&&i.kurioza.forEach(e=>{re.some(t=>t.id===e)||t.push(`Nieznane kurioza: "${e}" nie istnieje w aktualnej bazie danych.`)});i.magia&&i.magia.wybory&&"object"==typeof i.magia.wybory&&Object.entries(i.magia.wybory).forEach(([e,n])=>{n&&"object"==typeof n&&(n.tradycjaId&&!b[n.tradycjaId]&&t.push(`Nieznana tradycja magiczna: "${n.tradycjaId}" (wybór "${e}") nie istnieje w aktualnej bazie danych.`),["spellId","darmowyZaklecieId"].forEach(i=>{const a=n[i];a&&!f.some(e=>e.id===a)&&t.push(`Nieznane zaklęcie: "${a}" (wybór "${e}") nie istnieje w aktualnej bazie danych.`)}))});null!==i.srebrniki&&void 0!==i.srebrniki&&"number"!=typeof i.srebrniki&&t.push(`Nieprawidłowa wartość srebrników: "${i.srebrniki}" (oczekiwano liczby albo null).`);if(i.ekwipunek&&"object"==typeof i.ekwipunek){const e=i.ekwipunek;e.zamoznoscId&&!v[e.zamoznoscId]&&t.push(`Nieznany poziom zamożności: "${e.zamoznoscId}" nie istnieje w aktualnej bazie danych.`),e.wybory&&"object"==typeof e.wybory&&Object.entries(e.wybory).forEach(([e,n])=>{n&&"object"==typeof n&&(n.itemId&&!B(n.itemId)&&t.push(`Nieznany przedmiot ekwipunku: "${n.itemId}" (wybór "${e}") nie istnieje w aktualnej bazie danych.`),"zwoj_zaklecie"===n.typ&&(n.tradycjaId&&!b[n.tradycjaId]&&t.push(`Nieznana tradycja magiczna: "${n.tradycjaId}" (zwój, wybór "${e}") nie istnieje w aktualnej bazie danych.`),n.spellId&&!f.some(e=>e.id===n.spellId)&&t.push(`Nieznane zaklęcie: "${n.spellId}" (zwój, wybór "${e}") nie istnieje w aktualnej bazie danych.`)))}),Array.isArray(e.zakupione)&&e.zakupione.forEach(e=>{e&&e.itemId&&!B(e.itemId)&&t.push(`Nieznany przedmiot ekwipunku: "${e.itemId}" (zakupiony) nie istnieje w aktualnej bazie danych.`)})}return t}(t);if(i.length>0)It("error","Nie udało się zaimportować postaci - plik zawiera błędy:",i);else try{await Bt(t);const e=Z(),n=O(e,t);n&&(be=e,ge=Oe(t)),It("success",n?`${H("check")} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`:`${H("check")} Postać została pomyślnie zaimportowana, ale nie udało się jej zapisać w pamięci przeglądarki (może być pełna albo zablokowana) - pracujesz na danych z pliku.`)}catch(e){console.error("Błąd importu postaci:",e),It("error",`Wystąpił nieoczekiwany błąd podczas importu: ${e.message}`)}},t.onerror=()=>{It("error","Nie udało się odczytać wybranego pliku.")},t.readAsText(e)}(t),e.target.value=""}),document.getElementById("btn-reset-level")?.addEventListener("click",Qe),document.getElementById("btn-reset-swap")?.addEventListener("click",Ye),document.getElementById("btn-reset-origin-attribute-choice")?.addEventListener("click",Ue),document.getElementById("btn-reset-curios")?.addEventListener("click",et),document.getElementById("btn-reset-professions")?.addEventListener("click",tt),document.getElementById("btn-reset-magic")?.addEventListener("click",pn),document.getElementById("magic-picker-close")?.addEventListener("click",cn),document.getElementById("magic-picker-overlay")?.addEventListener("click",e=>{"magic-picker-overlay"===e.target.id&&cn()}),document.getElementById("btn-randomize-wealth")?.addEventListener("click",zn),document.getElementById("btn-reset-wealth")?.addEventListener("click",kn),document.getElementById("equipment-picker-close")?.addEventListener("click",jn),document.getElementById("equipment-picker-overlay")?.addEventListener("click",e=>{"equipment-picker-overlay"===e.target.id&&jn()}),document.addEventListener("keydown",e=>{"Escape"===e.key&&on&&cn(),"Escape"===e.key&&fn&&jn(),"Escape"!==e.key||document.getElementById("load-character-overlay")?.hidden||Ln(),"Escape"!==e.key||document.getElementById("randomize-character-overlay")?.hidden||An()}),document.querySelectorAll("[data-reset-path]").forEach(e=>{e.addEventListener("click",t=>{t.stopPropagation(),Xe(e.dataset.resetPath)})}),document.getElementById("btn-new-character")?.addEventListener("click",()=>{confirm("Rozpocząć nową postać? Bieżące, niezapisane zmiany zostaną utracone.")&&Bn()}),document.getElementById("btn-load-character")?.addEventListener("click",Sn),document.getElementById("btn-randomize-character")?.addEventListener("click",Mn),document.getElementById("load-character-close")?.addEventListener("click",Ln),document.getElementById("load-character-overlay")?.addEventListener("click",e=>{"load-character-overlay"===e.target.id&&Ln()}),document.getElementById("randomize-character-close")?.addEventListener("click",An),document.getElementById("randomize-character-overlay")?.addEventListener("click",e=>{"randomize-character-overlay"===e.target.id&&An()}),document.getElementById("btn-randomize-character-confirm")?.addEventListener("click",()=>{An(),async function(e){Bn(),await Pe(),document.querySelectorAll(".origin-attr-choice-select").forEach(e=>{const t=Array.from(e.options).filter(e=>e.value);t.length&&(e.value=t[Math.floor(Math.random()*t.length)].value,e.dispatchEvent(new Event("change",{bubbles:!0})))});const t=document.querySelector(`input[name="poziom"][value="${e}"]`);t&&(t.checked=!0);if(await je(e),F>=4){const e=Array.from(document.querySelectorAll(`input[name="origin-option-${G}"]`));if(e.length){const t=e[Math.floor(Math.random()*e.length)];t.checked=!0,t.dispatchEvent(new Event("change",{bubbles:!0}))}}[[1,"path-grid-1"],[3,"path-grid-3"],[7,"path-grid-7"]].forEach(([e,t])=>{if(F<e)return;const n=Array.from(document.getElementById(t)?.querySelectorAll("button[data-path-id]")||[]);n.length&&n[Math.floor(Math.random()*n.length)].click()});if(i({pathNoviceId:Q.nowicjusz||null,pathExpertId:Q.ekspert||null,pathMasterId:Q.mistrz||null}).forEach(e=>{const t=[];for(let n=0;n<e.ilosc;n++)t.push(e.dostepne[Math.floor(Math.random()*e.dostepne.length)]);te[e.id]=t}),ct(),Zt(),Jt(),Ft(),Ut(),F>0){let e=0;const t=[];for(let n=0;n<2*F;n++){const n=Math.floor(6*Math.random())+1;t.push(n),e+=n}ce=e,Me(t,e)}zn(),M(ue).forEach(e=>{if("wybor_przedmiotu"===e.rodzaj){const t=e.opcje[Math.floor(Math.random()*e.opcje.length)];gn(e.id,t)}else if("wybor_dodatkowy"===e.rodzaj){const t=e.opcje.filter(e=>"przedmiot"===e.typ);if(!t.length)return;const n=t[Math.floor(Math.random()*t.length)];gn(e.id,n.id)}}),Te(8),gt()}(he)}),document.getElementById("character-name")?.addEventListener("input",e=>{ke=e.target.value,gt()}),document.getElementById("btn-save-character")?.addEventListener("click",Ke),document.getElementById("btn-promote-character")?.addEventListener("click",He),document.querySelectorAll(".collapsible-section-header").forEach(e=>{const t=e.closest(".collapsible-section");if(!t)return;const n=()=>{const n=t.classList.toggle("collapsed");e.setAttribute("aria-expanded",String(!n))};e.addEventListener("click",n),e.addEventListener("keydown",e=>{"Enter"!==e.key&&" "!==e.key||(e.preventDefault(),n())})}),function(){const e=document.getElementById("btn-scroll-top");if(!e)return;const t=()=>{e.hidden=fe().top<=200};e.addEventListener("click",()=>{const{scroller:t}=fe();t.scrollTo({top:0,behavior:"smooth"}),e.hidden=!0}),window.addEventListener("scroll",t,{passive:!0}),document.querySelectorAll(".modal-body").forEach(e=>{e.addEventListener("scroll",t,{passive:!0})});const n=new MutationObserver(t);document.querySelectorAll(".modal-overlay").forEach(e=>{n.observe(e,{attributes:!0,attributeFilter:["hidden"]})}),t()}(),function(){$n||($n=document.createElement("div"),$n.className="js-tooltip",$n.setAttribute("role","tooltip"),document.body.appendChild($n));document.querySelectorAll("[data-tooltip]").forEach(e=>{e.dataset.tooltipBound||(e.dataset.tooltipBound="true",e.addEventListener("mouseenter",()=>En(e)),e.addEventListener("mouseleave",In),e.addEventListener("focus",()=>En(e)),e.addEventListener("blur",In))})}()});const ot={sila:"Siła",zrecznosc:"Zręczność",intelekt:"Intelekt",wola:"Wola"},st={zdrowie:"Zdrowie",moc:"Moc",obrona:"Obrona",predkosc:"Prędkość",splugawienie:"Splugawienie"};function rt(e){return(te[e.id]||[]).length===e.ilosc}function ct(){const e=document.getElementById("attribute-slots");if(!e)return;const t=i({pathNoviceId:Q.nowicjusz||null,pathExpertId:Q.ekspert||null,pathMasterId:Q.mistrz||null});0===t.length?e.innerHTML='<p class="hint">Żadna z wybranych ścieżek nie daje na tym poziomie możliwości zwiększenia atrybutów.</p>':(e.innerHTML=t.map(e=>{const t=te[e.id]||[],n=t.length>=e.ilosc,i=e.dostepne.map(i=>{const a=t.filter(e=>e===i).length;return`\n          <div class="attribute-stepper" data-slot-id="${e.id}" data-attr="${i}">\n            <span class="attribute-stepper-label">${ot[i]||i}</span>\n            <button type="button" class="attribute-stepper-btn" data-delta="-1" ${0===a?"disabled":""}>−</button>\n            <span class="attribute-stepper-count">${a}</span>\n            <button type="button" class="attribute-stepper-btn" data-delta="1" ${n?"disabled":""}>+</button>\n          </div>\n        `}).join("");return`\n        <div class="slot-card" data-slot-id="${e.id}">\n          <div class="slot-source">\n            ${e.source}\n            <button type="button" class="section-reset-btn" data-reset-attribute-slot="${e.id}" title="Wyczyść wybór dla tej ścieżki">Wyczyść</button>\n          </div>\n          <div class="slot-description">Rozdaj ${e.ilosc} punkty(ów) zwiększenia o ${e.wartosc} - można je łączyć na jednym atrybucie (przypisano ${t.length}/${e.ilosc})</div>\n          <div class="attribute-choice-list">${i}</div>\n        </div>\n      `}).join(""),e.querySelectorAll(".attribute-stepper-btn").forEach(e=>{e.addEventListener("click",e=>{const n=e.target.closest(".attribute-stepper"),{slotId:i,attr:a}=n.dataset,o=parseInt(e.target.dataset.delta),s=[...te[i]||[]],r=t.find(e=>e.id===i);if(o>0&&s.length<r.ilosc)s.push(a);else if(o<0){const e=s.lastIndexOf(a);-1!==e&&s.splice(e,1)}te[i]=s,ct()})}),e.querySelectorAll("[data-reset-attribute-slot]").forEach(e=>{e.addEventListener("click",()=>{delete te[e.dataset.resetAttributeSlot],ct()})}));const n=function(){const e=U.find(e=>e.id===G);if(!e)return null;const t=document.getElementById("attribute-decreased")?.value,n=document.getElementById("attribute-increased")?.value;return Re(e,t,n)}();if(n){const e=U.find(e=>e.id===G),i={...n};t.forEach(e=>{(te[e.id]||[]).forEach(t=>{i[t]+=e.wartosc})}),at(i,e)}const a=document.getElementById("btn-next-4");a&&(a.disabled=!t.every(rt))}function lt(e,t){const n=function(){const e={zdrowie:0,moc:0,obrona:0,predkosc:0,splugawienie:0};return[1,3,7].forEach(t=>{const n=Y[t]?.pkt?.mod_drugorzedne;n&&Object.keys(e).forEach(t=>{e[t]+=n[t]||0})}),e}();let i=e.sila+n.zdrowie;if(F>=4&&t.poziom_4&&t.poziom_4.zdrowie){i+=parseInt(t.poziom_4.zdrowie.replace("+",""))}const a={percepcja:e.intelekt,obrona:e.zrecznosc+n.obrona,zdrowie:i,szybkosc_zdrowienia:Math.floor(e.sila/4)||1,moc:n.moc,predkosc:(t.predkosc||0)+n.predkosc,splugawienie:n.splugawienie+en()};"1/4"===t.rozmiar?a.obrona+=4:"1/2"===t.rozmiar?a.obrona+=2:"2"===t.rozmiar&&(a.obrona-=2);const o=document.getElementById("calculated-attributes");if(o){if(document.getElementById("secondary-attributes-display"))document.getElementById("perception-final").textContent=a.percepcja,document.getElementById("defense-final").textContent=a.obrona,document.getElementById("health-final").textContent=a.zdrowie,document.getElementById("healing-rate-final").textContent=a.szybkosc_zdrowienia,document.getElementById("speed-final").textContent=a.predkosc,document.getElementById("power-final").textContent=a.moc,document.getElementById("corruption-final").textContent=a.splugawienie;else{const e=document.createElement("div");e.id="secondary-attributes-display",e.className="secondary-attributes",e.innerHTML=`\n        <h4>Atrybuty drugorzędne:</h4>\n        <div class="attributes-grid">\n          <div class="attribute-display">\n            <label>Percepcja:</label>\n            <span class="attribute-value" id="perception-final">${a.percepcja}</span>\n          </div>\n          <div class="attribute-display">\n            <label>Obrona:</label>\n            <span class="attribute-value" id="defense-final">${a.obrona}</span>\n          </div>\n          <div class="attribute-display">\n            <label>Zdrowie:</label>\n            <span class="attribute-value" id="health-final">${a.zdrowie}</span>\n          </div>\n          <div class="attribute-display">\n            <label>Szybkość Zdrowienia:</label>\n            <span class="attribute-value" id="healing-rate-final">${a.szybkosc_zdrowienia}</span>\n          </div>\n          <div class="attribute-display">\n            <label>Prędkość:</label>\n            <span class="attribute-value" id="speed-final">${a.predkosc}</span>\n          </div>\n          <div class="attribute-display">\n            <label>Moc:</label>\n            <span class="attribute-value" id="power-final">${a.moc}</span>\n          </div>\n          <div class="attribute-display">\n            <label>Splugawienie:</label>\n            <span class="attribute-value" id="corruption-final">${a.splugawienie}</span>\n          </div>\n        </div>\n      `,o.appendChild(e)}}}function dt(e){return e>=0?`+${e}`:`${e}`}function ut(e){if(!e||0===Object.keys(e).length)return null;return Object.entries(e).map(([e,t])=>({nazwa:mt(e),opis:t}))}function pt(e){return(e||[]).map(e=>c[e]||e).join(", ")}function yt(e){if(!e.profesje||0===e.profesje.length)return"brak dodatkowej profesji lub języka";const t=e.profesje.join(", ");return e.bonus_jezyk_lub_profesja?`${t} (albo nowy język - wybór w Kroku 5)`:`${t} (gwarantowana)`}function mt(e){return e.replace(/_/g," ").split(" ").map(e=>e.charAt(0).toUpperCase()+e.slice(1)).join(" ")}function zt(e){e.classList.remove("expanded"),e.classList.add("compact");const t=e.querySelector(".tile-content-collapsed"),n=e.querySelector(".tile-content-expanded-top"),i=e.querySelector(".tile-content-expanded-extra");t&&(t.style.display="block"),n&&(n.style.display="none"),i&&(i.style.display="none")}function wt(){document.querySelectorAll(".origin-tile").forEach(e=>{e.classList.contains("expanded")&&zt(e)})}function kt(e){return 0===e?"Poziom startowy":e<=2?"Nowicjusz":e<=6?"Ekspert":"Mistrz"}function bt(){if(!G)return"";const e=U.find(e=>e.id===G);return e?`\n    <div class="preview-section">\n      <p><strong>Poziom:</strong> ${F} (${kt(F)})</p>\n    </div>\n    ${function(e){const t=ut(e.cechy_specjalne);return`\n    <div class="preview-section">\n      <h5>${e.nazwa}</h5>\n      <p>${e.opis}</p>\n      <p><strong>Rozmiar:</strong> ${e.rozmiar} | <strong>Prędkość bazowa:</strong> ${e.predkosc}</p>\n      <p><strong>Języki:</strong> ${pt(e.jezyki)}</p>\n      <p><strong>Profesja/język z pochodzenia:</strong> ${yt(e)}</p>\n      ${t?`\n        <div class="trait-list">\n          ${t.map(e=>`<div class="trait-item"><strong>${e.nazwa}:</strong> ${e.opis}</div>`).join("")}\n        </div>\n      `:""}\n    </div>\n  `}(e)}\n    ${function(e){const t=parseInt(document.getElementById("strength-final").textContent),n=parseInt(document.getElementById("agility-final").textContent),i=parseInt(document.getElementById("intellect-final").textContent),a=parseInt(document.getElementById("will-final").textContent),o=[],s=document.getElementById("default-attributes");if(s&&!s.checked){const e=document.getElementById("attribute-decreased")?.value,t=document.getElementById("attribute-increased")?.value;e&&t&&o.push(`Zamiana wartości: −1 ${ot[e]}, +1 ${ot[t]}.`)}const r=Fe();if(e.wybor_atrybutu&&r.length>0){const t=e.wybor_atrybutu.wartosc||1;o.push(`Bonus z pochodzenia: ${r.map(e=>`${ot[e]} +${t}`).join(", ")}.`)}return`\n    <div class="preview-section">\n      <h5>Atrybuty Podstawowe</h5>\n      <div class="attributes-grid">\n        <div class="attribute-box"><strong>Siła</strong><br>${t}</div>\n        <div class="attribute-box"><strong>Zręczność</strong><br>${n}</div>\n        <div class="attribute-box"><strong>Intelekt</strong><br>${i}</div>\n        <div class="attribute-box"><strong>Wola</strong><br>${a}</div>\n      </div>\n      ${o.map(e=>`<p class="hint">${e}</p>`).join("")}\n    </div>\n  `}(e)}\n    ${function(){const e=(e,t="0")=>document.getElementById(e)?.textContent??t;return`\n    <div class="preview-section">\n      <h5>Atrybuty Drugorzędne</h5>\n      <div class="attributes-grid">\n        <div class="attribute-box"><strong>Percepcja</strong><br>${e("perception-final")}</div>\n        <div class="attribute-box"><strong>Obrona</strong><br>${e("defense-final")}</div>\n        <div class="attribute-box"><strong>Zdrowie</strong><br>${e("health-final")}</div>\n        <div class="attribute-box"><strong>Szybkość Zdrowienia</strong><br>${e("healing-rate-final","1")}</div>\n        <div class="attribute-box"><strong>Prędkość</strong><br>${e("speed-final")}</div>\n        <div class="attribute-box"><strong>Moc</strong><br>${e("power-final")}</div>\n        <div class="attribute-box"><strong>Splugawienie</strong><br>${e("corruption-final")}</div>\n      </div>\n    </div>\n  `}()}\n    ${function(e){if(F<4||!e.poziom_4)return"";const t=document.querySelector(`input[name="origin-option-${e.id}"]:checked`)?.value,n=parseInt((e.poziom_4.zdrowie||"+0").replace("+",""))||0;return`\n    <div class="preview-section">\n      <h5>Korzyść z Pochodzenia (Poziom 4)</h5>\n      ${n>0?`<p><strong>Zdrowie:</strong> +${n}</p>`:""}\n      <p><strong>Wybrana opcja:</strong> ${t||"nie wybrano"}</p>\n    </div>\n  `}(e)}\n    ${function(){const e={1:"Nowicjusz",3:"Ekspert",7:"Mistrz"},t=[1,3,7].map(t=>{const n=Y[t];if(!n)return"";const i=n.pkt||{},a=(i.talenty||[]).map(e=>`<div class="trait-item"><strong>${e.nazwa}:</strong> ${e.opis}</div>`).join(""),o=(i.zaklecia||[]).map(e=>`<div class="trait-item"><strong>Magia:</strong> ${e.opis}</div>`).join("");return`\n      <div class="path-benefit-item">\n        <h6>${e[t]}: ${n.sciezkaNazwa||n.pathId} (poziom ${t})</h6>\n        ${a||o?`<div class="trait-list">${a}${o}</div>`:""}\n      </div>\n    `}).filter(Boolean);return 0===t.length?"":`\n    <div class="preview-section">\n      <h5>Wybrane Ścieżki</h5>\n      ${t.join("")}\n    </div>\n  `}()}\n    ${function(){const e=X.map(e=>{const t=se.find(t=>t.id===e);return t?t.nazwa:e}),t=ne.map(e=>{const t=re.find(t=>t.id===e);return t?t.nazwa:e}),n=new Set(Ot()),i=qt().map(e=>{const t=c[e]||e;return n.has(e)?`${t} (czytanie/pisanie)`:t});if(0===e.length&&0===t.length&&0===i.length)return"";return`\n    <div class="preview-section">\n      <h5>Profesje, Języki i Kurioza</h5>\n      ${e.length>0?`<p><strong>Profesje:</strong> ${e.join(", ")}</p>`:""}\n      ${i.length>0?`<p><strong>Języki:</strong> ${i.join(", ")}</p>`:""}\n      ${t.length>0?`<p><strong>Kurioza:</strong> ${t.join(", ")}</p>`:""}\n    </div>\n  `}()}\n    ${function(){const e=Yt();if(0===e.length)return"";const{resolutions:t,knownTraditions:n}=u(e,ie),i=[...n].map(e=>b[e]?.nazwa||e).sort((e,t)=>e.localeCompare(t,"pl")),a=t.flatMap(e=>"zaklecie"===e.mode&&e.spellId?[e.spellId]:"tradycja"===e.mode&&e.darmowyZaklecieId?[e.darmowyZaklecieId]:[]).map(e=>f.find(t=>t.id===e)).filter(Boolean);return 0===i.length&&0===a.length?"":`\n    <div class="preview-section">\n      <h5>Magia - Znane Tradycje i Zaklęcia</h5>\n      <div class="trait-list">${i.length?`<div class="trait-item"><strong>Znane tradycje:</strong> ${i.join(", ")}</div>`:""}${a.map(e=>`<div class="trait-item"><strong>${e.nazwa}</strong> ${Ht(e.zrodlo)} <em>(${e.tradycjaNazwa}, krąg ${e.krag}, ${"atak"===e.kategoria?"atak":"użytkowe"})</em>: ${e.opis}</div>`).join("")}</div>\n    </div>\n  `}()}\n    ${function(){const e=bn();if(!e)return"";const t=[...e.ownedStarting,...e.purchasedEntries];if(0===t.length)return"";const n=t.map(e=>{const t=e.zwojZaklecie?`Zwój (${b[e.zwojZaklecie.tradycjaId]?.nazwa||e.zwojZaklecie.tradycjaId}${e.zwojZaklecie.spellId?`: ${f.find(t=>t.id===e.zwojZaklecie.spellId)?.nazwa||""}`:""})`:e.itemId?B(e.itemId)?.nazwa||e.itemId:e.tekst,n=e.itemId?B(e.itemId):null,i=e.ilosc>1?` ×${e.ilosc}`:"",a=n?C(n):null;return`<div class="trait-item">${t}${i}${n?` ${Ht(n.zrodlo)}`:""}${a?`<br><small>${a}</small>`:""}</div>`}).join("");return`\n    <div class="preview-section">\n      <h5>Ekwipunek (Zamożność: ${e.wealthentry.nazwa})</h5>\n      <div class="trait-list">${n}</div>\n      <p><strong>Gotówka:</strong> ${x(e.cashCopperbits)}</p>\n    </div>\n  `}()}\n    ${F<=0?"":`\n    <div class="preview-section">\n      <h5>Zasoby</h5>\n      <p><strong>Srebrniki:</strong> ${null!=ce?ce:"nie wylosowano"} | <strong>Kurioza:</strong> ${le}</p>\n    </div>\n  `}\n    ${function(e){if(!V[e]||0===Object.keys(V[e]).length)return"";const t=U.find(t=>t.id===e);if(!t||!t.tabele)return"";let n='<div class="preview-section">';return n+=`<h5>${H("dice")} Wyniki Tabel Losowych</h5>`,Object.entries(V[e]).forEach(([e,i])=>{const a=t.tabele[e]?.nazwa||function(e){const t=e.replace(/_/g," ");return t.charAt(0).toUpperCase()+t.slice(1)}(e),o="wybór"===i.typ?H("target"):H("dice"),s="wybór"===i.typ?"Wybór":"Losowanie";n+='<div class="table-result-item">',n+='<div class="table-result-header">',n+=`<span class="table-result-name">${a}</span>`,n+=`<span class="table-result-type">${o} ${s}</span>`,n+="</div>",n+='<div class="table-result-content">',n+=`<div class="table-result-roll">Rzut: ${i.rzut}</div>`,n+=`<div class="table-result-outcome">${i.wynik}</div>`,i.efekt&&(n+=`<div class="table-result-effect"><strong>Efekt mechaniczny:</strong> ${i.efekt}</div>`),n+="</div>",n+="</div>"}),n+="</div>",n}(e.id)}\n  `:""}function gt(){if(!G)return;!function(){const e=document.getElementById("missing-items-warning");if(!e)return;const t=ht();if(0===t.length)return void(e.innerHTML="");e.innerHTML=`\n    <div class="missing-items-warning">\n      <h4>${H("warning")} Możliwe przeoczenia</h4>\n      <ul>${t.map(e=>`<li>${e}</li>`).join("")}</ul>\n    </div>\n  `}(),We();const e=document.getElementById("character-preview");if(!e)return;const t=ke?`Podgląd Postaci: ${ke}`:"Podgląd Postaci";e.innerHTML=`<h4>${H("scroll")} ${t}</h4>${bt()}`}function ht(){if(!G)return[];const e=U.find(e=>e.id===G);if(!e)return[];const t=[];F>=1&&!Q.nowicjusz&&t.push("Nie wybrano ścieżki nowicjusza (Krok 3)."),F>=3&&!Q.ekspert&&t.push("Nie wybrano ścieżki eksperckiej (Krok 3)."),F>=7&&!Q.mistrz&&t.push("Nie wybrano ścieżki mistrzowskiej (Krok 3)."),e.wybor_atrybutu&&Fe().length<e.wybor_atrybutu.ilosc&&t.push(`Nie wybrano bonusu do atrybutu z pochodzenia ${e.nazwa} (Krok 2).`);i({pathNoviceId:Q.nowicjusz||null,pathExpertId:Q.ekspert||null,pathMasterId:Q.mistrz||null}).every(rt)||t.push("Nie rozdano wszystkich punktów zwiększenia atrybutów głównych (Krok 4)."),F>=4&&e.poziom_4?.opcje?.length>0&&!Qt()&&t.push('Nie wybrano korzyści z pochodzenia na poziomie 4 (Krok 2, sekcja "Korzyści z Pochodzenia").'),F>0&&null===ce&&t.push('Nie wylosowano srebrników za poziom (Krok 2, sekcja "Zasoby na wyższym poziomie").');const{slots:n}=At();n.every(e=>Rt(e))||t.push("Nie wszystkie sloty profesji/języków są wypełnione (Krok 5).");const{kurioza:a}=Mt();ne.length<a&&t.push(`Nie wybrano wszystkich kuriozów (${ne.length}/${a}) (Krok 5).`);const o=Yt();if(o.length>0){const{resolutions:e}=u(o,ie);e.some(e=>!e.complete)&&t.push("Postać ma nierozwiązane wybory magii - tradycje lub zaklęcia (Krok 6).")}if(ue){M(ue).some(e=>{const t=ye[e.id];return"wybor_przedmiotu"===e.rodzaj?!t?.itemId:!t||("zwoj_zaklecie"===t.typ?!t.spellId:"przedmiot"===t.typ&&!t.itemId)})&&t.push("Nie dokonano wszystkich wyborów wyposażenia startowego (Krok 7).")}else t.push("Nie wybrano Zamożności - postać nie ma wyposażenia startowego (Krok 7).");return t}async function ft(e){if(!G){const e=document.getElementById("level-benefits-section");return void(e&&(e.style.display="none"))}if(0!==e)try{const n={pochodzenie:G,sciezka_nowicjusza:Q.nowicjusz||null,sciezka_ekspercka:Q.ekspert||null,sciezka_mistrzowska:Q.mistrz||null},i=[];for(let a=1;a<=e;a++)i.push(t(a,n));!function(e,t){const n=document.getElementById("level-benefits-section"),i=document.getElementById("selected-level-name"),a=document.getElementById("level-benefits-content");if(!n||!a)return;n.style.display="block",i&&(i.textContent=t);a.innerHTML=e.map(jt).join("")}(i,e)}catch(t){console.error("Błąd ładowania korzyści:",t),function(e){const t=document.getElementById("level-benefits-section"),n=document.getElementById("selected-level-name");t.style.display="block";const i={1:"Nowicjusz",2:"Nowicjusz",3:"Ekspert",4:"Ekspert",5:"Ekspert",6:"Ekspert",7:"Mistrz",8:"Mistrz",9:"Mistrz",10:"Mistrz"}[e]||"Nieznany poziom",a=4===e?"Pochodzenie":"Brak ścieżki";n.textContent=`${i} (${a})`;["secondary-attributes-growth","primary-attributes-choice","talents-section","magic-section","languages-professions-section"].forEach(e=>{const t=document.getElementById(e);t&&(t.style.display="none")});const o=document.getElementById("level-benefits-content");o&&(o.innerHTML=`\n      <div class="benefit-category">\n        <h5>Podstawowe informacje</h5>\n        <p>Poziom ${e} - ${i}</p>\n        <p><em>Szczegółowe korzyści będą dostępne po wyborze pochodzenia i ścieżek.</em></p>\n      </div>\n    `)}(e)}else!function(){const e=document.getElementById("level-benefits-section"),t=document.getElementById("selected-level-name"),n=document.getElementById("level-benefits-content");if(!e||!n)return;e.style.display="block",t&&(t.textContent="Poziom startowy (Pochodzenie)");n.innerHTML='\n    <div class="benefit-category">\n      <h5>Postać startowa</h5>\n      <p>Na poziomie 0 postać ma wyłącznie atrybuty, języki i cechy wynikające z pochodzenia - nie wybiera jeszcze żadnej ścieżki.</p>\n      <p class="hint">Pierwszą ścieżkę (nowicjusza) wybierzesz po podniesieniu poziomu do 1.</p>\n    </div>\n  '}()}function jt(e){const t=e.nazwa_poziomu||"Nieznany poziom",n=e.nazwa_sciezki||("pochodzenie"===e.zrodlo_korzysci?"Pochodzenie":"Brak ścieżki");return`\n    <div class="path-benefit-item">\n      <h6>Poziom ${e.poziom} - ${t} (${n})</h6>\n      ${e.opis_poziomu?`<p class="hint">${e.opis_poziomu}</p>`:""}\n      ${function(e,t={}){const n=(e,t)=>`\n    <div class="benefit-category">\n      <h5>${e}</h5>\n      ${t}\n    </div>\n  `,i=[],a=[["Zdrowie",e.zdrowie],["Moc",e.moc],["Obrona",e.obrona],["Percepcja",e.percepcja],["Prędkość",e.predkosc],["Splugawienie",e.splugawienie]].filter(([,e])=>e).map(([e,t])=>`${e} ${t}`);a.length&&i.push(n("Atrybuty drugorzędne",`<p>${a.join(" · ")}</p>`));const o=e.atrybuty_glowne;if(o&&"wybor"===o.typ){const e={sila:"Siła",zrecznosc:"Zręczność",intelekt:"Intelekt",wola:"Wola"},t=(o.dostepne||[]).map(t=>e[t]||t).join(", ");i.push(n("Atrybuty główne",`\n      <p>Do rozdania: <strong>${o.ilosc}</strong> pkt (maksymalnie ${o.wartosc} na jeden atrybut).</p>\n      ${t?`<p class="hint">Do wyboru: ${t}.</p>`:""}\n      <p class="hint">Punkty rozdasz w Kroku 4 (Rozwój Atrybutów).</p>\n    `))}if(e.talenty&&e.talenty.length>0){const t=e.talenty.map(e=>`<li><strong>${e}</strong> - ${K(e)}</li>`).join("");i.push(n("Talenty",`<ul>${t}</ul>`))}e.magia&&i.push(n("Magia",`\n      <p>${k(e.magia)}</p>\n      <p class="hint">Tradycje i zaklęcia wybierzesz w Kroku 6 (Magia).</p>\n    `));e.jezyki_profesje&&i.push(n("Języki i profesje",`\n      <p>${e.jezyki_profesje.opis}</p>\n      <p class="hint">Sloty rozdasz w Kroku 5 (Profesje i Kurioza).</p>\n    `));if(e.opcje&&e.opcje.length>0){const t=e.opcje.map(e=>`<li>${e}</li>`).join("");i.push(n("Do wyboru",`\n      <ul>${t}</ul>\n      <p class="hint">Wyboru dokonasz w sekcji "Korzyści z Pochodzenia" poniżej.</p>\n    `))}if(i.length)return i.join("");const s={sciezka_nowicjusza:"ścieżki nowicjusza",sciezka_ekspercka:"ścieżki eksperckiej",sciezka_mistrzowska:"ścieżki mistrzowskiej"}[t.zrodlo_korzysci];return s?t.nazwa_sciezki?`<p class="hint">Dla ${s} <strong>${t.nazwa_sciezki}</strong> nie mamy jeszcze zapisanych korzyści na tym poziomie.</p>`:`<p class="hint">Korzyść ze ${s}</p>`:'<p class="hint">Ten poziom nie przyznaje dodatkowych korzyści.</p>'}(e.korzyści||{},e)}\n    </div>\n  `}const vt=2;function $t(){if(!G)return null;const e=U.find(e=>e.id===G);if(!e)return null;const t=(e,t="0")=>document.getElementById(e)?.textContent??t,i=Yt(),{resolutions:a,knownTraditions:o}=u(i,ie),s=a.flatMap(e=>"zaklecie"===e.mode&&e.spellId?[e.spellId]:"tradycja"===e.mode&&e.darmowyZaklecieId?[e.darmowyZaklecieId]:[]).map(e=>f.find(t=>t.id===e)).filter(Boolean),r=new Set(Ot()),l=qt().map(e=>{const t=c[e]||e;return r.has(e)?`${t} (czytanie/pisanie)`:t}),d=(e,t)=>{if(!t)return null;const i=n(e);return i.find(e=>e.id===t)?.nazwa||t};return{wersjaEksportu:vt,utworzono:(new Date).toISOString(),wybory:{imie:ke||"",pochodzenie:G,bonusoweAtrybutyPochodzenia:Fe(),opcjaPoziom4:Qt(),wynikiTabelPochodzenia:JSON.parse(JSON.stringify(V[G]||{})),poziom:F,atrybutyGlowne:{domyslne:document.getElementById("default-attributes")?.checked??!0,zmniejszony:document.getElementById("attribute-decreased")?.value||"",zwiekszony:document.getElementById("attribute-increased")?.value||""},sciezki:{...Q},atrybutySloty:JSON.parse(JSON.stringify(te)),profesjeJezykiSloty:JSON.parse(JSON.stringify(ee)),kurioza:[...ne],magia:{wybory:JSON.parse(JSON.stringify(ie)),ryzykoWyniki:JSON.parse(JSON.stringify(ae))},srebrniki:ce,ekwipunek:{zamoznoscId:ue,zamoznoscWynik:de,gotowkaPoczatkowaWynik:pe,wybory:JSON.parse(JSON.stringify(ye)),sprzedane:[...me],zakupione:JSON.parse(JSON.stringify(ze))}},podsumowanie:{imie:ke||null,pochodzenie:e.nazwa,poziom:F,poziomNazwa:kt(F),atrybutyGlowne:{sila:t("strength-final"),zrecznosc:t("agility-final"),intelekt:t("intellect-final"),wola:t("will-final")},attributesSecondary:{percepcja:t("perception-final"),obrona:t("defense-final"),zdrowie:t("health-final"),szybkoscZdrowienia:t("healing-rate-final","1"),predkosc:t("speed-final"),moc:t("power-final"),splugawienie:t("corruption-final")},sciezki:{nowicjusz:d(1,Q.nowicjusz),ekspert:d(3,Q.ekspert),mistrz:d(7,Q.mistrz)},profesje:X.map(e=>se.find(t=>t.id===e)?.nazwa||e),jezyki:l,kurioza:ne.map(e=>re.find(t=>t.id===e)?.nazwa||e),tradycje:[...o].map(e=>b[e]?.nazwa||e).sort((e,t)=>e.localeCompare(t,"pl")),zaklecia:s.map(e=>e.nazwa),srebrniki:ce,ekwipunek:(()=>{const e=bn();if(!e)return null;const t=[...e.ownedStarting,...e.purchasedEntries].map(e=>{if(e.zwojZaklecie){const t=e.zwojZaklecie.spellId?f.find(t=>t.id===e.zwojZaklecie.spellId):null;return`Zwój (${b[e.zwojZaklecie.tradycjaId]?.nazwa||e.zwojZaklecie.tradycjaId}${t?`: ${t.nazwa}`:""})`}const t=e.itemId?B(e.itemId)?.nazwa||e.itemId:e.tekst;return e.ilosc>1?`${t} ×${e.ilosc}`:t});return{zamoznosc:e.wealthentry.nazwa,przedmioty:t,gotowka:x(e.cashCopperbits)}})()}}}function Et(e){const t=document.getElementById("error");t.textContent=e,t.style.display="block"}function It(e,t,n=[]){const i=document.getElementById("import-feedback");if(!i)return;i.className=`import-feedback ${e}`;const a=n.length?`<ul>${n.map(e=>`<li>${e}</li>`).join("")}</ul>`:"";i.innerHTML=`${t}${a}`,i.style.display="block"}async function Bt(e){const t=e.wybory;ke=t.imie||"";const n=document.getElementById("character-name");n&&(n.value=ke),_e(t.pochodzenie,{autoScroll:!1}),V[t.pochodzenie]=JSON.parse(JSON.stringify(t.wynikiTabelPochodzenia||{})),function(e){const t=V[e]||{};Object.entries(t).forEach(([t,n])=>{const i=document.getElementById(`roll-result-${e}-${t}`);if(!i)return;const a="wybór"===n.typ?`${H("target")} Wybór`:`${H("dice")} Rzut`,o=n.efekt?`<br><strong>Efekt mechaniczny:</strong> ${n.efekt}`:"";i.style.display="block",i.innerHTML=`\n      <div class="roll-result-content">\n        <div class="roll-dice">${a}: ${n.rzut}</div>\n        <div class="roll-outcome">${n.wynik}</div>\n        ${o}\n      </div>\n    `})}(t.pochodzenie);const i=document.querySelectorAll(".origin-attr-choice-select");(t.bonusoweAtrybutyPochodzenia||[]).forEach((e,t)=>{i[t]&&e&&(i[t].value=e,i[t].dispatchEvent(new Event("change",{bubbles:!0})))}),F=t.poziom;const a=document.querySelector(`input[name="poziom"][value="${t.poziom}"]`);if(a&&(a.checked=!0),xe(),await Se(),Le(F),Ne(F),Ae(F),ve(),await Ee(1),await Ee(3),await Ee(7),await ft(F),t.opcjaPoziom4){const e=Array.from(document.querySelectorAll(`input[name="origin-option-${t.pochodzenie}"]`)).find(e=>e.value===t.opcjaPoziom4);e&&(e.checked=!0,e.dispatchEvent(new Event("change",{bubbles:!0})))}const o=document.getElementById("default-attributes");o.checked=t.atrybutyGlowne?.domyslne??!0;const s=document.getElementById("custom-attributes");s&&(s.style.display=o.checked?"none":"block"),o.checked||(document.getElementById("attribute-decreased").value=t.atrybutyGlowne?.zmniejszony||"",document.getElementById("attribute-increased").value=t.atrybutyGlowne?.zwiekszony||""),it(),[[1,t.sciezki?.nowicjusz],[3,t.sciezki?.ekspert],[7,t.sciezki?.mistrz]].forEach(([e,t])=>{t&&document.querySelector(`button[data-path-id="${t}"][data-pick-level="${e}"]`)?.click()}),te=JSON.parse(JSON.stringify(t.atrybutySloty||{})),ct(),ee=JSON.parse(JSON.stringify(t.profesjeJezykiSloty||{})),Zt(),ne=[...t.kurioza||[]],Jt(),Vt(),ce="number"==typeof t.srebrniki?t.srebrniki:null;const r=document.getElementById("wealth-summary");r&&null!=ce&&(r.textContent=`Srebrniki: ${ce} (zaimportowano)`),ie=JSON.parse(JSON.stringify(t.magia?.wybory||{})),ae=JSON.parse(JSON.stringify(t.magia?.ryzykoWyniki||{})),Xt(),ue=t.ekwipunek?.zamoznoscId||null,de="number"==typeof t.ekwipunek?.zamoznoscWynik?t.ekwipunek.zamoznoscWynik:null,pe="number"==typeof t.ekwipunek?.gotowkaPoczatkowaWynik?t.ekwipunek.gotowkaPoczatkowaWynik:null,ye=JSON.parse(JSON.stringify(t.ekwipunek?.wybory||{})),me=[...t.ekwipunek?.sprzedane||[]],ze=JSON.parse(JSON.stringify(t.ekwipunek?.zakupione||[])),mn(),gt()}function St(){const e=document.getElementById("help-lightbox");e&&(e.style.display="flex",document.body.style.overflow="hidden",xt("start"),setTimeout(()=>{const t=e.querySelector(".help-close");t&&t.focus()},100))}function Lt(){const e=document.getElementById("help-lightbox");if(!e)return;e.style.display="none",document.body.style.overflow="auto";const t=document.getElementById("btn-help");t&&t.focus()}function xt(e){const t=document.getElementById("help-content");if(!t)return;if("undefined"==typeof getStartContent)return void(t.innerHTML="<p>Ładowanie pomocy...</p>");const n={start:getStartContent(),glossary:getGlossaryContent(),faq:getFAQContent(),shortcuts:getShortcutsContent()};t.innerHTML=n[e]||n.start,t.scrollTop=0}async function Nt(e,t){try{const n=document.getElementById(`roll-result-${e}-${t}`);n&&(n.style.display="block",n.innerHTML=`<div class="loading">${H("dice")} Losowanie...</div>`);const i=g(e,t);if(V[e]||(V[e]={}),V[e][t]={rzut:i.rzut,wynik:i.wynik,efekt:i.efekt,typ:"losowanie"},n){const e=i.efekt?`<br><strong>Efekt mechaniczny:</strong> ${i.efekt}`:"";n.innerHTML=`\n        <div class="roll-result-content">\n          <div class="roll-dice">${H("dice")} Rzut: ${i.rzut}</div>\n          <div class="roll-outcome">${i.wynik}</div>\n          ${e}\n        </div>\n      `}}catch(n){console.error("Błąd losowania z tabeli:",n);const i=document.getElementById(`roll-result-${e}-${t}`);i&&(i.innerHTML=`<div class="error">${H("x")} Błąd: ${n.message}</div>`)}}function Mt(){let e=0;return G&&(e+=1),F>=1&&(e+=1),F>=3&&(e+=1),F>=7&&(e+=1),{kurioza:e}}function At(){const e=U.find(e=>e.id===G)||null;return l({pochodzenie:e,pathNoviceId:Q.nowicjusz||null,pathExpertId:Q.ekspert||null,pathMasterId:Q.mistrz||null})}const Ct={naukowe:"Naukowe",pospolite:"Pospolite",przestepcze:"Przestępcze",wojenne:"Wojenne",koczownicze:"Koczownicze",religijne:"Religijne"};function Pt(e){const t=e.kategorie.includes("dowolna"),n=new Set(Object.entries(ee).filter(([t,n])=>t!==e.id&&n&&"profesja"===n.mode&&n.profesjaId).map(([,e])=>e.profesjaId));return se.filter(i=>{if(n.has(i.id))return!1;if(t)return!0;const a=Object.keys(Ct).find(e=>Ct[e]===i.kategoria);return e.kategorie.includes(a)})}function _t(){const e=U.find(e=>e.id===G),t=[];e&&e.jezyki.forEach(n=>t.push({jezyk:n,source:`Pochodzenie: ${e.nazwa}`}));const{slots:n}=At();return n.forEach(e=>{const n=ee[e.id];n&&"jezyk_nowy"===n.mode&&n.jezyk&&!t.some(e=>e.jezyk===n.jezyk)&&t.push({jezyk:n.jezyk,source:e.source})}),t}function qt(){return _t().map(e=>e.jezyk)}function Tt(){const{autoScriptAllKnown:e,autoScriptAllKnownSource:t,autoScriptWithOrigin:n,autoScriptWithOriginSource:i,slots:a}=At();if(e)return _t().map(e=>({jezyk:e.jezyk,source:t}));const o=n.map(e=>({jezyk:e,source:i}));return a.forEach(e=>{const t=ee[e.id];t&&"jezyk_pismo"===t.mode&&t.jezyk&&!o.some(e=>e.jezyk===t.jezyk)&&o.push({jezyk:t.jezyk,source:e.source})}),o}function Ot(){return Tt().map(e=>e.jezyk)}function Zt(){const e=document.getElementById("professions-slots");if(!e)return;const{slots:t}=At();e.innerHTML=t.map(e=>function(e){const t=ee[e.id]||{},n=t.mode||(1===e.opcje.length?e.opcje[0]:null),i={profesja:"Profesja",jezyk_nowy:"Nowy język",jezyk_pismo:"Pismo w znanym języku"},a=e.opcje.length>1?`\n    <div class="slot-mode-toggle" role="radiogroup">\n      ${e.opcje.map(t=>`\n        <label class="slot-mode-option">\n          <input type="radio" name="mode-${e.id}" value="${t}" ${n===t?"checked":""}>\n          ${i[t]}\n        </label>\n      `).join("")}\n    </div>\n  `:"";let o="";if("profesja"===n){const n=Pt(e),i={};n.forEach(e=>{(i[e.kategoria]=i[e.kategoria]||[]).push(e)}),o=`\n      <select class="slot-value-select" data-slot-id="${e.id}" data-slot-field="profesjaId">\n        <option value="">-- wybierz profesję --</option>\n        ${Object.entries(i).map(([e,n])=>`\n          <optgroup label="${e}">\n            ${n.map(e=>`<option value="${e.id}" ${t.profesjaId===e.id?"selected":""}>${e.nazwa}</option>`).join("")}\n          </optgroup>\n        `).join("")}\n      </select>\n    `}else if("jezyk_nowy"===n){const n=new Set(qt()),i=Object.entries(c).filter(([e])=>!n.has(e)||e===t.jezyk);o=`\n      <select class="slot-value-select" data-slot-id="${e.id}" data-slot-field="jezyk">\n        <option value="">-- wybierz język --</option>\n        ${i.map(([e,n])=>`<option value="${e}" ${t.jezyk===e?"selected":""}>${n}</option>`).join("")}\n      </select>\n    `}else if("jezyk_pismo"===n){const n=qt(),i=new Set(Ot()),a=n.filter(e=>!i.has(e)||e===t.jezyk);o=`\n      <select class="slot-value-select" data-slot-id="${e.id}" data-slot-field="jezyk">\n        <option value="">-- wybierz język --</option>\n        ${a.map(e=>`<option value="${e}" ${t.jezyk===e?"selected":""}>${c[e]||e}</option>`).join("")}\n      </select>\n    `}return`\n    <div class="slot-card" data-slot-id="${e.id}">\n      <div class="slot-source">\n        ${e.source}\n        <button type="button" class="section-reset-btn" data-reset-jp-slot="${e.id}" title="Wyczyść wybór dla tego slotu">Wyczyść</button>\n      </div>\n      ${e.opis?`<div class="slot-description">${e.opis}</div>`:""}\n      ${a}\n      ${o}\n    </div>\n  `}(e)).join(""),e.querySelectorAll('input[type="radio"][name^="mode-"]').forEach(e=>{e.addEventListener("change",e=>{Wt(e.target.closest(".slot-card").dataset.slotId,{mode:e.target.value,profesjaId:null,jezyk:null})})}),e.querySelectorAll(".slot-value-select").forEach(e=>{e.addEventListener("change",e=>{const{slotId:t,slotField:n}=e.target.dataset;Wt(t,{[n]:e.target.value||null})})}),e.querySelectorAll("[data-reset-jp-slot]").forEach(e=>{e.addEventListener("click",()=>{delete ee[e.dataset.resetJpSlot],Zt()})}),X=Object.values(ee).filter(e=>e&&"profesja"===e.mode&&e.profesjaId).map(e=>e.profesjaId),function(){const e=document.getElementById("professions-list");if(!e)return;const{slots:t}=At();e.innerHTML=t.map(e=>{const t=ee[e.id];if(!t||"profesja"!==t.mode||!t.profesjaId)return"";const n=se.find(e=>e.id===t.profesjaId);return n?`\n      <div class="selected-item">\n        <button class="remove-btn" data-remove-profession-id="${n.id}">×</button>\n        <span>${n.nazwa}</span>\n        ${Ht(e.source)}\n      </div>\n    `:""}).join(""),e.querySelectorAll("[data-remove-profession-id]").forEach(e=>{e.addEventListener("click",()=>function(e){const t=Object.keys(ee).find(t=>{const n=ee[t];return n&&"profesja"===n.mode&&n.profesjaId===e});t&&(ee[t]={...ee[t],profesjaId:null});Zt()}(e.dataset.removeProfessionId))})}(),function(){const e=document.getElementById("languages-known-summary"),t=document.getElementById("language-slots");if(!e||!t)return;const{autoScriptAllKnown:n,autoScriptAllKnownSource:i}=At(),a=_t(),o=new Map(Tt().map(e=>[e.jezyk,e.source]));e.innerHTML=a.length?`Znane języki: <strong>${a.map(e=>c[e.jezyk]||e.jezyk).join(", ")}</strong>`:"Brak wybranego pochodzenia.",t.innerHTML=a.map(({jezyk:e,source:t})=>{const n=o.get(e);return`\n      <div class="language-chip">\n        <div class="language-chip-row">\n          <span class="language-name">${c[e]||e}</span>\n          ${Ht(t)}\n        </div>\n        <div class="language-chip-row">\n          <span class="language-flags">mówiony${n?" • pismo":""}</span>\n          ${n?Ht(n):""}\n        </div>\n      </div>\n    `}).join("")+(n?`<p class="hint">Magik automatycznie czyta i pisze we wszystkich znanych sobie językach ${Ht(i)}.</p>`:"")}(),Vt()}function Wt(e,t){ee[e]={...ee[e],...t},Zt()}const Kt={PG:"Podręcznik Główny",SUP:"Suplement Władcy Demonów",NW:"Niepewna Wiara",RA:"Rozkoszna Agonia",SP:"Straszliwe Piękno",GP:"Grobowce Pustkowia",GWP:"Głód w Pustce",CS:"Chwalebna Śmierć"};function Ht(e){if(!e)return"";return`<span class="source-tag" title="${Kt[e]||e}">(${e})</span>`}function Jt(){const e=document.getElementById("curios-grid"),t=document.getElementById("curios-count"),n=document.getElementById("curios-list");if(!e||!t||!n)return;const{kurioza:i}=Mt();t.textContent=i,e.innerHTML="";const a={};re.forEach(e=>{a[e.kategoria]||(a[e.kategoria]=[]),a[e.kategoria].push(e)}),Object.entries(a).forEach(([t,n])=>{n.forEach(t=>{const n=function(e){const t=ne.includes(e.id),n=document.createElement("div");return n.className="curio-tile "+(t?"selected":""),n.dataset.curioId=e.id,n.innerHTML=`\n    <div class="tile-category">${e.kategoria||""}</div>\n    <div class="tile-title">${e.nazwa||""}</div>\n    ${e.opis?`<div class="tile-description">${e.opis}</div>`:""}\n  `,n.addEventListener("click",()=>function(e){const{kurioza:t}=Mt();ne.includes(e)?ne=ne.filter(t=>t!==e):ne.length<t&&ne.push(e);Jt(),Vt()}(e.id)),n}(t);e.appendChild(n)})}),function(){const e=document.getElementById("curios-list");if(!e)return;e.innerHTML=ne.map(e=>{const t=re.find(t=>t.id===e);return t?`\n      <div class="selected-item">\n        <button class="remove-btn" data-remove-curio-id="${e}">×</button>\n        <span>${t.nazwa}</span>\n      </div>\n    `:""}).join(""),e.querySelectorAll("[data-remove-curio-id]").forEach(e=>{e.addEventListener("click",()=>{return t=e.dataset.removeCurioId,ne=ne.filter(e=>e!==t),Jt(),void Vt();var t})})}()}function Rt(e){const t=ee[e.id],n=t?.mode||(1===e.opcje.length?e.opcje[0]:null);return!!n&&("profesja"===n?!!t?.profesjaId:!!t?.jezyk)}function Dt(e,t){if("profesja"===t)return Pt(e).map(e=>e.id);if("jezyk_nowy"===t){const e=new Set(qt());return Object.keys(c).filter(t=>!e.has(t))}if("jezyk_pismo"===t){const e=new Set(Ot());return qt().filter(t=>!e.has(t))}return[]}function Gt(e){const t=[...e];for(let e=t.length-1;e>0;e--){const n=Math.floor(Math.random()*(e+1));[t[e],t[n]]=[t[n],t[e]]}return t}function Ft(){const{slots:e}=At();for(const t of e){if(Rt(t))continue;const e=ee[t.id]?.mode,n=e?[e]:Gt(t.opcje);for(const e of n){const n=Dt(t,e);if(0===n.length)continue;const i=n[Math.floor(Math.random()*n.length)];ee[t.id]="profesja"===e?{mode:e,profesjaId:i}:{mode:e,jezyk:i};break}}Zt()}function Ut(){const{kurioza:e}=Mt(),t=Math.max(0,e-ne.length);if(0===t)return;const n=re.filter(e=>!ne.includes(e.id));for(let e=0;e<t&&n.length>0;e++){const e=Math.floor(Math.random()*n.length),t=n.splice(e,1)[0];ne.push(t.id)}Jt(),Vt()}function Vt(){const e=document.getElementById("btn-next-5");if(!e)return;const{kurioza:t}=Mt(),{slots:n}=At(),i=n.every(e=>Rt(e)),a=ne.length>=t;e.disabled=!(i&&a)}function Qt(){return G&&document.querySelector(`input[name="origin-option-${G}"]:checked`)?.value||null}function Yt(){if(!G)return[];const e=U.find(e=>e.id===G);return e?d({pochodzenie:e,wybranaOpcjaPoziom4:Qt(),pathNoviceId:Q.nowicjusz||null,pathExpertId:Q.ekspert||null,pathMasterId:Q.mistrz||null,selectedLevel:F}):[]}function Xt(){const e=Yt(),t=document.getElementById("magic-slots-container"),n=document.getElementById("known-traditions-hint");if(!t)return;if(0===e.length)return t.innerHTML='<p class="hint">Żadna z dotychczas wybranych ścieżek (ani pochodzenie) nie przyznaje magii na obecnym poziomie postaci - ten krok jest w pełni opcjonalny.</p>',void(n&&(n.innerHTML=""));const{resolutions:i,knownTraditions:a}=u(e,ie);if(function(e){const t=new Set;e.forEach(e=>{"tradycja"===e.mode&&e.tradycjaId&&z(e.tradycjaId)&&t.add(e.tradycjaId)}),oe=t}(i),n){const e=[...a].map(e=>b[e]?.nazwa||e).sort((e,t)=>e.localeCompare(t,"pl"));n.innerHTML=e.length?`<strong>Znane tradycje:</strong> ${e.join(", ")}`:"Jeszcze nie poznano żadnej tradycji."}t.innerHTML=i.map(e=>function(e){const{atom:t,mode:n,tradycjaId:i,spellId:a,darmowyZaklecieId:o,complete:s,blackMagicRisk:r}=e,c="tradycja"===n&&z(i),l=["magic-slot-card"];s&&l.push("complete");(c||r)&&l.push("black-magic");let d="";if("wymuszona_tradycja"===t.rodzaj)d=tn(t.id,t.kategoria,i),i&&(d+=an(t.id,i,o));else if("wybor_fixed"===t.rodzaj){const e=b[t.tradycjaNazwa]?.nazwa||t.tradycjaNazwa;"tradycja"===n?(d=`<p class="magic-slot-status ok">${H("book")} Tradycja ${e} nie jest jeszcze znana - zostanie automatycznie poznana.</p>`,d+=an(t.id,t.tradycjaNazwa,o)):d=nn(t.id,a,t.tradycjaNazwa)}else"wybor"===t.rodzaj?(d=`\n      <div class="magic-slot-mode-toggle">\n        <button type="button" class="magic-mode-option magic-mode-option--tradition ${"tradycja"===n?"active":""}" data-magic-mode="${t.id}" data-mode-value="tradycja">\n          ${H("book")}\n          <span class="magic-mode-option-text"><strong>Nowa tradycja</strong><small>poznaj całą szkołę magii</small></span>\n        </button>\n        <button type="button" class="magic-mode-option magic-mode-option--spell ${"zaklecie"===n?"active":""}" data-magic-mode="${t.id}" data-mode-value="zaklecie">\n          ${H("sparkle")}\n          <span class="magic-mode-option-text"><strong>Zaklęcie</strong><small>naucz się jednego czaru</small></span>\n        </button>\n      </div>\n    `,"tradycja"===n?(d+=tn(t.id,t.kategoria,i),i&&(d+=an(t.id,i,o))):"zaklecie"===n&&(d+=nn(t.id,a))):"zaklecie_tylko"===t.rodzaj&&(d=nn(t.id,a));return`\n    <div class="${l.join(" ")}" data-magic-slot="${t.id}">\n      <p class="magic-slot-source">${t.source}</p>\n      <p class="magic-slot-desc">${w(t)}</p>\n      ${d}\n      ${function(e){const{atom:t,mode:n,tradycjaId:i,spellId:a,blackMagicRisk:o}=e;if("tradycja"===n&&i&&z(i))return`<div class="black-magic-warning">${H("warning")} ${b[i]?.nazwa||i} to tradycja czarnej magii - poznanie przyznaje automatycznie <strong>1 punkt Splugawienia</strong>.</div>`;if(o){const e=ae[t.id];return e&&e.spellId===a?`<div class="black-magic-warning">${H("warning")} Zaklęcie czarnej magii. Rzut ryzyka: <span class="black-magic-roll-result">k6 = ${e.rzut}</span> ${e.przyznane?"→ +1 Splugawienie":"→ bez efektu"}.</div>`:`\n      <div class="black-magic-warning">\n        ${H("warning")} Zaklęcie czarnej magii - ryzyko Splugawienia (rzut k6 &lt; ${o.liczbaZnanychPrzed} już znanych zaklęć czarnej magii).\n        <button type="button" class="btn-secondary small" data-magic-roll="${t.id}" data-roll-spell="${a}" data-roll-limit="${o.liczbaZnanychPrzed}">Rzuć k6</button>\n      </div>\n    `}return""}(e)}\n      <p class="magic-slot-status ${s?"ok":""}">${s?`${H("check")} Rozwiązano`:"Nierozwiązane (opcjonalne)"}</p>\n    </div>\n  `}(e)).join(""),function(e){e.querySelectorAll("[data-magic-mode]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.magicMode,n=e.dataset.modeValue;(ie[t]||{}).mode!==n&&(ie[t]={mode:n},delete ae[t],Xt())})}),e.querySelectorAll("[data-open-tradition-picker]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.openTraditionPicker,n=e.dataset.category.split(",").filter(Boolean),{knownTraditions:i}=u(Yt(),ie);sn(t,n,i)})}),e.querySelectorAll("[data-open-spell-picker]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.openSpellPicker,n=e.dataset.traditionRestriction||null,{knownTraditions:i}=u(Yt(),ie);!function(e,t,n,i){on={atomId:e,kind:"zaklecie",knownTraditions:t,moc:n,tradycjaOgraniczenie:i,search:"",filterKrag:null,filterKategoria:null,filterTradycja:null};const a=document.getElementById("magic-picker-title");a&&(a.textContent="Wybierz zaklęcie");const o=document.getElementById("magic-picker-overlay");o&&(o.hidden=!1);ln()}(t,i,parseInt(document.getElementById("power-final")?.textContent,10)||0,n)})}),e.querySelectorAll("[data-open-free-spell-picker]").forEach(e=>{e.addEventListener("click",()=>{rn(e.dataset.openFreeSpellPicker,e.dataset.traditionFree)})}),e.querySelectorAll("[data-magic-clear]").forEach(e=>{e.addEventListener("click",t=>{t.stopPropagation();const n=e.dataset.magicClear,i={...ie[n]||{}};delete i[e.dataset.clearField],ie[n]=i,delete ae[n],Xt()})}),e.querySelectorAll("[data-magic-roll]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.magicRoll,n=e.dataset.rollSpell,i=parseInt(e.dataset.rollLimit,10),a=Math.floor(6*Math.random())+1;ae[t]={spellId:n,rzut:a,przyznane:a<i},Xt()})})}(t),function(){if(!G)return;const e=U.find(e=>e.id===G);if(!e)return;lt({sila:parseInt(document.getElementById("strength-final")?.textContent,10)||0,zrecznosc:parseInt(document.getElementById("agility-final")?.textContent,10)||0,intelekt:parseInt(document.getElementById("intellect-final")?.textContent,10)||0,wola:parseInt(document.getElementById("will-final")?.textContent,10)||0},e)}()}function en(){return oe.size+Object.values(ae).filter(e=>e.przyznane).length}function tn(e,t,n){const i=n?b[n]?.nazwa||n:null,a=n&&z(n);return`\n    <div class="magic-slot-picker magic-slot-picker--tradition">\n      <span class="magic-slot-picker-label">${H("book")} Tradycja</span>\n      ${i?`\n        <div class="magic-picked-chip">${i}${a?` ${H("warning")}`:""}\n          <button type="button" class="chip-remove" data-magic-clear="${e}" data-clear-field="tradycjaId" title="Usuń wybór">${H("x")}</button>\n        </div>\n      `:""}\n      <button type="button" class="btn-secondary small" data-open-tradition-picker="${e}" data-category="${(t||["dowolna"]).join(",")}">${i?"Zmień tradycję":"Wybierz tradycję"}</button>\n    </div>\n  `}function nn(e,t,n=null){const i=t?f.find(e=>e.id===t):null;return`\n    <div class="magic-slot-picker magic-slot-picker--spell">\n      <span class="magic-slot-picker-label">${H("sparkle")} Zaklęcie</span>\n      ${i?`\n        <div class="magic-picked-chip">${i.nazwa} (${i.tradycjaNazwa}, krąg ${i.krag})${z(i.tradycja)?` ${H("warning")}`:""}\n          <button type="button" class="chip-remove" data-magic-clear="${e}" data-clear-field="spellId" title="Usuń wybór">${H("x")}</button>\n        </div>\n      `:""}\n      <button type="button" class="btn-secondary small" data-open-spell-picker="${e}" data-tradition-restriction="${n||""}">${i?"Zmień zaklęcie":"Wybierz zaklęcie"}</button>\n    </div>\n  `}function an(e,t,n){const i=n?f.find(e=>e.id===n):null;return`\n    <div class="magic-slot-picker magic-slot-picker--spell magic-slot-picker-secondary">\n      <span class="magic-slot-picker-label">${H("sparkle")} Darmowe zaklęcie (krąg 0)</span>\n      ${i?`\n        <div class="magic-picked-chip">${i.nazwa} (krąg 0)\n          <button type="button" class="chip-remove" data-magic-clear="${e}" data-clear-field="darmowyZaklecieId" title="Usuń wybór">${H("x")}</button>\n        </div>\n      `:""}\n      <button type="button" class="btn-secondary small" data-open-free-spell-picker="${e}" data-tradition-free="${t}">${i?"Zmień darmowe zaklęcie":"Wybierz zaklęcie kręgu 0"}</button>\n    </div>\n  `}let on=null;function sn(e,t,n,i="magia"){on={atomId:e,kind:"tradycja",kategoria:t,knownTraditions:n,search:"",target:i};const a=document.getElementById("magic-picker-title");a&&(a.textContent="Wybierz tradycję");const o=document.getElementById("magic-picker-overlay");o&&(o.hidden=!1),ln()}function rn(e,t,n="magia"){on={atomId:e,kind:"darmowe_zaklecie",tradycjaId:t,search:"",target:n};const i=document.getElementById("magic-picker-title");i&&(i.textContent="Wybierz zaklęcie kręgu 0");const a=document.getElementById("magic-picker-overlay");a&&(a.hidden=!1),ln()}function cn(){const e=document.getElementById("magic-picker-overlay");e&&(e.hidden=!0),on=null}function ln(){const e=document.getElementById("magic-picker-body");if(!e||!on)return;const t="tradycja"===on.kind?"Szukaj tradycji...":"darmowe_zaklecie"===on.kind?"Szukaj zaklęcia kręgu 0...":"Szukaj zaklęcia po nazwie lub opisie...";e.innerHTML=`\n    <input type="text" class="picker-search" id="picker-search-input" placeholder="${t}">\n    <div id="picker-dynamic"></div>\n  `;const n=document.getElementById("picker-search-input");n.value=on.search,n.addEventListener("input",()=>{on.search=n.value,dn()}),n.focus(),dn()}function dn(){const e=document.getElementById("picker-dynamic");var t;e&&on&&("tradycja"===on.kind?e.innerHTML=function(){const e=p(on.kategoria,on.knownTraditions),t=on.search.trim().toLowerCase(),n=t?e.filter(e=>e.nazwa.toLowerCase().includes(t)):e,i=n.map(e=>`\n    <button type="button" class="picker-tile" data-pick-tradition="${e.id}">\n      <div class="picker-tile-header"><span>${e.nazwa}</span></div>\n      ${e.opis?`<p class="picker-tile-description">${e.opis}</p>`:""}\n      ${e.czarnaMagia?`<div class="picker-tile-warning">${H("warning")} Czarna magia - poznanie przyznaje 1 Splugawienie</div>`:""}\n    </button>\n  `).join("")||'<p class="hint">Brak tradycji spełniających kryteria wyszukiwania.</p>';return`\n    <p class="picker-results-count hint">Znaleziono ${n.length} z ${e.length} tradycji</p>\n    <div class="picker-tile-grid">${i}</div>\n  `}():"darmowe_zaklecie"===on.kind?e.innerHTML=function(){const{tradycjaId:e,search:t}=on,n=m(e),i=t.trim().toLowerCase(),a=i?n.filter(e=>`${e.nazwa} ${e.opis}`.toLowerCase().includes(i)):n,o=un(on.atomId),s=a.slice().sort((e,t)=>e.nazwa.localeCompare(t.nazwa,"pl")).map(e=>{const t=o.has(e.id);return`\n      <button type="button" class="picker-tile ${t?"disabled":""}" ${t?"disabled":""} data-pick-free-spell="${e.id}">\n        <div class="picker-tile-header">\n          <span>${e.nazwa}</span>\n          ${Ht(e.zrodlo)}\n        </div>\n        <div class="picker-tile-meta">${e.tradycjaNazwa} · Krąg 0 · ${"atak"===e.kategoria?"Atak":"Użytkowe"}</div>\n        <p class="picker-tile-description">${e.opis}</p>\n        ${t?'<div class="picker-tile-taken">Już wybrane w innym slocie</div>':""}\n      </button>\n    `}).join("")||'<p class="hint">Brak zaklęć kręgu 0 spełniających kryteria wyszukiwania.</p>';return`\n    <p class="picker-results-count hint">Znaleziono ${a.length} z ${n.length} zaklęć kręgu 0</p>\n    <div class="picker-tile-grid">${s}</div>\n  `}():e.innerHTML=function(){const{knownTraditions:e,moc:t,tradycjaOgraniczenie:n,search:i,filterKrag:a,filterKategoria:o,filterTradycja:s}=on,r=y({knownTraditions:e,moc:t,tradycjaOgraniczenie:n}),c=[...new Set(r.map(e=>e.krag))].sort((e,t)=>e-t),l=[...new Map(r.map(e=>[e.tradycja,e.tradycjaNazwa])).entries()].sort((e,t)=>e[1].localeCompare(t[1],"pl"));let d=r;null!==a&&(d=d.filter(e=>e.krag===a));o&&(d=d.filter(e=>e.kategoria===o));s&&(d=d.filter(e=>e.tradycja===s));const u=i.trim().toLowerCase();u&&(d=d.filter(e=>`${e.nazwa} ${e.opis}`.toLowerCase().includes(u)));const p=l.length>1?l.map(([e,t])=>`<button type="button" class="picker-filter-chip ${s===e?"active":""}" data-filter-tradition="${e}">${t}</button>`).join(""):"",m=c.length>1?c.map(e=>`<button type="button" class="picker-filter-chip ${a===e?"active":""}" data-filter-circle="${e}">Krąg ${e}</button>`).join(""):"",w=[["atak","Atak"],["uzytkowe","Użytkowe"]].map(([e,t])=>`<button type="button" class="picker-filter-chip ${o===e?"active":""}" data-filter-category="${e}">${t}</button>`).join(""),k=p||m||w?`<div class="picker-filter-chips">${p}${m}${w}</div>`:"",b=un(on.atomId),g=d.slice().sort((e,t)=>e.tradycjaNazwa.localeCompare(t.tradycjaNazwa,"pl")||e.krag-t.krag||e.nazwa.localeCompare(t.nazwa,"pl")).map(e=>{const t=b.has(e.id);return`\n      <button type="button" class="picker-tile ${t?"disabled":""}" ${t?"disabled":""} data-pick-spell="${e.id}">\n        <div class="picker-tile-header">\n          <span>${e.nazwa}</span>\n          ${Ht(e.zrodlo)}\n        </div>\n        <div class="picker-tile-meta">${e.tradycjaNazwa} · Krąg ${e.krag} · ${"atak"===e.kategoria?"Atak":"Użytkowe"}</div>\n        <p class="picker-tile-description">${e.opis}</p>\n        ${t?'<div class="picker-tile-taken">Już wybrane w innym slocie</div>':""}\n        ${!t&&z(e.tradycja)?`<div class="picker-tile-warning">${H("warning")} Czarna magia</div>`:""}\n      </button>\n    `}).join("")||'<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';return`\n    ${k}\n    <p class="picker-results-count hint">Znaleziono ${d.length} z ${r.length} zaklęć</p>\n    <div class="picker-tile-grid">${g}</div>\n  `}(),(t=e).querySelectorAll("[data-filter-circle]").forEach(e=>{e.addEventListener("click",()=>{const t=parseInt(e.dataset.filterCircle,10);on.filterKrag=on.filterKrag===t?null:t,dn()})}),t.querySelectorAll("[data-filter-category]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.filterCategory;on.filterKategoria=on.filterKategoria===t?null:t,dn()})}),t.querySelectorAll("[data-filter-tradition]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.filterTradition;on.filterTradycja=on.filterTradycja===t?null:t,dn()})}),t.querySelectorAll("[data-pick-tradition]").forEach(e=>{e.addEventListener("click",()=>function(e){const t=on.atomId;if("ekwipunek"===(on.target||"magia")){const n=ye[t]||{};ye[t]={...n,typ:"zwoj_zaklecie",tradycjaId:e,spellId:null};const i=m(e);return 1===i.length?(ye[t].spellId=i[0].id,cn()):i.length>1?rn(t,e,"ekwipunek"):cn(),void mn()}const n=ie[t]||{};ie[t]={...n,mode:n.mode||"tradycja",tradycjaId:e,darmowyZaklecieId:null};const i=m(e);1===i.length?(ie[t].darmowyZaklecieId=i[0].id,cn()):i.length>1?rn(t,e):cn(),Xt()}(e.dataset.pickTradition))}),t.querySelectorAll("[data-pick-spell]").forEach(e=>{e.addEventListener("click",()=>function(e){const t=on.atomId,n=ie[t]||{};ie[t]={...n,mode:n.mode||"zaklecie",spellId:e},delete ae[t],cn(),Xt()}(e.dataset.pickSpell))}),t.querySelectorAll("[data-pick-free-spell]").forEach(e=>{e.addEventListener("click",()=>function(e){const t=on.atomId;if("ekwipunek"===(on.target||"magia")){const n=ye[t]||{};return ye[t]={...n,spellId:e},cn(),void mn()}const n=ie[t]||{};ie[t]={...n,darmowyZaklecieId:e},cn(),Xt()}(e.dataset.pickFreeSpell))}))}function un(e){const{resolutions:t}=u(Yt(),ie),n=new Set;return t.forEach(t=>{t.atom.id!==e&&("zaklecie"===t.mode&&t.spellId&&n.add(t.spellId),"tradycja"===t.mode&&t.darmowyZaklecieId&&n.add(t.darmowyZaklecieId))}),n}function pn(){ie={},ae={},oe=new Set,Xt()}function yn(e){const[t,n]=e.split("k"),i=parseInt(t,10)||1,a=parseInt(n,10)||6;let o=0;for(let e=0;e<i;e++)o+=Math.floor(Math.random()*a)+1;return o}function mn(){!function(){const e=document.getElementById("wealth-grid"),t=document.getElementById("wealth-roll");if(!e)return;t&&(t.textContent=null!=de?`Wynik rzutu 3k6: ${de}`:"");e.innerHTML=Object.values(v).map(e=>{const t=e.zakres3k6[0]===e.zakres3k6[1]?`${e.zakres3k6[0]}`:`${e.zakres3k6[0]}–${e.zakres3k6[1]}`,n=ue===e.id;return`\n      <button type="button" class="picker-tile zamoznosc-tile ${n?"selected":""}" data-select-wealth="${e.id}">\n        <div class="picker-tile-header">\n          <span>${e.nazwa}</span>\n          ${n?`<span class="wealth-badge">${H("check")} Wybrano</span>`:""}\n        </div>\n        <div class="picker-tile-meta">3k6: ${t}</div>\n        <p class="picker-tile-description">${e.opis}</p>\n      </button>\n    `}).join(""),e.querySelectorAll("[data-select-wealth]").forEach(e=>{e.addEventListener("click",()=>wn(e.dataset.selectWealth,null))})}(),function(){const e=document.getElementById("starting-gear-section");if(!e)return;if(!ue)return void(e.innerHTML="");const t=bn(),n=t.guaranteed.map(e=>{const t=e.id?B(e.id):null,n=t?.nazwa||e.id||e.tekst,i=e.ilosc&&e.ilosc>1?` (${e.ilosc}×)`:"",a=t?C(t):null;return`<li${a?` title="${a}"`:""}>${n}${i}</li>`}).join(""),i=t.atoms.map(e=>function(e){const t=ye[e.id];if("wybor_przedmiotu"===e.rodzaj){const n=e.opcje.map(n=>{const i=B(n),a=t?.itemId===n,o=C(i);return`<button type="button" class="btn-secondary small ${a?"active":""}" data-select-starting="${e.id}" data-item-id="${n}"${o?` title="${o}"`:""}>${i?.nazwa||n}</button>`}).join(""),i=t?.itemId?B(t.itemId):null,a=i?C(i):null;return`\n      <div class="magic-slot-card ${t?.itemId?"complete":""}">\n        <p class="magic-slot-desc">Wybierz jedno: ${e.opcje.map(e=>B(e)?.nazwa||e).join(" / ")}${e.opisWyboru?` (${e.opisWyboru})`:""}</p>\n        <div class="magic-slot-mode-toggle">${n}</div>\n        ${a?`<p class="magic-slot-status ok">${i.nazwa}: ${a}</p>`:""}\n      </div>\n    `}const n=e.opcje.map(n=>{const i="zwoj_zaklecie"===n.typ?"zwoj_zaklecie"===t?.typ:"przedmiot"===t?.typ&&t?.itemId===n.id;if("zwoj_zaklecie"===n.typ)return`<button type="button" class="btn-secondary small ${i?"active":""}" data-open-scroll="${e.id}">${n.etykieta}</button>`;const a=C(B(n.id));return`<button type="button" class="btn-secondary small ${i?"active":""}" data-select-starting="${e.id}" data-item-id="${n.id}"${a?` title="${a}"`:""}>${n.etykieta}</button>`}).join("");let i="";if("zwoj_zaklecie"===t?.typ&&t.tradycjaId){const e=b[t.tradycjaId]?.nazwa||t.tradycjaId,n=t.spellId?f.find(e=>e.id===t.spellId):null;i=`<p class="magic-slot-status ok">Wybrano: ${e}${n?` - ${n.nazwa}`:" (wybierz zaklęcie kręgu 0)"}</p>`}else if("przedmiot"===t?.typ&&t.itemId){const e=B(t.itemId),n=e?C(e):null;n&&(i=`<p class="magic-slot-status ok">${e.nazwa}: ${n}</p>`)}return`\n    <div class="magic-slot-card ${t?"complete":""}">\n      <p class="magic-slot-desc">${e.opis}</p>\n      <div class="magic-slot-mode-toggle">${n}</div>\n      ${i}\n    </div>\n  `}(e)).join("");e.innerHTML=`\n    <h4>${H("backpack")} Wyposażenie startowe (${t.wealthentry.nazwa})</h4>\n    <p class="hint">Gwarantowane: <ul class="guaranteed-list">${n}</ul></p>\n    ${i}\n    <p class="hint">Startowa gotówka: <strong>${x(t.startingCashCopperbits)}</strong> (sakiewka z ${t.wealthentry.pieniadze.kosci} ${"okr"===t.wealthentry.pieniadze.jednostka?"okrawków":"md"===t.wealthentry.pieniadze.jednostka?"miedziaków":"srebrników"})</p>\n    ${t.wealthentry.dodatkowyOpis?`<p class="hint">${t.wealthentry.dodatkowyOpis}</p>`:""}\n  `,e.querySelectorAll("[data-select-starting]").forEach(e=>{e.addEventListener("click",()=>{gn(e.dataset.selectStarting,e.dataset.itemId)})}),e.querySelectorAll("[data-open-scroll]").forEach(e=>{e.addEventListener("click",()=>sn(e.dataset.openScroll,["dowolna"],new Set,"ekwipunek"))})}(),hn()}function zn(){const e=yn("3k6"),t=$(e);t&&wn(t.id,e)}function wn(e,t){const n=v[e];n&&(ue=e,de=t,pe=yn(n.pieniadze.kosci),ye={},me=[],ze=[],we=new Set,mn())}function kn(){ue=null,de=null,pe=null,ye={},me=[],ze=[],we=new Set,mn()}function bn(){if(!ue)return null;const e=v[ue],t=A(ue),n=M(ue),i=[];t.forEach((e,t)=>{i.push({klucz:`g${t}`,itemId:e.id||null,tekst:e.tekst||null,ilosc:e.ilosc||1})}),n.forEach(e=>{const t=ye[e.id];t&&("zwoj_zaklecie"===t.typ&&t.tradycjaId?i.push({klucz:e.id,itemId:null,ilosc:1,atomId:e.id,sprzedawalny:!1,zwojZaklecie:{tradycjaId:t.tradycjaId,spellId:t.spellId||null}}):t.itemId&&i.push({klucz:e.id,itemId:t.itemId,ilosc:1,atomId:e.id}))});const a=new Set(me),o=i.filter(e=>!a.has(e.klucz)),s=i.filter(e=>a.has(e.klucz)),r=e.pieniadze.jednostka,c=null!=pe?pe*q[r]:0,l=s.reduce((e,t)=>t.itemId?e+N(B(t.itemId)?.cena)*t.ilosc:e,0),d=ze.reduce((e,t)=>e+S(B(t.itemId)?.cena)*t.ilosc,0),u=(ce||0)*q.sr,p=c+l+u-d;return{wealthentry:e,atoms:n,guaranteed:t,ownedStarting:o,soldStarting:s,purchasedEntries:ze.map((e,t)=>({klucz:`z${t}`,itemId:e.itemId,ilosc:e.ilosc})),startingCashCopperbits:c,withSaleCopperbits:l,tooPurchasesCopperbits:d,withSilverLevel:u,cashCopperbits:p}}function gn(e,t){ye[e]={typ:"przedmiot",itemId:t},mn()}function hn(){const e=document.getElementById("shop-section");if(!e)return;if(!ue)return void(e.innerHTML="");const t=bn(),n=(e,t)=>e.map(e=>{const n=e.zwojZaklecie?`Zwój (${b[e.zwojZaklecie.tradycjaId]?.nazwa||e.zwojZaklecie.tradycjaId}${e.zwojZaklecie.spellId?`: ${f.find(t=>t.id===e.zwojZaklecie.spellId)?.nazwa||""}`:""})`:e.itemId?B(e.itemId)?.nazwa||e.itemId:e.tekst,i=e.itemId?B(e.itemId):null,a="startowe"!==t||i&&i.cena,o=i?x(N(i.cena)*e.ilosc):null,s=e.ilosc>1?` ×${e.ilosc}`:"",r=i?C(i):null,c=!!i?.opis,l=we.has(e.klucz);return`\n      <tr>\n        <td>${n}${s} ${i?Ht(i.zrodlo):""}</td>\n        <td>${r||"—"}</td>\n        <td>${i?L(i.cena):"—"}</td>\n        <td class="equipment-table-actions">\n          ${c?`<button type="button" class="icon-btn" data-info="${e.klucz}" title="Pokaż opis">${H("info")}</button>`:""}\n          ${a?`<button type="button" class="icon-btn" data-sell="${e.klucz}" data-zrodlo="${t}" title="${"startowe"===t?`Sprzedaj za ${o}`:"Zwróć (pełny zwrot)"}">${H("startowe"===t?"purse":"undo")}</button>`:""}\n        </td>\n      </tr>\n    `+(c?`<tr class="equipment-table-desc-row" ${l?"":"hidden"}><td colspan="4">${i.opis}</td></tr>`:"")}).join(""),i=[...t.ownedStarting,...t.purchasedEntries].length?`\n    <div class="equipment-table-wrap">\n      <table class="equipment-table">\n        <thead><tr><th>Przedmiot</th><th>Statystyki</th><th>Cena</th><th></th></tr></thead>\n        <tbody id="ekwipunek-posiadane-list">\n          ${n(t.ownedStarting,"startowe")}\n          ${n(t.purchasedEntries,"kupione")}\n        </tbody>\n      </table>\n    </div>\n  `:'<p class="hint">Brak przedmiotów.</p>';e.innerHTML=`\n    <div class="flex-row-between">\n      <h4>${H("stall")} Sklep</h4>\n      <span id="gotowka-summary" class="inline-summary"><strong>Gotówka: ${x(t.cashCopperbits)}</strong></span>\n    </div>\n    ${t.withSilverLevel>0?`<p class="hint">Zawiera ${ce} wylosowanych srebrników z Kroku 2 (poziom ${F}).</p>`:""}\n\n    <div class="flex-row-between">\n      <h5>Twoje przedmioty</h5>\n    </div>\n    ${i}\n\n    ${t.soldStarting.length?`\n      <div class="flex-row-between"><h5>Sprzedane</h5></div>\n      <div class="equipment-tag-list">${t.soldStarting.map(e=>`<span class="equipment-tag sold">${e.itemId?B(e.itemId)?.nazwa:e.tekst}</span>`).join("")}</div>\n    `:""}\n\n    <div class="flex-row-between">\n      <h5>Katalog przedmiotów</h5>\n      <button type="button" class="btn-primary small" id="btn-open-shop">${H("cart")} Przeglądaj katalog</button>\n    </div>\n  `,e.querySelectorAll("[data-sell]").forEach(e=>{e.addEventListener("click",()=>function(e,t){if("startowe"===t)me.includes(e)||me.push(e);else if("kupione"===t){const t=parseInt(e.replace("z",""),10),n=ze[t];n&&(n.ilosc>1?n.ilosc-=1:ze.splice(t,1))}mn()}(e.dataset.sell,e.dataset.zrodlo))}),e.querySelectorAll("[data-info]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.info;we.has(t)?we.delete(t):we.add(t),hn()})}),document.getElementById("btn-open-shop")?.addEventListener("click",()=>function(){fn={search:"",filterKategoria:null,filterRzadkosc:null,sortBy:"nazwa",sortDir:"asc",ukryjNiedostepne:!0};const e=document.getElementById("equipment-picker-overlay");e&&(e.hidden=!1);!function(){const e=document.getElementById("equipment-picker-body");if(!e||!fn)return;e.innerHTML='\n    <input type="text" class="picker-search" id="equipment-picker-search-input" placeholder="Szukaj przedmiotu...">\n    <div id="equipment-picker-dynamic"></div>\n  ';const t=document.getElementById("equipment-picker-search-input");t.value=fn.search,t.addEventListener("input",()=>{fn.search=t.value,vn()}),t.focus(),vn()}()}())}let fn=null;function jn(){const e=document.getElementById("equipment-picker-overlay");e&&(e.hidden=!0),fn=null}function vn(){const e=document.getElementById("equipment-picker-dynamic");if(!e||!fn)return;const{search:t,filterKategoria:n,filterRzadkosc:i,sortBy:a,sortDir:o,ukryjNiedostepne:s}=fn;let r=j.filter(e=>e.cena);n&&(r=r.filter(e=>e.kategoria===n)),i&&(r=r.filter(e=>e.rzadkosc===i));const c=t.trim().toLowerCase();c&&(r=r.filter(e=>`${e.nazwa} ${e.opis||""}`.toLowerCase().includes(c)));const l=Object.keys(I).filter(e=>j.some(t=>t.kategoria===e&&t.cena)).map(e=>`<button type="button" class="picker-filter-chip ${n===e?"active":""}" data-filter-category="${e}">${I[e]}</button>`).join(""),d=Object.keys(E).map(e=>`<button type="button" class="picker-filter-chip ${i===e?"active":""}" data-filter-rarity="${e}">${E[e]}</button>`).join(""),u=Object.keys(P).map(e=>`<button type="button" class="picker-filter-chip ${a===e?"active":""}" data-sort-by="${e}">${P[e]}${a===e?` ${H("desc"===o?"chevron-down":"chevron-up")}`:""}</button>`).join(""),p=bn(),y=p?new Set([...p.ownedStarting,...p.purchasedEntries].filter(e=>e.itemId).map(e=>e.itemId)):new Set;let m=_(r,a,o).map(e=>{const t=!p||p.cashCopperbits<S(e.cena),n=y.has(e.id);return{i:e,tooExpensive:t,owned:n,niedostepny:t||n}});const z=m.length;s&&(m=m.filter(e=>!e.niedostepny));const w=m.map(({i:e,tooExpensive:t,owned:n,niedostepny:i})=>{const a=C(e),o=n?"Już posiadane":t?"Za mało gotówki":"";return`\n      <button type="button" class="picker-tile ${i?"disabled":""}" ${i?"disabled":""} data-buy="${e.id}">\n        <div class="picker-tile-header">\n          <span>${e.nazwa}</span>\n          ${Ht(e.zrodlo)}\n        </div>\n        <div class="picker-tile-meta">${I[e.kategoria]||e.kategoria} · ${E[e.rzadkosc]||"—"} · ${L(e.cena)}</div>\n        ${a?`<div class="picker-tile-stats">${a}</div>`:""}\n        ${e.opis?`<p class="picker-tile-description">${e.opis}</p>`:""}\n        ${o?`<div class="picker-tile-taken">${o}</div>`:""}\n      </button>\n    `}).join("")||'<p class="hint">Brak przedmiotów spełniających kryteria wyszukiwania.</p>';e.innerHTML=`\n    <div class="picker-filter-chips">${l}</div>\n    <div class="picker-filter-chips">${d}</div>\n    <div class="picker-filter-chips picker-sort-row"><span class="picker-sort-label">Sortuj:</span>${u}</div>\n    <div class="picker-toolbar">\n      <p class="picker-results-count hint">Znaleziono ${z} przedmiotów${s&&z!==m.length?` (${m.length} dostępnych)`:""}</p>\n      <label class="picker-toggle-label">\n        <input type="checkbox" id="equipment-picker-hide-unavailable" ${s?"checked":""}>\n        Ukryj niedostępne (za drogie, już posiadane)\n      </label>\n    </div>\n    <div class="picker-tile-grid">${w}</div>\n  `,document.getElementById("equipment-picker-hide-unavailable")?.addEventListener("change",e=>{fn.ukryjNiedostepne=e.target.checked,vn()}),e.querySelectorAll("[data-filter-category]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.filterCategory;fn.filterKategoria=fn.filterKategoria===t?null:t,vn()})}),e.querySelectorAll("[data-filter-rarity]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.filterRarity;fn.filterRzadkosc=fn.filterRzadkosc===t?null:t,vn()})}),e.querySelectorAll("[data-sort-by]").forEach(e=>{e.addEventListener("click",()=>{const t=e.dataset.sortBy;fn.sortBy===t?fn.sortDir="desc"===fn.sortDir?"asc":"desc":(fn.sortBy=t,fn.sortDir="asc"),vn()})}),e.querySelectorAll("[data-buy]").forEach(e=>{e.addEventListener("click",()=>function(e){const t=B(e);if(!t)return;const n=bn();if(!n||n.cashCopperbits<S(t.cena))return;const i=ze.find(t=>t.itemId===e);i?i.ilosc+=1:ze.push({itemId:e,ilosc:1});hn(),vn()}(e.dataset.buy))})}let $n=null;function En(e){const t=e.dataset.tooltip;if(!$n||!t)return;$n.textContent=t,$n.classList.add("visible");const n=e.getBoundingClientRect(),i=window.matchMedia("(max-width: 860px)").matches;requestAnimationFrame(()=>{const e=$n.offsetWidth,t=$n.offsetHeight;let a,o;i?(a=n.left+n.width/2-e/2,o=n.top-t-10):(a=n.right+10,o=n.top+n.height/2-t/2,a+e>window.innerWidth-8&&(a=n.left-e-10)),a=Math.min(Math.max(8,a),window.innerWidth-e-8),o=Math.min(Math.max(8,o),window.innerHeight-t-8),$n.style.left=`${a}px`,$n.style.top=`${o}px`})}function In(){$n?.classList.remove("visible")}function Bn(){Ve(),Zt(),Jt(),Xt(),mn();const e=document.getElementById("import-feedback");e&&(e.innerHTML="");const t=document.getElementById("missing-items-warning");t&&(t.innerHTML="");const n=document.getElementById("final-actions-feedback");n&&(n.className="final-actions-feedback",n.textContent=""),be=null,ge=null,ke="";const i=document.getElementById("character-name");i&&(i.value=""),Te(1),gt()}function Sn(){const e=document.getElementById("load-character-overlay");e&&(e.hidden=!1,xn())}function Ln(){const e=document.getElementById("load-character-overlay");e&&(e.hidden=!0)}function xn(){const e=document.getElementById("load-character-body");if(!e)return;const t=Object.values(T()).sort((e,t)=>(t.savedAt||"").localeCompare(e.savedAt||""));0!==t.length?(e.innerHTML=`\n    <div class="flex-row-between">\n      <p class="hint">${t.length} ${1===t.length?"postać zapisana":"postaci zapisanych"} w tej przeglądarce.</p>\n      <button type="button" class="section-reset-btn" id="btn-clear-saved-characters" title="Usuń wszystkie postacie zapisane w pamięci tej przeglądarki">Wyczyść pamięć przeglądarki</button>\n    </div>\n    <div class="known-spells-list">\n      ${t.map(e=>{const t=e.data?.wybory?.pochodzenie,n=U.find(e=>e.id===t)?.nazwa||t||"Nieznane pochodzenie",i=e.data?.wybory?.poziom??"?",a=e.data?.wybory?.imie;return`\n          <div class="selected-item">\n            <span>${a?`<strong>${a}</strong> - `:""}${n}, poziom ${i} <em>(zapisano ${e.savedAt?new Date(e.savedAt).toLocaleString("pl-PL"):""})</em></span>\n            <button type="button" class="btn-secondary small" data-load-character="${e.id}">Wczytaj</button>\n          </div>\n        `}).join("")}\n    </div>\n  `,e.querySelectorAll("[data-load-character]").forEach(e=>{e.addEventListener("click",()=>async function(e){const t=T()[e];if(!t)return;Ln(),be=e;try{await Bt(t.data),ge=Oe(t.data),It("success",`${H("check")} Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`)}catch(e){console.error("Błąd wczytywania postaci z cache:",e),It("error",`Wystąpił nieoczekiwany błąd podczas wczytywania postaci: ${e.message}`)}}(e.dataset.loadCharacter))}),document.getElementById("btn-clear-saved-characters")?.addEventListener("click",Nn)):e.innerHTML='<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisujesz przyciskiem "Zapisz postać" w Kroku 8 (Podgląd); zapis powstaje też automatycznie przy imporcie z pliku JSON.</p>'}function Nn(){confirm("Usunąć wszystkie postacie zapisane w pamięci tej przeglądarki? Tej operacji nie można odwrócić.")&&(W(),xn())}function Mn(){const e=document.getElementById("randomize-character-overlay");e&&(e.hidden=!1,Cn())}function An(){const e=document.getElementById("randomize-character-overlay");e&&(e.hidden=!0)}function Cn(){const e=document.getElementById("randomize-level-grid");e&&(e.innerHTML=Array.from({length:11},(e,t)=>{const n=he===t;return`\n      <button type="button" class="picker-tile ${n?"selected":""}" data-select-randomize-level="${t}">\n        <div class="picker-tile-header">\n          <span>Poziom ${t}</span>\n          ${n?`<span class="wealth-badge">${H("check")} Wybrano</span>`:""}\n        </div>\n        <div class="picker-tile-meta">${kt(t)}</div>\n      </button>\n    `}).join(""),e.querySelectorAll("[data-select-randomize-level]").forEach(e=>{e.addEventListener("click",()=>{he=parseInt(e.dataset.selectRandomizeLevel,10),Cn()})}))}window.nextStep=function(e){if(1===e){if(!G)return void Et("Wybierz pochodzenie postaci!");Te(2),Je(),nt()}else 2===e?(Te(3),gt()):3===e?(Te(4),ct()):4===e?(Te(5),Zt(),Jt()):5===e?(Te(6),Xt()):6===e?(Te(7),mn()):7===e&&(Te(8),gt())},window.prevStep=function(e){2===e?Te(1):3===e?Te(2):4===e?Te(3):5===e?Te(4):6===e?Te(5):7===e?Te(6):8===e&&Te(7)},window.exportJSON=function(){if(D=$t(),!D)return void Et("Wybierz pochodzenie postaci, zanim wyeksportujesz kartę!");const e=JSON.stringify(D,null,2),t=`data:application/json;charset=utf-8,${encodeURIComponent(e)}`;var n;const i=`postac-${((n=D.wybory.imie)?n.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ł/g,"l").replace(/Ł/g,"L").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""):"")||D.wybory.pochodzenie}-${(new Date).toISOString().split("T")[0]}.json`,a=document.createElement("a");a.setAttribute("href",t),a.setAttribute("download",i),a.click()},window.closeHelp=Lt,window.switchHelpTab=function(e){document.querySelectorAll(".help-tab").forEach(e=>{e.classList.remove("active"),e.setAttribute("aria-selected","false")}),document.querySelectorAll(".help-tab").forEach(t=>{const n=t.getAttribute("onclick");n&&n.includes(`'${e}'`)&&(t.classList.add("active"),t.setAttribute("aria-selected","true"))}),xt(e)};
+/**
+ * Frontend JavaScript dla kreatora postaci
+ */
+
+import { buildCharacter, calculateBenefitsLevel } from './logic/character.js';
+import { getPathsForLevel, calculateSlotsAttributes } from './logic/paths.js';
+import { getOriginsListUi, getOriginTablesUi } from './logic/origins.js';
+import { getProfessionsUi, getCuriosUi } from './logic/professions-curios.js';
+import { LANGUAGES, calculateSlotsProfessionsAndLanguages } from './logic/languages-professions.js';
+import { calculateSlotsMagic, calculateResolutionMagic, getTraditionsForCategory, getSpellsToLearning, getCircleZeroSpells, isBlackMagic, atomDescription, descriptionMagic } from './logic/magic.js';
+import { TRADITIONS } from './data/traditions.js';
+import { TALENT_POOLS, PATH_LEVEL_KEYS } from './data/paths.js';
+import { rollTable } from './data/table_utils.js';
+import GAME_DATA from './data/game-data.js';
+import SPELLS from './data/spells.js';
+import EQUIPMENT from './data/equipment.js';
+import { WEALTH, getWealthForRoll } from './data/wealth.js';
+import {
+  RARITY_CODES, CATEGORY_CODES_EQ, getItem, priceOnCopperbits, formatPrice,
+  formatCopperbits, priceBuybackCopperbits, calculateAtomsGear, getGuaranteedEntries,
+  formatStatsItem, SORT_CODES, sortItems, CONVERTER_TO_COPPERBITS
+} from './logic/equipment.js';
+import { getSavedCharacters, saveCharacterToCache, generateSaveId, clearSavedCharacters } from './logic/saves.js';
+import { getTalentDescription } from './logic/talents.js';
+import { isSourceEnabled, filterBySource, setSourceEnabled, setSourcesEnabled, getDisabledSources, ALWAYS_ENABLED_SOURCE } from './logic/sources.js';
+import { PATH_CATEGORY_CODES } from './data/path_categories.js';
+import CONTENT from './data/content.js';
+import { t, initI18n, localeTag } from './i18n/index.js';
+
+/** Zwraca znacznik `<svg>` odwołujący się do ikony (linia, bez wypełnienia) zdefiniowanej w sprite w index.html. */
+function icon(name) {
+  return `<svg class="icon"><use href="#icon-${name}"></use></svg>`;
+}
+
+/**
+ * Progi wyboru ścieżek: poziom postaci -> klucz w `selectedPaths`. Trzy progi
+ * (1/3/7) powtarzają się w całym kreatorze, więc mapowanie żyje w jednym
+ * miejscu zamiast w kolejnych blokach `if`.
+ */
+const PATH_TIER_BY_LEVEL = { 1: 'nowicjusz', 3: 'ekspert', 7: 'mistrz' };
+const PATH_LEVEL_BY_TIER = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
+
+let currentCharacter = null;
+let selectedOrigin = null;
+let selectedLevel = 0; // Gra zaczyna się od poziomu 0
+let availableOrigin = [];
+let resultsTables = {}; // Przechowuje wyniki tabel losowych dla wybranego pochodzenia
+let selectedPaths = { nowicjusz: '', ekspert: '', mistrz: '' };
+/**
+ * Talenty wybrane z pul przyznawanych przez ścieżki (np. łotrzykowskie).
+ * Klucz to `${pathId}:${klucz poziomu}`, wartość - tablica nazw talentów.
+ * Osobno od `talenty` w danych ścieżki, bo to wybór gracza, nie stała korzyść.
+ */
+let poolTalentChoices = {};
+let grantedBenefitsWithPaths = { 1: null, 3: null, 7: null };
+let selectedProfessions = []; // Pochodna odpowiedziSlotow - profesje przypisane do slotów w trybie 'profesja'
+let answersSlots = {}; // slotId -> { mode: 'profesja'|'jezyk_nowy'|'jezyk_pismo', profesjaId, jezyk }
+let selectedAttributesSlots = {}; // slotId (ze ścieżki) -> tablica wybranych atrybutów (sila/zrecznosc/intelekt/wola)
+let selectedCurios = [];
+let magicChoices = {}; // atomId (ze slotu magii) -> { mode: 'tradycja'|'zaklecie', tradycjaId, spellId }
+let magicRiskResults = {}; // atomId -> { spellId, rzut, przyznane } - zapamiętany rzut k6 ryzyka splugawienia
+let magicBlackMagicTooTraditions = new Set(); // tradycje czarnej magii, za które już przyznano 1 Splugawienie
+let availableProfessions = [];
+let availableCurios = [];
+let randomizedSilver = null; // 2k6 za każdy poziom powyżej 0
+let numberCurios = 0; // Po 1 za poziomy wyboru ścieżek: 1, 3, 7
+
+// --- Krok 7: Ekwipunek ---
+let equipmentWealthResult = null; // wynik rzutu 3k6 (albo null, gdy zamożność wybrano ręcznie bez losowania)
+let equipmentWealthId = null; // klucz z ZAMOZNOSC (np. 'komfort')
+let equipmentStartingCashRoll = null; // wylosowana suma kostek startowej sakiewki (w jednostce danego poziomu zamożności)
+let equipmentChoices = {}; // atomId -> { itemId } (wybor_przedmiotu) albo { typ:'zwoj_zaklecie', tradycjaId, spellId } / { typ:'przedmiot', itemId } (wybor_dodatkowy)
+let equipmentSold = []; // klucze startowych pozycji (kluczStart) sprzedanych w sklepie
+let equipmentPurchased = []; // { itemId, ilosc } kupione w sklepie
+let equipmentDescriptionExpanded = new Set(); // klucze pozycji "Twoje przedmioty", dla których rozwinięto wiersz z opisem
+
+// --- Krok 8: Imię postaci ---
+let characterName = ''; // opcjonalne imię wpisane w Kroku 8; trafia do eksportu i nazwy pliku
+
+// --- Zapis w pamięci przeglądarki (localStorage) ---
+let currentSaveCacheId = null; // id aktualnie edytowanej postaci w cache; null = jeszcze nie zapisana / nowa postać
+let lastSavedSnapshot = null; // zrzut `wybory` z chwili ostatniego zapisu - służy do wykrywania niezapisanych zmian
+
+// --- Popup "Wylosuj postać" (boczne menu) ---
+let randomizeCharacterLevel = 0; // poziom wybrany w popupie - jedyna rzecz, którą wybiera użytkownik, reszta jest losowana
+
+// Ładowanie opcji przy starcie strony
+document.addEventListener('DOMContentLoaded', async () => {
+  // Teksty interfejsu wstawiamy PRZED pierwszym renderowaniem - inaczej
+  // funkcje renderujące zdążyłyby złapać jeszcze nieprzetłumaczone etykiety.
+  await initI18n();
+  await loadOptions();
+  await loadLevels();
+  initializeLevels();
+  await loadPathsToTiles();
+  await loadProfessionsAndCurios();
+  
+  // Inicjalizuj system pomocy
+  initializeHelpSystem();
+
+  // Handler zwijania/rozwijania listy kuriozów
+  const btnToggleCur = document.getElementById('btn-toggle-curios');
+  const curGrid = document.getElementById('curios-grid');
+  if (btnToggleCur && curGrid) {
+    btnToggleCur.addEventListener('click', () => {
+      const expanded = btnToggleCur.getAttribute('data-expanded') === 'true';
+      btnToggleCur.setAttribute('data-expanded', expanded ? 'false' : 'true');
+      btnToggleCur.textContent = expanded ? t('common.expand') : t('common.collapse');
+      curGrid.style.display = expanded ? 'none' : 'grid';
+    });
+  }
+
+  // Centralne losowanie
+  const btnRandomizeProfessions = document.getElementById('btn-randomize-professions');
+  if (btnRandomizeProfessions) {
+    btnRandomizeProfessions.addEventListener('click', () => randomizeProfessionsCentrally());
+  }
+  const btnRandomizeCurios = document.getElementById('btn-randomize-curios');
+  if (btnRandomizeCurios) {
+    btnRandomizeCurios.addEventListener('click', () => randomizeCuriosCentrally());
+  }
+
+  // Handlery wyboru ścieżek i zasobów - nowy system kafelków
+  // Event listenery dla ścieżek są dodawane dynamicznie w renderPathTile()
+  const btnWealth = document.getElementById('btn-roll-wealth');
+  if (btnWealth) {
+    btnWealth.addEventListener('click', () => {
+      if (selectedLevel <= 0) return;
+      // 2k6 srebrników za każdy poziom powyżej 0
+      let sum = 0;
+      const rolls = [];
+      for (let i = 0; i < selectedLevel * 2; i++) {
+        const r = Math.floor(Math.random() * 6) + 1;
+        rolls.push(r);
+        sum += r;
+      }
+      randomizedSilver = sum;
+      updateWealthUi(rolls, sum);
+      updatePreviewCharacter();
+    });
+  }
+
+  // Toggle własnych atrybutów
+  document.getElementById('default-attributes').addEventListener('change', (e) => {
+    const customDiv = document.getElementById('custom-attributes');
+    customDiv.style.display = e.target.checked ? 'none' : 'block';
+    if (e.target.checked) {
+      // Wyczyść zamianę i użyj domyślnych wartości bazujących na pochodzeniu
+      document.getElementById('attribute-decreased').value = '';
+      document.getElementById('attribute-increased').value = '';
+      aktualizujDomyślneAtrybuty();
+    } else {
+      updateCalculatedAttributes();
+    }
+  });
+
+  // Jednorazowa zamiana wartości atrybutów (-1/+1)
+  ['attribute-decreased', 'attribute-increased'].forEach(id => {
+    document.getElementById(id).addEventListener('change', updateCalculatedAttributes);
+  });
+
+  // Lokalne przyciski "Wyczyść" - czyszczą tylko wybór swojej sekcji
+  document.getElementById('btn-reset-origin')?.addEventListener('click', resetChoiceOrigin);
+  document.getElementById('btn-randomize-step-1')?.addEventListener('click', randomizeOriginAndTraits);
+  document.getElementById('btn-import-character')?.addEventListener('click', () => {
+    document.getElementById('import-character-file')?.click();
+  });
+  document.getElementById('import-character-file')?.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileImport(file);
+    e.target.value = ''; // pozwala ponownie wybrać ten sam plik po błędzie
+  });
+  document.getElementById('btn-reset-level')?.addEventListener('click', resetLevel);
+  document.getElementById('btn-reset-swap')?.addEventListener('click', resetSwapAttributes);
+  document.getElementById('btn-reset-origin-attribute-choice')?.addEventListener('click', resetChoiceAttributeOrigin);
+  document.getElementById('btn-reset-curios')?.addEventListener('click', resetCurios);
+  document.getElementById('btn-reset-professions')?.addEventListener('click', resetAllProfessionsAndLanguages);
+  document.getElementById('btn-reset-magic')?.addEventListener('click', resetMagic);
+  document.getElementById('magic-picker-close')?.addEventListener('click', closeMagicPicker);
+  document.getElementById('talent-pool-close')?.addEventListener('click', closeTalentPoolPicker);
+  document.getElementById('talent-pool-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'talent-pool-overlay') closeTalentPoolPicker();
+  });
+  // Przyciski wyboru z puli powstają razem z podsumowaniem ścieżki, więc
+  // nasłuch jest delegowany na dokument, a nie wieszany na każdym z osobna.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-pool-grant]');
+    if (btn) openTalentPoolPicker(btn.dataset.poolGrant);
+  });
+
+  document.getElementById('magic-picker-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'magic-picker-overlay') closeMagicPicker();
+  });
+  document.getElementById('btn-randomize-wealth')?.addEventListener('click', randomizeWealth);
+  document.getElementById('btn-reset-wealth')?.addEventListener('click', resetWealth);
+  document.getElementById('equipment-picker-close')?.addEventListener('click', closeEquipmentPicker);
+  document.getElementById('equipment-picker-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'equipment-picker-overlay') closeEquipmentPicker();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && magicPicker) closeMagicPicker();
+    if (e.key === 'Escape' && equipmentPicker) closeEquipmentPicker();
+    if (e.key === 'Escape' && !document.getElementById('load-character-overlay')?.hidden) closeLoadCharacterPopup();
+    if (e.key === 'Escape' && !document.getElementById('randomize-character-overlay')?.hidden) closeRandomizeCharacterPopup();
+  });
+  document.querySelectorAll('[data-reset-path]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // Sekcja ścieżki jest zwijana/rozwijana przez kliknięcie nagłówka -
+      // nie pozwól, by kliknięcie przycisku Wyczyść też przełączało akordeon.
+      e.stopPropagation();
+      resetPath(btn.dataset.resetPath);
+    });
+  });
+
+  // Boczne menu (nowa/wczytaj/wylosuj postać) + podpowiedzi zbudowane w JS
+  document.getElementById('btn-new-character')?.addEventListener('click', () => {
+    if (confirm(t('messages.confirmNewCharacter'))) newCharacter();
+  });
+  document.getElementById('btn-sources')?.addEventListener('click', openSourcesPicker);
+  document.getElementById('sources-close')?.addEventListener('click', closeSourcesPicker);
+  document.getElementById('sources-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'sources-overlay') closeSourcesPicker();
+  });
+  document.getElementById('btn-load-character')?.addEventListener('click', openLoadCharacterPopup);
+  document.getElementById('btn-randomize-character')?.addEventListener('click', openRandomizeCharacterPopup);
+  document.getElementById('load-character-close')?.addEventListener('click', closeLoadCharacterPopup);
+  document.getElementById('load-character-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'load-character-overlay') closeLoadCharacterPopup();
+  });
+  document.getElementById('randomize-character-close')?.addEventListener('click', closeRandomizeCharacterPopup);
+  document.getElementById('randomize-character-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'randomize-character-overlay') closeRandomizeCharacterPopup();
+  });
+  document.getElementById('btn-randomize-character-confirm')?.addEventListener('click', () => {
+    closeRandomizeCharacterPopup();
+    randomizeWholeCharacter(randomizeCharacterLevel);
+  });
+  document.getElementById('character-name')?.addEventListener('input', (e) => {
+    characterName = e.target.value;
+    updatePreviewCharacter();
+  });
+  document.getElementById('btn-save-character')?.addEventListener('click', saveCharacterOnDemand);
+  document.getElementById('btn-promote-character')?.addEventListener('click', promoteCharacter);
+  initializeCollapsibleSections();
+  initializeScrollTopButton();
+  renderPathFilterBar();
+  initializeTooltips();
+});
+
+/**
+ * Podpina zwijanie/rozwijanie sekcji oznaczonych klasą `.collapsible-section`
+ * (obecnie "Korzyści Poziomu" w Kroku 2, domyślnie zwinięta w index.html).
+ */
+function initializeCollapsibleSections() {
+  document.querySelectorAll('.collapsible-section-header').forEach(header => {
+    const section = header.closest('.collapsible-section');
+    if (!section) return;
+    const toggle = () => {
+      const collapsed = section.classList.toggle('collapsed');
+      header.setAttribute('aria-expanded', String(!collapsed));
+    };
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+}
+
+/**
+ * Zwraca element, który aktualnie się przewija: treść otwartego popupu
+ * (jeśli jakiś jest otwarty) albo całą stronę.
+ * @returns {{scroller: Element|Window, top: number}}
+ */
+function getActiveScrollContext() {
+  const openModalBody = [...document.querySelectorAll('.modal-overlay:not([hidden])')]
+    .map(overlay => overlay.querySelector('.modal-body'))
+    .find(Boolean);
+  if (openModalBody) return { scroller: openModalBody, top: openModalBody.scrollTop };
+  return { scroller: window, top: window.scrollY };
+}
+
+/**
+ * Przycisk "przewiń na górę" (prawy dolny róg) - działa zarówno dla całej
+ * strony, jak i dla treści otwartego popupu (wyboru zaklęcia, tradycji,
+ * ekwipunku itd.), bo te przewijają się niezależnie od strony pod spodem.
+ * Pokazuje się dopiero, gdy jest co przewijać.
+ */
+function initializeScrollTopButton() {
+  const btn = document.getElementById('btn-scroll-top');
+  if (!btn) return;
+
+  const refresh = () => {
+    btn.hidden = getActiveScrollContext().top <= 200;
+  };
+
+  btn.addEventListener('click', () => {
+    const { scroller } = getActiveScrollContext();
+    scroller.scrollTo({ top: 0, behavior: 'smooth' });
+    btn.hidden = true;
+  });
+
+  window.addEventListener('scroll', refresh, { passive: true });
+  document.querySelectorAll('.modal-body').forEach(body => {
+    body.addEventListener('scroll', refresh, { passive: true });
+  });
+  // Otwarcie/zamknięcie popupu zmienia kontekst przewijania, a samo w sobie
+  // nie generuje zdarzenia scroll - obserwuj więc atrybut [hidden] overlayów.
+  const observer = new MutationObserver(refresh);
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    observer.observe(overlay, { attributes: true, attributeFilter: ['hidden'] });
+  });
+  refresh();
+}
+
+/**
+ * Ładuje dostępne opcje z serwera
+ */
+async function loadOptions() {
+  try {
+    // Pobierz podstawowe opcje
+    const opcje = {
+      pochodzenia: Object.keys(GAME_DATA.pochodzenia),
+      sciezki: Object.keys(GAME_DATA.sciezki_nowicjuszy)
+    };
+
+    // Sprawdź, które pochodzenia mają tabele
+    let originsWithTables = [];
+    try {
+      const originsData = getOriginsListUi();
+      originsWithTables = originsData.pochodzenia || [];
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn(t('messages.loadOriginsError'), error);
+    }
+
+    // Ładowanie szczegółowych danych pochodzeń
+    availableOrigin = await loadDetailsOriginsExtended(opcje.pochodzenia, originsWithTables);
+
+    // Generowanie kafelków pochodzeń
+    generateTilesOrigins(availableOrigin);
+
+    // Wypełnianie selecta ścieżek (jeśli istnieje - dla kompatybilności wstecznej)
+    const pathSelect = document.getElementById('sciezka');
+    if (pathSelect) {
+      pathSelect.innerHTML = `<option value="">${t('summary.noPath')}</option>`;
+
+      opcje.sciezki.forEach(id => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = id.charAt(0).toUpperCase() + id.slice(1);
+        pathSelect.appendChild(option);
+      });
+    }
+
+  } catch (error) {
+    showError(t('messages.saves.optionsLoadError', { message: error.message }));
+  }
+}
+
+/**
+ * Ładuje dostępne poziomy z serwera
+ */
+async function loadLevels() {
+  // Poziomy są dostępne w DANE_GRY.poziomy, ale obecnie nie są używane w UI
+  // (poziomy są zdefiniowane bezpośrednio w HTML)
+}
+
+/**
+ * Inicjalizuje obsługę poziomów postaci
+ */
+function initializeLevels() {
+  // Dodaj event listenery dla radio buttonów poziomów
+  const levelInputs = document.querySelectorAll('input[name="poziom"]');
+  levelInputs.forEach(input => {
+    input.addEventListener('change', (e) => applyLevelChange(parseInt(e.target.value)));
+  });
+
+  // Inicjalizuj ścieżki dla poziomu 0 (domyślnego)
+  updatePathsVisibility(0);
+  updatePathsLevel(0);
+  updateWealthSection(0);
+  updateOriginBenefits(0);
+  // Załaduj korzyści dla poziomu 0
+  loadBenefitsLevel(0);
+
+  // Breadcrumbs
+  const crumbs = document.querySelectorAll('#breadcrumbs .breadcrumb-item');
+  crumbs.forEach(c => {
+    c.addEventListener('click', () => {
+      const step = parseFloat(c.getAttribute('data-step'));
+      randomizeToStep(step);
+    });
+  });
+}
+
+/**
+ * Ustawia nowy poziom postaci i odświeża wszystko, co od niego zależy.
+ * Wywoływana zarówno przez radio poziomu w Kroku 2, jak i przez przycisk
+ * "Awans" w Kroku 8 - dzięki temu obie drogi przechodzą przez to samo
+ * przycinanie stanu (zob. pruneStateForLevel()).
+ * @param {number} poziom - nowy poziom postaci (0-10)
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.keepSilverRoll=false] - czy zachować wylosowane
+ *   srebrniki. Domyślnie nie, bo ich liczba zależy od poziomu; wyjątkiem jest
+ *   awans w trakcie gry (zob. promoteCharacter()), gdzie postać po prostu ma
+ *   już swój majątek i nie przelicza go od nowa.
+ */
+async function applyLevelChange(poziom, { keepSilverRoll = false } = {}) {
+  const poprzedniPoziom = selectedLevel;
+  selectedLevel = poziom;
+
+  // Wybory z wyższych poziomów (ścieżki, sloty, kurioza, magia...) przestają
+  // obowiązywać, gdy poziom spadnie - inaczej zostawałyby w postaci mimo
+  // tego, że nowy poziom ich nie przyznaje.
+  pruneStateForLevel(poziom, poprzedniPoziom, { keepSilverRoll });
+
+  updatePathsVisibility(poziom);
+  updatePathsLevel(poziom);
+  updatePathsSectionTitle(poziom);
+  updateWealthSection(poziom);
+  updateOriginBenefits(poziom);
+
+  // Aktualizuj widoczność sekcji ścieżek i prze-renderuj kafelki,
+  // aby przyciski przeszły ze stanu disabled -> enabled po zmianie poziomu
+  renderPathSectionsVisibility();
+  await renderPathSection(1);
+  await renderPathSection(3);
+  await renderPathSection(7);
+
+  // Kroki zależne od poziomu i ścieżek - przerenderuj, żeby pokazywały stan
+  // po przycięciu, a nie nieaktualne wybory z poprzedniego poziomu.
+  renderAttributesSlotsSection();
+  renderProfessionsSection();
+  renderCuriosSection();
+  renderSpellsSection();
+  renderEquipmentSection();
+  updateStep3NextButton();
+  updateStep5NextButton();
+
+  // Załaduj korzyści dla wybranego poziomu
+  await loadBenefitsLevel(poziom);
+  updateCalculatedAttributes();
+  updatePreviewCharacter();
+}
+
+/**
+ * Usuwa z postaci wybory, których nowy poziom już nie przyznaje: ścieżki
+ * powyżej progu, sloty atrybutów i profesji z usuniętych ścieżek, nadmiarowe
+ * kurioza, wybory magii dla nieistniejących już korzyści, opcję z poziomu 4
+ * pochodzenia oraz wylosowane srebrniki (ich liczba zależy od poziomu).
+ * @param {number} poziom - nowy poziom postaci
+ * @param {number} poprzedniPoziom - poziom sprzed zmiany
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.keepSilverRoll=false] - pomiń zerowanie rzutu na srebrniki
+ */
+function pruneStateForLevel(poziom, poprzedniPoziom, { keepSilverRoll = false } = {}) {
+  if (poziom === poprzedniPoziom) return;
+
+  // 1. Ścieżki, do których nowy poziom nie daje już dostępu (resetSciezke()
+  //    odejmuje też przyznane przez nie korzyści).
+  if (poziom < 1 && selectedPaths.nowicjusz) resetPath('nowicjusz');
+  if (poziom < 3 && selectedPaths.ekspert) resetPath('ekspert');
+  if (poziom < 7 && selectedPaths.mistrz) resetPath('mistrz');
+
+  // 1b. Talenty wybrane z pul - zostają tylko te nadania, do których postać
+  //     nadal dochodzi poziomem i których ścieżka wciąż jest wybrana.
+  const aktualneNadania = new Set(getPoolGrants().map(g => g.id));
+  Object.keys(poolTalentChoices).forEach(id => {
+    if (!aktualneNadania.has(id)) delete poolTalentChoices[id];
+  });
+
+  // 2. Sloty zwiększenia atrybutów (Krok 4) przyznane przez ścieżki, których
+  //    postać już nie ma.
+  const idsSlotowAtrybutow = new Set(calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  }).map(s => s.id));
+  Object.keys(selectedAttributesSlots).forEach(id => {
+    if (!idsSlotowAtrybutow.has(id)) delete selectedAttributesSlots[id];
+  });
+
+  // 3. Sloty profesji i języków (Krok 5) z usuniętych ścieżek.
+  const idsSlotowProfesji = new Set(calculateSlotsCharacter().slots.map(s => s.id));
+  Object.keys(answersSlots).forEach(id => {
+    if (!idsSlotowProfesji.has(id)) delete answersSlots[id];
+  });
+
+  // 4. Kurioza ponad limit nowego poziomu (progi 1/3/7).
+  const { kurioza } = calculateChoiceCount();
+  if (selectedCurios.length > kurioza) selectedCurios = selectedCurios.slice(0, kurioza);
+
+  // 5. Opcja korzyści z pochodzenia na poziomie 4 - poniżej tego poziomu
+  //    postać jej nie ma, więc zaznaczony radiobutton trzeba wyczyścić
+  //    (pobierzAktualnieWybranaOpcjePoziom4() czyta go wprost z DOM).
+  if (poziom < 4 && selectedOrigin) {
+    document.querySelectorAll(`input[name="origin-option-${selectedOrigin}"]`).forEach(radio => { radio.checked = false; });
+  }
+
+  // 6. Wybory magii dla korzyści, których na nowym poziomie już nie ma
+  //    (liczone po przycięciu ścieżek i opcji poziomu 4 powyżej).
+  const idsAtomowMagii = new Set(getCurrentAtomsMagic().map(a => a.id));
+  Object.keys(magicChoices).forEach(id => {
+    if (!idsAtomowMagii.has(id)) delete magicChoices[id];
+  });
+  Object.keys(magicRiskResults).forEach(id => {
+    if (!idsAtomowMagii.has(id)) delete magicRiskResults[id];
+  });
+
+  // 7. Srebrniki - ich liczba to 2k6 za każdy poziom powyżej 0, więc przy
+  //    ręcznej zmianie poziomu (tworzenie/poprawianie postaci) poprzedni rzut
+  //    przestaje pasować i trzeba go powtórzyć. Awans w trakcie gry jest
+  //    wyjątkiem: postać ma już swój majątek i nie przelicza go od nowa.
+  if (!keepSilverRoll) {
+    randomizedSilver = null;
+    const wealthSpan = document.getElementById('wealth-summary');
+    if (wealthSpan) wealthSpan.textContent = t('step2.silverNotRolled');
+  }
+}
+
+/**
+ * Ładuje i renderuje kafelki ścieżek w Kroku 3
+ */
+async function loadPathsToTiles() {
+  try {
+    initializeAccordionPaths();
+    renderPathSectionsVisibility();
+    await renderPathSection(1);
+    await renderPathSection(3);
+    await renderPathSection(7);
+    updateStep3NextButton();
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn(t('paths.loadError'), e);
+  }
+}
+
+/**
+ * Umożliwia ręczne zwijanie/rozwijanie sekcji ścieżek po kliknięciu nagłówka
+ * (np. by wrócić do wcześniej wybranej ścieżki i zmienić decyzję).
+ */
+function initializeAccordionPaths() {
+  document.querySelectorAll('.path-section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const section = header.closest('.path-section');
+      if (section) section.classList.toggle('collapsed');
+    });
+  });
+}
+
+function renderPathSectionsVisibility() {
+  const canTier3 = selectedLevel >= 3;
+  const canTier7 = selectedLevel >= 7;
+  const sec1 = document.getElementById('path-section-1');
+  const sec3 = document.getElementById('path-section-3');
+  const sec7 = document.getElementById('path-section-7');
+  const g3 = document.getElementById('path-grid-3');
+  const s3 = document.getElementById('path-summary-3');
+  const g7 = document.getElementById('path-grid-7');
+  const s7 = document.getElementById('path-summary-7');
+
+  // Dla poziomu 0 ukryj wszystkie sekcje ścieżek
+  const levelZero = selectedLevel === 0;
+  if (sec1) sec1.style.display = levelZero ? 'none' : '';
+  if (sec3) sec3.style.display = levelZero ? 'none' : '';
+  if (sec7) sec7.style.display = levelZero ? 'none' : '';
+
+  if (!levelZero) {
+    // Dostępność sekcji eksperta i mistrza sygnalizuje opacja kafelków
+    if (g3) g3.style.opacity = canTier3 ? '1' : '0.5';
+    if (s3) s3.textContent = canTier3 ? '' : 'Odblokuj wyborem poziomu 3 w Kroku 2';
+    if (g7) g7.style.opacity = canTier7 ? '1' : '0.5';
+    if (s7) s7.textContent = canTier7 ? '' : 'Odblokuj wyborem poziomu 7 w Kroku 2';
+  }
+
+  updatePathAccordion();
+  updateStep3NextButton();
+}
+
+/**
+ * Rozwija sekcję pierwszej niewybranej dostępnej ścieżki, a zwija pozostałe
+ * dostępne sekcje. Sekcje niedostępne (zablokowane wyższym poziomem) są
+ * domyślnie zwinięte - widoczny zostaje tylko komunikat o odblokowaniu.
+ */
+function updatePathAccordion() {
+  const poziomy = [1, 3, 7];
+  const selectedMap = { 1: selectedPaths.nowicjusz, 3: selectedPaths.ekspert, 7: selectedPaths.mistrz };
+  const availableLevels = poziomy.filter(p => selectedLevel >= p);
+  const activeLevel = availableLevels.find(p => !selectedMap[p]);
+
+  poziomy.forEach(p => {
+    const section = document.getElementById(`path-section-${p}`);
+    if (!section) return;
+    if (!availableLevels.includes(p)) {
+      // Sekcja niedostępna - poza akordeonem, domyślnie zwinięta
+      section.classList.add('collapsed');
+      return;
+    }
+    section.classList.toggle('collapsed', p !== activeLevel);
+  });
+}
+
+async function renderPathSection(levelChoice) {
+  const gridId = `path-grid-${levelChoice}`;
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.innerHTML = '';
+  let paths = [];
+  try {
+    paths = filterBySource(getPathsForLevel(levelChoice));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn(t('paths.loadError'), error);
+    return;
+  }
+  for (const p of paths) {
+    const tile = renderPathTile(p, levelChoice);
+    grid.appendChild(tile);
+  }
+  applyPathFilters();
+  // updateStep3NextButton() jest wywoływane w applyPathBenefits
+}
+
+/** Stan filtra ścieżek w Kroku 3 - dzielony przez wszystkie trzy siatki. */
+let pathFilterState = { search: '', kategorie: new Set() };
+
+/** Rysuje chipy kategorii w pasku filtra (raz, przy starcie aplikacji). */
+function renderPathFilterBar() {
+  const container = document.getElementById('path-filter-categories');
+  if (!container) return;
+  container.innerHTML = PATH_CATEGORY_CODES.map(kod => `
+    <button type="button" class="path-category-filter-btn" data-category-filter="${kod}">${t(`paths.categories.${kod}`)}</button>
+  `).join('');
+  container.querySelectorAll('[data-category-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const kod = btn.dataset.categoryFilter;
+      if (pathFilterState.kategorie.has(kod)) pathFilterState.kategorie.delete(kod);
+      else pathFilterState.kategorie.add(kod);
+      btn.classList.toggle('active', pathFilterState.kategorie.has(kod));
+      applyPathFilters();
+    });
+  });
+  document.getElementById('path-filter-search')?.addEventListener('input', (e) => {
+    pathFilterState.search = e.target.value.trim().toLowerCase();
+    applyPathFilters();
+  });
+  document.getElementById('path-filter-reset')?.addEventListener('click', resetPathFilters);
+}
+
+function resetPathFilters() {
+  pathFilterState = { search: '', kategorie: new Set() };
+  const search = document.getElementById('path-filter-search');
+  if (search) search.value = '';
+  document.querySelectorAll('[data-category-filter]').forEach(btn => btn.classList.remove('active'));
+  applyPathFilters();
+}
+
+/**
+ * Chowa/pokazuje kafelki ścieżek na wszystkich trzech siatkach naraz według
+ * bieżącego stanu filtra. Wybór gracza jest niezależny od filtra - schowany
+ * kafelek wybranej ścieżki wciąż liczy się jako wybrany, tylko nie jest
+ * widoczny, dopóki filtr nie zostanie poluzowany.
+ */
+function applyPathFilters() {
+  const { search, kategorie } = pathFilterState;
+  const aktywny = Boolean(search) || kategorie.size > 0;
+  const resetBtn = document.getElementById('path-filter-reset');
+  if (resetBtn) resetBtn.hidden = !aktywny;
+
+  let widocznychLacznie = 0;
+  ['path-grid-1', 'path-grid-3', 'path-grid-7'].forEach(gridId => {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    grid.querySelectorAll('.path-tile').forEach(tile => {
+      const pasujeSzukanie = !search || (tile.dataset.searchText || '').includes(search);
+      const tileKategorie = (tile.dataset.kategorie || '').split(',').filter(Boolean);
+      const pasujeKategoria = kategorie.size === 0 || [...kategorie].some(k => tileKategorie.includes(k));
+      const widoczny = pasujeSzukanie && pasujeKategoria;
+      tile.hidden = !widoczny;
+      if (widoczny) widocznychLacznie++;
+    });
+  });
+
+  const empty = document.getElementById('path-filter-empty');
+  if (empty) empty.hidden = !aktywny || widocznychLacznie > 0;
+}
+
+function renderPathTile(path, levelChoice) {
+  const canPick = selectedLevel >= levelChoice;
+  const selectedId = levelChoice === 1 ? selectedPaths.nowicjusz : (levelChoice === 3 ? selectedPaths.ekspert : selectedPaths.mistrz);
+  const isSelected = selectedId === path.id;
+  const tile = document.createElement('button');
+  tile.type = 'button';
+  tile.className = `picker-tile path-tile${isSelected ? ' selected' : ''}${canPick ? '' : ' disabled'}`;
+  if (!canPick) tile.disabled = true;
+  tile.dataset.pathId = path.id;
+  tile.dataset.pickLevel = levelChoice;
+  // Do filtrowania w Kroku 3 (zob. applyPathFilters()): kategorie tematyczne
+  // do dopasowania chipów oraz nazwa+opis w jednym polu do szukania tekstem.
+  tile.dataset.kategorie = (path.kategorie || []).join(',');
+  tile.dataset.searchText = `${path.nazwa} ${path.opis || ''}`.toLowerCase();
+  const kategorieHtml = (path.kategorie || [])
+    .map(k => `<span class="path-category-chip">${t(`paths.categories.${k}`)}</span>`).join('');
+  tile.innerHTML = `
+    <div class="picker-tile-header">
+      <span>${path.nazwa}</span>
+      ${isSelected ? `<span class="wealth-badge">${icon('check')} Wybrano</span>` : ''}
+    </div>
+    <div class="picker-tile-meta">${renderSourceTag(path.zrodlo || 'PG')} ${t('paths.pickLevel', { level: levelChoice })}</div>
+    ${kategorieHtml ? `<div class="path-category-chips">${kategorieHtml}</div>` : ''}
+    <div class="tile-body">
+      ${renderPathBenefitsList(path, levelChoice)}
+    </div>
+  `;
+  if (canPick) {
+    tile.addEventListener('click', (e) => {
+      e.preventDefault();
+      applyPathBenefits({ levelChoice, sciezka: path });
+      // Po wyborze prze-renderuj sekcję, aby podświetlić kafel
+      renderPathSection(levelChoice);
+    });
+  }
+  return tile;
+}
+
+function renderPathBenefitsList(path, levelChoice) {
+  const pkt = (path.korzysci && path.korzysci[levelChoice]) || {};
+  // Parametr nazywa się `talent`, a nie `t` - `t` to funkcja tłumaczeń i jej
+  // przysłonięcie w tym callbacku wywalało renderowanie kafelków ścieżek.
+  const talenty = (pkt.talenty || []).map(talent => `<li><strong>${t('summary.talentColon')}</strong> ${talent.nazwa || talent} – ${talent.opis || ''}</li>`).join('');
+  const zaklecia = (pkt.zaklecia || []).map(z => `<li><strong>${t('summary.magicColon')}</strong> ${z.opis || z.nazwa || z}</li>`).join('');
+  const modAttr = pkt.mod_atrybuty ? Object.entries(pkt.mod_atrybuty).map(([k,v]) => `${attributeLabel(k)}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const modSecondary = pkt.mod_drugorzedne ? Object.entries(pkt.mod_drugorzedne).map(([k,v]) => `${secondaryAttributeLabel(k)}: ${v>0?'+':''}${v}`).join(', ') : '';
+  const atrybutyGlowne = pkt.atrybuty_glowne
+    ? `<li><strong>${t('attributes.headingColon')}</strong> ${t('summary.increaseAnyBy', { count: pkt.atrybuty_glowne.ilosc, value: pkt.atrybuty_glowne.wartosc })}</li>`
+    : '';
+  const literacy = (pkt.bieglosci || []).map(b => `<li><strong>${t('summary.languagesAndProfessionsColon')}</strong> ${b}</li>`).join('');
+  const gear = (pkt.sprzet || []).map(s => `<li><strong>${t('summary.gearColon')}</strong> ${s}</li>`).join('');
+  return `
+    <div class="benefit-category"><h5>${t('paths.levelBenefitsHeading', { level: levelChoice })}</h5>
+      <ul class="path-benefits">
+        ${atrybutyGlowne}
+        ${talenty}
+        ${zaklecia}
+        ${modAttr?`<li><strong>${t('attributes.modifiersColon')}</strong> ${modAttr}</li>`:''}
+        ${modSecondary?`<li><strong>Modyfikatory drugorzędne:</strong> ${modSecondary}</li>`:''}
+        ${literacy}
+        ${gear}
+      </ul>
+    </div>`;
+}
+
+function applyPathBenefits({ levelChoice, sciezka }) {
+  // Poprzednie korzyści z tego progu (jeśli były) zostaną zastąpione niżej -
+  // dodajBenefity() przelicza atrybuty drugorzędne od zera na podstawie
+  // aktualnego stanu przyznaneKorzysciZeSciezek, więc nie trzeba ich osobno odjąć.
+  // Zapisz wybór ścieżki w stanie uproszczonym
+  const tier = PATH_TIER_BY_LEVEL[levelChoice];
+  if (tier) selectedPaths[tier] = sciezka.id;
+
+  // Zastosuj nowy pakiet korzyści
+  const pkt = (sciezka.korzysci && sciezka.korzysci[levelChoice]) || {};
+  grantedBenefitsWithPaths[levelChoice] = { pathId: sciezka.id, sciezkaNazwa: sciezka.nazwa, zrodlo: sciezka.zrodlo, levelChoice, pkt };
+  addBenefits(pkt);
+  updatePreviewCharacter();
+  renderPathSummary(levelChoice, sciezka);
+  updatePathAccordion();
+  updateStep3NextButton();
+  // Sekcja "Korzyści Poziomu" w Kroku 2 pokazuje korzyści ze ścieżki
+  // przypisanej do bieżącego poziomu - po zmianie ścieżki trzeba ją
+  // przeliczyć, inaczej zostałaby przy stanie "Brak ścieżki".
+  loadBenefitsLevel(selectedLevel);
+}
+
+/**
+ * Włącza przycisk "Dalej" w Kroku 3, gdy wybrane są wymagane ścieżki
+ */
+function updateStep3NextButton() {
+  const btn = document.getElementById('btn-next-3');
+  if (!btn) return;
+  
+  // Dla poziomu 0 nie wymagaj żadnych ścieżek
+  if (selectedLevel === 0) {
+    btn.disabled = false;
+    return;
+  }
+  
+  const hasNovice = !!selectedPaths.nowicjusz;
+  const needExpert = selectedLevel >= 3;
+  const needMaster = selectedLevel >= 7;
+  const hasExpert = !!selectedPaths.ekspert;
+  const hasMaster = !!selectedPaths.mistrz;
+  const canProceed = hasNovice && (!needExpert || hasExpert) && (!needMaster || hasMaster);
+  btn.disabled = !canProceed;
+}
+
+function renderPathSummary(levelChoice, sciezka) {
+  const box = document.getElementById(`path-summary-${levelChoice}`);
+  if (!box) return;
+  box.innerHTML = `
+    <div class="inline-box">${t('paths.chosenPathColon')} <strong>${sciezka.nazwa}</strong> ${t('paths.appliedLevelBenefits', { level: levelChoice })}</div>
+    ${renderPoolGrantsHtml(levelChoice)}
+  `;
+}
+
+/**
+ * Zwraca listę przyznanych przez ścieżki wyborów talentu z puli, do których
+ * postać faktycznie już doszła poziomem. Jeden wpis to jedno nadanie
+ * (ścieżka + jej próg), razem z tym, co gracz już z niego wybrał.
+ */
+function getPoolGrants(levelChoice = null) {
+  const tiers = [
+    { key: 'nowicjusz', group: 'sciezki_nowicjuszy', levelChoice: 1 },
+    { key: 'ekspert', group: 'sciezki_ekspertow', levelChoice: 3 },
+    { key: 'mistrz', group: 'sciezki_mistrzow', levelChoice: 7 }
+  ];
+  const grants = [];
+  tiers.forEach(tier => {
+    if (levelChoice !== null && tier.levelChoice !== levelChoice) return;
+    const pathId = selectedPaths[tier.key];
+    if (!pathId) return;
+    const sciezka = GAME_DATA[tier.group] && GAME_DATA[tier.group][pathId];
+    if (!sciezka) return;
+    Object.entries(PATH_LEVEL_KEYS[tier.group]).forEach(([levelKey, poziom]) => {
+      const wybor = sciezka[levelKey] && sciezka[levelKey].talenty_do_wyboru;
+      if (!wybor || selectedLevel < poziom) return;
+      const id = `${pathId}:${levelKey}`;
+      grants.push({
+        id,
+        pathId,
+        pathName: sciezka.nazwa,
+        levelChoice: tier.levelChoice,
+        poziom,
+        pula: wybor.pula,
+        ilosc: wybor.ilosc || 1,
+        wybrane: poolTalentChoices[id] || []
+      });
+    });
+  });
+  return grants;
+}
+
+/** Renderuje przyciski wyboru talentu z puli dla danego progu ścieżki. */
+function renderPoolGrantsHtml(levelChoice) {
+  const grants = getPoolGrants(levelChoice);
+  if (grants.length === 0) return '';
+  return grants.map(g => {
+    const pula = TALENT_POOLS[g.pula];
+    const brakuje = g.ilosc - g.wybrane.length;
+    const lista = g.wybrane.length
+      ? `<ul class="path-benefits">${g.wybrane.map(nazwaTalentu => `<li><strong>${nazwaTalentu}</strong> - ${getTalentDescription(nazwaTalentu)}</li>`).join('')}</ul>`
+      : '';
+    return `
+      <div class="inline-box pool-grant">
+        <div class="pool-grant-header">
+          <span>${t('paths.talentPoolGrantLabel', { pool: pula ? pula.nazwa : t('paths.talentPoolFallbackName'), level: g.poziom })}
+            <strong>${g.wybrane.length}/${g.ilosc}</strong> ${t('summary.chosenCountSuffix')}</span>
+          <button type="button" class="btn-primary small" data-pool-grant="${g.id}">
+            ${brakuje > 0 ? `${icon('plus-circle')} Wybierz talent` : `${icon('refresh')} Zmień wybór`}
+          </button>
+        </div>
+        ${lista}
+      </div>
+    `;
+  }).join('');
+}
+
+/** Otwiera okno wyboru talentu z puli dla wskazanego nadania. */
+function openTalentPoolPicker(grantId) {
+  const grant = getPoolGrants().find(g => g.id === grantId);
+  const overlay = document.getElementById('talent-pool-overlay');
+  const body = document.getElementById('talent-pool-body');
+  const title = document.getElementById('talent-pool-title');
+  if (!grant || !overlay || !body) return;
+  const pula = TALENT_POOLS[grant.pula];
+  if (!pula) return;
+
+  if (title) title.textContent = t('paths.talentPoolHeader', { pool: pula.nazwa, path: grant.pathName, level: grant.poziom });
+  const wybrane = new Set(grant.wybrane);
+  const grupy = Object.values(pula.grupy).map(grupa => {
+    const opcje = grupa.talenty.map(talent => {
+      const juz = wybrane.has(talent);
+      return `
+        <button type="button" class="picker-tile talent-option${juz ? ' selected' : ''}"
+                data-grant="${grant.id}" data-talent="${talent}">
+          <div class="picker-tile-header"><span>${talent}</span>${juz ? `<span class="wealth-badge">${icon('check')} Wybrano</span>` : ''}</div>
+          <div class="tile-body"><p>${getTalentDescription(talent)}</p></div>
+        </button>
+      `;
+    }).join('');
+    return `
+      <div class="benefit-category">
+        <h5>${pula.etykietaGrupy}: ${grupa.nazwa}</h5>
+        ${grupa.wybierz_rozne ? `<p class="hint">${t('paths.talentPoolDifferentSkill')}</p>` : ''}
+        <div class="picker-grid">${opcje}</div>
+      </div>
+    `;
+  }).join('');
+
+  body.innerHTML = `
+    <p class="hint">${t('summary.toChooseColon')} <strong>${grant.ilosc}</strong>${t('paths.talentPoolClickHint')}</p>
+    ${grupy}
+  `;
+  body.querySelectorAll('button[data-talent]').forEach(btn => {
+    btn.addEventListener('click', () => toggleTalentPool(btn.dataset.grant, btn.dataset.talent));
+  });
+  overlay.hidden = false;
+}
+
+function closeTalentPoolPicker() {
+  const overlay = document.getElementById('talent-pool-overlay');
+  if (overlay) overlay.hidden = true;
+}
+
+/**
+ * Dodaje albo usuwa talent z wyboru gracza dla danego nadania. Przy komplecie
+ * wybranych talentów kolejny wybór zastępuje najstarszy, żeby nie trzeba było
+ * najpierw ręcznie odznaczać.
+ */
+function toggleTalentPool(grantId, talent) {
+  const grant = getPoolGrants().find(g => g.id === grantId);
+  if (!grant) return;
+  const obecne = [...(poolTalentChoices[grantId] || [])];
+  const idx = obecne.indexOf(talent);
+  if (idx >= 0) {
+    obecne.splice(idx, 1);
+  } else {
+    if (obecne.length >= grant.ilosc) obecne.shift();
+    obecne.push(talent);
+  }
+  poolTalentChoices[grantId] = obecne;
+  openTalentPoolPicker(grantId);
+  refreshPathSummaries();
+  updatePreviewCharacter();
+}
+
+/**
+ * Przerysowuje podsumowania wybranych ścieżek w Kroku 3. Licznik
+ * "x/y wybrane" siedzi właśnie tam, a renderPathSection() odświeża samą
+ * siatkę kafli - bez tego licznik zostawałby na starej wartości po wyborze
+ * talentu z puli albo po imporcie postaci.
+ */
+function refreshPathSummaries() {
+  const grupy = { 1: 'sciezki_nowicjuszy', 3: 'sciezki_ekspertow', 7: 'sciezki_mistrzow' };
+  const tierByLevel = { 1: 'nowicjusz', 3: 'ekspert', 7: 'mistrz' };
+  Object.entries(grupy).forEach(([levelChoice, grupa]) => {
+    const pathId = selectedPaths[tierByLevel[levelChoice]];
+    const sciezka = pathId && GAME_DATA[grupa] && GAME_DATA[grupa][pathId];
+    if (sciezka) renderPathSummary(Number(levelChoice), sciezka);
+  });
+}
+
+/**
+ * Sumuje wymuszone podwyżki atrybutów głównych ze wszystkich aktualnie
+ * wybranych ścieżek. Liczone od zera przy każdym przeliczeniu - inaczej
+ * ponowne kliknięcie tej samej ścieżki dodawałoby bonus drugi raz.
+ */
+function sumAttributeBonusesFromPaths() {
+  const suma = { sila: 0, zrecznosc: 0, intelekt: 0, wola: 0 };
+  Object.values(grantedBenefitsWithPaths).forEach(wpis => {
+    const mod = wpis && wpis.pkt && wpis.pkt.mod_atrybuty;
+    if (!mod) return;
+    Object.entries(mod).forEach(([atrybut, wartosc]) => {
+      if (atrybut in suma) suma[atrybut] += wartosc;
+    });
+  });
+  return suma;
+}
+
+function addBenefits(pkt) {
+  // Atrybuty główne zależą od wybranych ścieżek, więc przelicz je od zera
+  // (updateCalculatedAttributes() dolicza sumAttributeBonusesFromPaths()).
+  if (pkt.mod_atrybuty) {
+    updateCalculatedAttributes();
+    return;
+  }
+  // Atrybuty drugorzędne – przeliczenie przez naszą funkcję
+  const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
+  if (pochodzenie) {
+    const atrybuty = {
+      sila: parseInt(document.getElementById('strength-final').textContent),
+      zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+      intelekt: parseInt(document.getElementById('intellect-final').textContent),
+      wola: parseInt(document.getElementById('will-final').textContent)
+    };
+    updateAttributesSecondary(atrybuty, pochodzenie);
+  }
+}
+
+function subtractBenefits(prev) {
+  const pkt = prev.pkt || {};
+  // Podobnie jak przy dodawaniu: atrybuty główne przelicza od zera
+  // updateCalculatedAttributes(), po wyczyszczeniu wpisu ścieżki.
+  if (pkt.mod_atrybuty) {
+    updateCalculatedAttributes();
+    return;
+  }
+  const pochodzenie = selectedOrigin && availableOrigin.find(p=>p.id===selectedOrigin);
+  if (pochodzenie) {
+    const atrybuty = {
+      sila: parseInt(document.getElementById('strength-final').textContent),
+      zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+      intelekt: parseInt(document.getElementById('intellect-final').textContent),
+      wola: parseInt(document.getElementById('will-final').textContent)
+    };
+    updateAttributesSecondary(atrybuty, pochodzenie);
+  }
+}
+
+/**
+ * Aktualizuje dostępne ścieżki na podstawie wybranego poziomu
+ * @param {number} poziom - Wybrany poziom postaci
+ */
+async function updatePathsLevel(_level) {
+  // Nowy system kafelków - funkcja jest już obsługiwana przez renderPathSectionsVisibility()
+  // i renderPathSection() w głównym flow
+}
+
+
+/**
+ * Aktualizuje tytuł sekcji ścieżek na podstawie poziomu
+ * @param {number} poziom - Wybrany poziom postaci
+ */
+function updatePathsSectionTitle(poziom) {
+  const title = document.getElementById('path-section-title');
+  if (!title) return;
+
+  // Nazwa sekcji dla każdego poziomu siedzi w pliku językowym
+  // (paths.section.<poziom>); brak wpisu to wariant ogólny.
+  const nazwa = poziom >= 1 && poziom <= 10 ? t(`paths.section.${poziom}`) : null;
+  title.textContent = nazwa && !nazwa.startsWith('paths.') ? nazwa : t('paths.sectionGeneric');
+}
+
+/**
+ * Ustawia widoczność selectów ścieżek w zależności od poziomu
+ */
+function updatePathsVisibility(_level) {
+  // Funkcja jest już obsługiwana przez renderPathSectionsVisibility()
+  renderPathSectionsVisibility();
+}
+
+/**
+ * Aktualizuje sekcję zasobów (złoto i kurioza) na podstawie poziomu
+ */
+function updateWealthSection(poziom) {
+  const secondary = document.getElementById('wealth-section');
+  if (!secondary) return;
+  secondary.style.display = poziom > 0 ? 'block' : 'none';
+  numberCurios = calculateChoiceCount().kurioza;
+  const curiosSpan = document.getElementById('curios-summary');
+  if (curiosSpan) curiosSpan.textContent = `Kurioza: ${numberCurios}`;
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan && randomizedSilver != null) {
+    wealthSpan.textContent = `Srebrniki: ${randomizedSilver}`;
+  }
+}
+
+/**
+ * Uaktualnia wyświetlanie bogactwa po losowaniu
+ */
+function updateWealthUi(rolls, sum) {
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan) {
+    wealthSpan.textContent = `Srebrniki: ${sum} (rzuty: ${rolls.join(', ')})`;
+  }
+}
+
+/**
+ * Aktualizuje sekcję korzyści z pochodzenia na podstawie poziomu
+ */
+function updateOriginBenefits(poziom) {
+  const secondary = document.getElementById('origin-benefits-section');
+  if (!secondary) return;
+  
+  // Pokaż sekcję tylko dla poziomu 4
+  secondary.style.display = poziom >= 4 ? 'block' : 'none';
+  
+  if (poziom >= 4 && selectedOrigin) {
+    updateOriginBenefitsContent();
+    // Zaktualizuj atrybuty z bonusem z poziomu 4
+    updateAttributesWithLevel4();
+  }
+}
+
+/**
+ * Aktualizuje zawartość korzyści z pochodzenia
+ */
+function updateOriginBenefitsContent() {
+  const content = document.getElementById('origin-benefits-content');
+  if (!content || !selectedOrigin) return;
+  
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie || !pochodzenie.poziom_4) return;
+  
+  const benefits = pochodzenie.poziom_4;
+
+  // Wybrana opcja żyje wyłącznie w DOM (zob. getCurrentSelectedLevel4Option()),
+  // a ta funkcja przebudowuje radiobuttony od zera - bez zapamiętania i
+  // przywrócenia zaznaczenia postać po każdej zmianie poziomu po cichu traciła
+  // korzyść z poziomu 4 (a wraz z nią np. przyznane przez nią zaklęcie).
+  const wybranaOpcja = getCurrentSelectedLevel4Option();
+
+  // Wyświetl korzyści z pochodzenia dla poziomu 4
+  content.innerHTML = `
+    <div class="benefit-item">
+      <h5>${t('summary.originBenefitsWithName', { origin: pochodzenie.nazwa })}</h5>
+      <div class="origin-benefits-details">
+        ${parseInt(benefits.zdrowie.replace('+', '')) > 0 ? `
+        <div class="health-bonus">
+          <h6>${icon('heart')} Bonus do Zdrowia</h6>
+          <p><strong>${t('attributes.healthColon')}</strong> +${benefits.zdrowie.replace('+', '')}</p>
+        </div>
+        ` : ''}
+
+        <div class="options-selection">
+          <h6>${icon('bolt')} ${t('summary.chooseOptionHeading')}</h6>
+          <p>${t('step2.chooseOneOption')}</p>
+          <div class="options-list">
+            ${benefits.opcje.map(opcja => `
+              <label class="option-choice">
+                <input type="radio" name="origin-option-${pochodzenie.id}" value="${opcja}"${opcja === wybranaOpcja ? ' checked' : ''}>
+                <span class="option-text">${opcja}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="talent-descriptions">
+          <h6>${icon('book')} ${t('summary.talentDescriptionsHeading')}</h6>
+          ${generateTalentDescriptions(benefits.opcje)}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Dodaj event listenery dla wyboru opcji
+  addOptionEventListeners(pochodzenie.id);
+}
+
+/**
+ * Zwraca nazwę talentu przyznawanego przez opcję korzyści z pochodzenia
+ * (poziom 4) albo `null`, gdy opcja nie dotyczy talentu.
+ *
+ * Opcje są zapisane jako 'talent <Nazwa>' (zob. OPTION_TALENT_PREFIX w
+ * data/<język>/origins.js), a klucze opisów w data/<język>/talents.js to już
+ * sama nazwa. Bez odcięcia przedrostka wyszukanie opisu zawsze zawodziło i
+ * kreator pokazywał "Opis talentu nie jest dostępny.".
+ */
+function talentNameFromOriginOption(opcja) {
+  const prefiks = CONTENT.ORIGIN_OPTION_TALENT_PREFIX;
+  return opcja.startsWith(prefiks) ? opcja.slice(prefiks.length) : null;
+}
+
+/**
+ * Generuje opisy opcji korzyści z pochodzenia na poziomie 4. Opisy talentów
+ * pochodzą z data/<język>/talents.js - jedynego miejsca, w którym są
+ * utrzymywane.
+ */
+function generateTalentDescriptions(opcje) {
+  return opcje.map(opcja => {
+    const nazwaTalentu = talentNameFromOriginOption(opcja);
+    if (nazwaTalentu) {
+      return `
+        <div class="talent-description">
+          <strong>${nazwaTalentu}:</strong> ${getTalentDescription(nazwaTalentu)}
+        </div>
+      `;
+    }
+    if (opcja === '1 zaklęcie') {
+      return `
+        <div class="spell-description">
+          <strong>${t('summary.spellOptionLabel')}</strong> ${t('summary.learnOneSpellFromKnown')}
+        </div>
+      `;
+    }
+    if (opcja === 'zwiększenie Zdrowia o 4') {
+      return `
+        <div class="spell-description">
+          <strong>${t('summary.healthIncreaseLabel')}</strong> ${t('summary.healthIncreaseDescription')}
+        </div>
+      `;
+    }
+    return '';
+  }).join('');
+}
+
+/**
+ * Dodaje event listenery dla wyboru opcji pochodzenia
+ */
+function addOptionEventListeners(originId) {
+  const radioButtons = document.querySelectorAll(`input[name="origin-option-${originId}"]`);
+  radioButtons.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        // Zaktualizuj obliczone atrybuty z bonusem do zdrowia
+        updateAttributesWithLevel4();
+      }
+    });
+  });
+}
+
+/**
+ * Aktualizuje atrybuty z uwzględnieniem bonusu z poziomu 4
+ */
+function updateAttributesWithLevel4() {
+  if (selectedLevel < 4 || !selectedOrigin) return;
+  
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie || !pochodzenie.poziom_4) return;
+  
+  const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
+  
+  // Pobierz aktualne atrybuty
+  const atrybuty = {
+    sila: parseInt(document.getElementById('strength-final').textContent),
+    zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+    intelekt: parseInt(document.getElementById('intellect-final').textContent),
+    wola: parseInt(document.getElementById('will-final').textContent)
+  };
+  
+  // Dodaj bonus do zdrowia
+  const attributesWithBonus = {
+    ...atrybuty,
+    zdrowie: atrybuty.sila + healthBonus
+  };
+  
+  // Aktualizuj wyświetlane atrybuty drugorzędne
+  updateAttributesSecondary(attributesWithBonus, pochodzenie);
+}
+
+/**
+ * Ładuje rozszerzone dane pochodzeń z nowego API
+ * @param {Array} pochodzeniaIds - Lista ID pochodzeń
+ * @param {Array} pochodzeniaZTabelami - Lista metadanych pochodzeń z tabelami
+ * @returns {Array} Tablica obiektów pochodzeń z pełnymi danymi
+ */
+async function loadDetailsOriginsExtended(originIds, _originsWithTables = []) {
+  const pochodzenia = [];
+  
+  // Dopuszczalne źródła zgodne z katalogiem SOURCES
+  const allowedSources = new Set(['PG', 'SP', 'RA', 'NW', 'GWP', 'GP', 'SUP', 'CS', 'PZ']);
+  
+  for (const originId of originIds) {
+    try {
+      // Pobierz podstawowe dane pochodzenia
+      const character = buildCharacter({
+        pochodzenie: originId,
+        atrybuty: { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 }
+      });
+      // Kopia płytka, żeby nie mutować współdzielonego obiektu z DANE_GRY
+      const basicData = { ...character.pochodzenie };
+
+      // Filtrowanie pochodzeń tylko do tych z dokumentów SOURCES
+      if (!basicData || !basicData.zrodlo || !allowedSources.has(basicData.zrodlo)) {
+        continue;
+      }
+
+      // Spróbuj zawsze pobrać tabele (niezależnie od metadanych), jeśli istnieją
+      try {
+        const tabele = getOriginTablesUi(originId);
+        if (tabele) {
+          basicData.tabele = tabele;
+        }
+      } catch (tablesError) {
+        // eslint-disable-next-line no-console
+        console.warn(t('messages.import.tablesLoadError', { id: originId }), tablesError);
+      }
+
+      pochodzenia.push(basicData);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn(t('messages.import.originDataLoadError', { id: originId }), error);
+    }
+  }
+  
+  return pochodzenia;
+}
+
+/**
+ * Generuje rozwijane kafelki pochodzeń z dwoma stanami (zwinięty/rozwinięty)
+ * @param {Array} pochodzenia - Lista obiektów pochodzeń z danymi
+ * @throws {Error} Gdy parametr nie jest tablicą
+ */
+function generateTilesOrigins(pochodzenia) {
+  if (!Array.isArray(pochodzenia)) {
+    throw new Error('pochodzenia musi być tablicą');
+  }
+  // Pochodzenia z podręczników wyłączonych przez gracza w ogóle się nie
+  // pojawiają - patrz logic/sources.js.
+  pochodzenia = filterBySource(pochodzenia);
+    
+  const container = document.getElementById('origin-tiles');
+  if (!container) {
+    throw new Error('Element #origin-tiles nie został znaleziony');
+  }
+    
+  container.innerHTML = '';
+
+  pochodzenia.forEach(pochodzenie => {
+    const tile = document.createElement('div');
+    tile.className = 'origin-tile compact';
+    tile.dataset.originId = pochodzenie.id;
+    // Podpowiedź pokazywana przez CSS (.origin-tile:hover::after) - w CSS nie
+    // da się wywołać t(), więc tekst wchodzi atrybutem.
+    tile.dataset.hint = t('step1.tileHint');
+        
+    // Krótki opis (1 zdanie) dla stanu zwiniętego
+    const shortDescription = createShortCollapsedDescription(pochodzenie);
+        
+    // Rozszerzony opis (3 zdania) dla stanu rozwiniętego
+    const extendedDescription = createExtendedDescription(pochodzenie);
+        
+    // Oblicz atrybuty drugorzędne
+    const atrybutyDomyślne = { sila: 10, zrecznosc: 10, intelekt: 10, wola: 10 };
+    const attributesFinal = {
+      sila: atrybutyDomyślne.sila + (pochodzenie.atrybuty_bazowe.sila - 10),
+      zrecznosc: atrybutyDomyślne.zrecznosc + (pochodzenie.atrybuty_bazowe.zrecznosc - 10),
+      intelekt: atrybutyDomyślne.intelekt + (pochodzenie.atrybuty_bazowe.intelekt - 10),
+      wola: atrybutyDomyślne.wola + (pochodzenie.atrybuty_bazowe.wola - 10)
+    };
+        
+    // Oblicz obronę (bez modyfikatorów rozmiaru - zgodnie z zasadami gry)
+    const obrona = attributesFinal.zrecznosc;
+    const zdrowie = attributesFinal.sila;
+        
+    // Pobierz wszystkie cechy specjalne dla stanu rozwiniętego
+    const allTraits = getAllTraits(pochodzenie.cechy_specjalne);
+
+    tile.innerHTML = `
+            <div class="tile-top">
+            ${pochodzenie.miniatura === false ? '' : `<img class="origin-thumb" src="assets/origins/${pochodzenie.id}.jpg" alt="" loading="lazy" onerror="this.remove()">`}
+            <div class="tile-body">
+            <div class="tile-header">
+                <div class="badges-container">
+                    <div class="feature-desc">${t('summary.sizeLower')}</div><div class="size-badge">${pochodzenie.rozmiar}</div>
+                    ${pochodzenie.zrodlo ? `<div class="source-badge" title="${sourceName(pochodzenie.zrodlo)}">${pochodzenie.zrodlo}</div>${renderBetaTag(pochodzenie.zrodlo)}` : ''}
+                </div>
+                <h4>${pochodzenie.nazwa}</h4>
+            </div>
+
+            <!-- Stan zwinięty -->
+            <div class="tile-content-collapsed">
+                <div class="description">${shortDescription}</div>
+                <div class="attributes-grid">
+                    <div class="attribute-item">
+                        <span class="attr-name">${t('attributes.strength')}</span>
+                        <span class="attr-value">${pochodzenie.atrybuty_bazowe.sila}</span>
+                        <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.sila - 10)}</span>
+                    </div>
+                    <div class="attribute-item">
+                        <span class="attr-name">${t('attributes.agility')}</span>
+                        <span class="attr-value">${pochodzenie.atrybuty_bazowe.zrecznosc}</span>
+                        <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10)}</span>
+                    </div>
+                    <div class="attribute-item">
+                        <span class="attr-name">${t('attributes.intellect')}</span>
+                        <span class="attr-value">${pochodzenie.atrybuty_bazowe.intelekt}</span>
+                        <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10)}</span>
+                    </div>
+                    <div class="attribute-item">
+                        <span class="attr-name">${t('attributes.will')}</span>
+                        <span class="attr-value">${pochodzenie.atrybuty_bazowe.wola}</span>
+                        <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.wola - 10)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Górna część stanu rozwiniętego - obok obrazka, tak jak w stanie
+                 zwiniętym (ten sam układ: obrazek | opis + atrybuty) -->
+            <div class="tile-content-expanded-top">
+                <div class="expanded-description">${extendedDescription}</div>
+                <div class="tile-section attributes-section">
+                    <h5>${icon('swords')} ${t('attributes.heading')}</h5>
+                    <div class="attributes-grid">
+                        <div class="attribute-item">
+                            <span class="attr-name">${t('attributes.strength')}</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.sila}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.sila - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">${t('attributes.agility')}</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.zrecznosc}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.zrecznosc - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">${t('attributes.intellect')}</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.intelekt}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.intelekt - 10)}</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-name">${t('attributes.will')}</span>
+                            <span class="attr-value">${pochodzenie.atrybuty_bazowe.wola}</span>
+                            <span class="attr-mod">${formatModifier(pochodzenie.atrybuty_bazowe.wola - 10)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            </div>
+
+            <!-- Dolna część stanu rozwiniętego - na całą szerokość kafelka,
+                 pod obrazkiem, żadna sekcja tu nie jest zwężana przez jego kolumnę -->
+            <div class="tile-content-expanded-extra">
+                <div class="tile-sections">
+                    <div class="tile-section mechanics-section">
+                        <h5>${icon('dice')} ${t('summary.secondaryAttributes')}</h5>
+                        <div class="mechanics-grid">
+                            <div class="mechanics-item">
+                                <span class="mech-label">${t('attributes.defenseColon')}</span>
+                                <span class="mech-value">${obrona}</span>
+                            </div>
+                            <div class="mechanics-item">
+                                <span class="mech-label">${t('attributes.healthColon')}</span>
+                                <span class="mech-value">${zdrowie}</span>
+                            </div>
+                            <div class="mechanics-item">
+                                <span class="mech-label">${t('attributes.speedColon')}</span>
+                                <span class="mech-value">${pochodzenie.predkosc}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tile-section cultural-section">
+                        <h5>${icon('compass')} ${t('professions.culturalHeading')}</h5>
+                        <div class="cultural-info">
+                            <div class="cultural-item">
+                                <span class="cultural-label">${t('step5.languagesColon')}</span>
+                                <span class="cultural-value">${formatLanguagesOrigin(pochodzenie.jezyki)}</span>
+                            </div>
+                            <div class="cultural-item">
+                                <span class="cultural-label">${t('professions.professionsColon')}</span>
+                                <span class="cultural-value">${formatBonusProfessionsOrigin(pochodzenie)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${allTraits ? `
+                    <div class="tile-section features-section">
+                        <h5>${icon('sparkle')} Cechy Specjalne</h5>
+                        <div class="features-list">
+                            ${allTraits.map(cecha => `
+                                <div class="feature-item">
+                                    <span class="feature-name">${cecha.nazwa}</span>
+                                    <span class="feature-desc">${cecha.opis}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${pochodzenie.tabele && Object.keys(pochodzenie.tabele).length > 0 ? `
+                    <div class="tile-section tables-section">
+                        <h5>${icon('dice')} Tabele Losowania</h5>
+                        <div class="tables-grid">
+                            ${Object.entries(pochodzenie.tabele).map(([nameTable, tabela]) => `
+                                <div class="table-item">
+                                    <div class="table-header">
+                                        <span class="table-name">${tabela.nazwa}</span>
+                                        <span class="table-type">${tabela.typ}</span>
+                                    </div>
+                                    <div class="table-description">${tabela.opis}</div>
+
+                                    <div class="table-controls">
+                                        <div class="table-options">
+                                            <label for="table-select-${pochodzenie.id}-${nameTable}">${t('common.chooseOptionColon')}</label>
+                                            <select id="table-select-${pochodzenie.id}-${nameTable}" class="table-dropdown" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}">
+                                                <option value="">${t('common.selectOption')}</option>
+                                                ${tabela.opcje ? tabela.opcje.map(opcja => `
+                                                    <option value="${opcja.rzut}" data-wynik="${opcja.wynik}">${opcja.rzut}: ${opcja.wynik}</option>
+                                                `).join('') : ''}
+                                            </select>
+                                        </div>
+
+                                        <div class="table-buttons">
+                                            <button class="roll-table-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}">
+                                                ${icon('dice')} Losuj
+                                            </button>
+                                            <button class="apply-selection-btn" data-origin-id="${pochodzenie.id}" data-table-name="${nameTable}" style="display: none;">
+                                                ${icon('check')} ${t('messages.applyChoice')}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="roll-result" id="roll-result-${pochodzenie.id}-${nameTable}" style="display: none;">
+                                        <!-- Wynik losowania będzie wyświetlany tutaj -->
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- Przycisk wyboru -->
+                <div class="tile-select-section">
+                    <button class="tile-select-btn" data-origin-id="${pochodzenie.id}">
+                        Wybierz ${pochodzenie.nazwa}
+                    </button>
+                </div>
+            </div>
+        `;
+
+    // Dodaj obsługę dropdownów
+    const dropdowns = tile.querySelectorAll('.table-dropdown');
+    dropdowns.forEach(dropdown => {
+      dropdown.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const originId = e.target.dataset.originId;
+        const tableName = e.target.dataset.tableName;
+        const selectedValue = e.target.value;
+        const applyBtn = tile.querySelector(`.apply-selection-btn[data-origin-id="${originId}"][data-table-name="${tableName}"]`);
+        
+        if (selectedValue && applyBtn) {
+          applyBtn.style.display = 'inline-block';
+        } else if (applyBtn) {
+          applyBtn.style.display = 'none';
+        }
+      });
+    });
+
+    // Dodaj obsługę kliknięcia dla rozwijania/zwijania (cały kafelek)
+    tile.addEventListener('click', (e) => {
+      // Sprawdź czy kliknięto na przycisk "Wybierz"
+      if (e.target.classList.contains('tile-select-btn') || 
+                e.target.closest('.tile-select-btn')) {
+        e.stopPropagation();
+        selectOrigin(pochodzenie.id);
+        return;
+      }
+      
+      // Sprawdź czy kliknięto na przycisk losowania
+      if (e.target.classList.contains('roll-table-btn') || 
+                e.target.closest('.roll-table-btn')) {
+        e.stopPropagation();
+        const originId = e.target.dataset.originId || e.target.closest('.roll-table-btn').dataset.originId;
+        const tableName = e.target.dataset.tableName || e.target.closest('.roll-table-btn').dataset.tableName;
+        randomizeWithTableUi(originId, tableName);
+        return;
+      }
+      
+      // Sprawdź czy kliknięto na przycisk "Zastosuj wybór"
+      if (e.target.classList.contains('apply-selection-btn') || 
+                e.target.closest('.apply-selection-btn')) {
+        e.stopPropagation();
+        const originId = e.target.dataset.originId || e.target.closest('.apply-selection-btn').dataset.originId;
+        const tableName = e.target.dataset.tableName || e.target.closest('.apply-selection-btn').dataset.tableName;
+        applySelectedOptions(originId, tableName);
+        return;
+      }
+            
+      // W przeciwnym razie rozwiń/zwiń kafelek
+      e.stopPropagation();
+      toggleTileExpansion(pochodzenie.id);
+    });
+
+    container.appendChild(tile);
+  });
+}
+
+/**
+ * Tworzy krótki opis pochodzenia (1 zdanie) dla stanu zwiniętego
+ * @param {Object} pochodzenie - Obiekt pochodzenia
+ * @returns {string} Krótki opis
+ */
+function createShortCollapsedDescription(pochodzenie) {
+  return CONTENT.ORIGIN_DESCRIPTIONS_SHORT[pochodzenie.id] || t('origins.unknownOrigin');
+}
+
+/**
+ * Tworzy rozszerzony opis pochodzenia dla stanu rozwiniętego - kilka zdań
+ * osnutych wokół konkretnych ciekawostek zaczerpniętych z podręczników
+ * (nie ogólnikowych fantasy sztampek), zachowujących ich ponury, surowy ton.
+ * @param {Object} pochodzenie - Obiekt pochodzenia
+ * @returns {string} Rozszerzony opis
+ */
+function createExtendedDescription(pochodzenie) {
+  return CONTENT.ORIGIN_DESCRIPTIONS_EXTENDED[pochodzenie.id] || t('origins.unknownOrigin');
+}
+
+
+/**
+ * Zbiera wyniki tabel z kafelka pochodzenia
+ * @param {string} originId - ID pochodzenia
+ */
+function collectResultsTables(originId) {
+  // Znajdź kafelek pochodzenia
+  const tile = document.querySelector(`[data-origin-id="${originId}"]`);
+  if (!tile) return;
+  
+  // Znajdź wszystkie wyniki tabel w kafelku
+  const resultDivs = tile.querySelectorAll('.roll-result');
+  resultDivs.forEach(resultDiv => {
+    const id = resultDiv.id;
+    const match = id.match(/roll-result-(\w+)-(\w+)/);
+    if (match) {
+      const [, tableOriginId, tableName] = match;
+      if (tableOriginId === originId) {
+        const content = resultDiv.querySelector('.roll-result-content');
+        if (content && content.style.display !== 'none') {
+          const diceEl = content.querySelector('.roll-dice');
+          const rollOutcome = content.querySelector('.roll-outcome');
+          
+          if (diceEl && rollOutcome) {
+            const rollMatch = diceEl.textContent.match(/(\d+)/);
+            const rzut = rollMatch ? rollMatch[1] : '?';
+            const wynik = rollOutcome.textContent;
+            // Typ czytamy z atrybutu danych, a NIE z tekstu etykiety - tekst
+            // jest tłumaczony, więc porównywanie go zaklasyfikowałoby każdy
+            // wynik w innym języku jako losowanie.
+            const typ = diceEl.dataset.resultType === 'wybor' ? 'wybór' : 'losowanie';
+            
+            // Zapisz wynik
+            if (!resultsTables[originId]) {
+              resultsTables[originId] = {};
+            }
+            resultsTables[originId][tableName] = {
+              rzut,
+              wynik,
+              typ
+            };
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Krok 1 "Losuj postać": wybiera losowe pochodzenie i losuje wszystkie jego tabele
+ * (przeszłość, wygląd itd.), naśladując ręczny przepływ (rzuć każdą tabelę, potem
+ * kliknij "Wybierz") - dzięki temu wynikiTabel wypełnia się tak samo, jak przy ręcznym
+ * wyborze, patrz zbierzWynikiTabel() wywoływane wewnątrz wybierzPochodzenie().
+ */
+async function randomizeOriginAndTraits() {
+  // Losujemy wyłącznie spośród pochodzeń z włączonych podręczników, żeby
+  // "Wylosuj postać" nie wstawiało treści, którą gracz świadomie wyłączył.
+  const dostepne = filterBySource(availableOrigin);
+  if (!dostepne.length) return;
+
+  const random = dostepne[Math.floor(Math.random() * dostepne.length)];
+
+  if (random.tabele) {
+    for (const nameTable of Object.keys(random.tabele)) {
+      await randomizeWithTableUi(random.id, nameTable);
+    }
+  }
+
+  selectOrigin(random.id);
+}
+
+/**
+ * Wybiera pochodzenie
+ * @param {string} originId - ID pochodzenia do wyboru
+ * @param {Object} [opcje]
+ * @param {boolean} [opcje.autoScroll=true] - Czy przewinąć do przycisku "Dalej"
+ *   po wyborze. Wyłączane przy imporcie postaci (zob. zaimportujPostac()), żeby
+ *   nie odciągać strony od komunikatu importu, zanim użytkownik zdąży go przeczytać.
+ */
+function selectOrigin(originId, { autoScroll = true } = {}) {
+  // Resetuj stan i UI dla poprzedniego wyboru
+  resetStateAfterOriginChange();
+
+  selectedOrigin = originId;
+    
+  // Zbierz wyniki tabel z wybranego kafelka
+  collectResultsTables(originId);
+    
+  // Usuń selekcję z wszystkich kafelków
+  document.querySelectorAll('.origin-tile').forEach(tile => {
+    tile.classList.remove('selected');
+  });
+    
+  // Dodaj selekcję do wybranego kafelka
+  const selectedTile = document.querySelector(`[data-origin-id="${originId}"]`);
+  if (selectedTile) {
+    selectedTile.classList.add('selected');
+        
+    // Zwiń wszystkie kafelki po wyborze pochodzenia
+    collapseAllTiles();
+        
+    // Aktualizuj podsumowanie pochodzenia
+    updateSummaryOrigin();
+        
+    // Aktualizuj domyślne atrybuty
+    aktualizujDomyślneAtrybuty();
+  }
+
+  // Aktywuj przycisk "Dalej" w kroku 1
+  const nextButton = document.getElementById('btn-next-1');
+  if (nextButton) {
+    nextButton.disabled = false;
+  }
+  // Pochodzenie jest już wybrane, więc ewentualny baner "Wybierz pochodzenie
+  // postaci!" przestaje być aktualny.
+  hideError();
+
+  // Pokaż komunikat o wyborze
+  showMessageChoice(originId);
+
+  // Przewiń do przycisku "Dalej", by użytkownik mógł przejść do następnego kroku
+  if (autoScroll) {
+    requestAnimationFrame(() => {
+      nextButton?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    });
+  }
+}
+
+/**
+ * Resetuje wszystkie dane kolejnych kroków po zmianie pochodzenia
+ */
+function resetStateAfterOriginChange() {
+  // Reset stanu aplikacji
+  currentCharacter = null;
+  selectedLevel = 0;
+  selectedPaths = { nowicjusz: '', ekspert: '', mistrz: '' };
+  poolTalentChoices = {};
+  grantedBenefitsWithPaths = { 1: null, 3: null, 7: null };
+  selectedProfessions = [];
+  answersSlots = {};
+  selectedAttributesSlots = {};
+  selectedCurios = [];
+  magicChoices = {};
+  magicRiskResults = {};
+  magicBlackMagicTooTraditions = new Set();
+  randomizedSilver = null;
+  numberCurios = 0;
+  resultsTables = {};
+  equipmentWealthResult = null;
+  equipmentWealthId = null;
+  equipmentStartingCashRoll = null;
+  equipmentChoices = {};
+  equipmentSold = [];
+  equipmentPurchased = [];
+  equipmentDescriptionExpanded = new Set();
+
+  // Reset selektorów poziomu
+  const levelInputs = document.querySelectorAll('input[name="poziom"]');
+  levelInputs.forEach(input => { input.checked = false; });
+  const levelZero = Array.from(levelInputs).find(i => i.value === '0');
+  if (levelZero) {
+    levelZero.checked = true;
+  }
+
+  // Reset sekcji bogactwa i kuriozów
+  const curiosSpan = document.getElementById('curios-summary');
+  if (curiosSpan) curiosSpan.textContent = 'Kurioza: 0';
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan) wealthSpan.textContent = t('step2.silverNotRolled');
+
+  // Reset sekcji ścieżek (krok 3) - nowy system kafelków
+  // Reset podsumowań ścieżek
+  const summary1 = document.getElementById('path-summary-1');
+  if (summary1) summary1.innerHTML = '';
+  const summary3 = document.getElementById('path-summary-3');
+  if (summary3) summary3.innerHTML = '';
+  const summary7 = document.getElementById('path-summary-7');
+  if (summary7) summary7.innerHTML = '';
+
+  // Reset atrybutów własnych i przełączenie na domyślne
+  const chkDefault = document.getElementById('default-attributes');
+  if (chkDefault) chkDefault.checked = true;
+  const customDiv = document.getElementById('custom-attributes');
+  if (customDiv) customDiv.style.display = 'none';
+  ['attribute-decreased', 'attribute-increased'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['strength-base','agility-base','intellect-base','will-base'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = 10;
+  });
+
+  // Reset korzyści z pochodzenia (krok 2)
+  const originBenefits = document.getElementById('origin-benefits-content');
+  if (originBenefits) originBenefits.innerHTML = '';
+
+  // Ukryj/pokaż sekcje zależne od poziomu na start (0)
+  updateWealthSection(0);
+  updateOriginBenefits(0);
+  // Radio poziomu 0 jest zaznaczane wyżej przez ustawienie .checked wprost,
+  // co NIE odpala eventu 'change' (a to on normalnie woła loadBenefitsLevel) -
+  // bez tego wywołania "Korzyści Poziomu" zostawałyby z treścią poprzedniej postaci.
+  loadBenefitsLevel(0);
+  
+  // Reset sekcji ścieżek
+  renderPathSectionsVisibility();
+
+  // Oblicz od nowa atrybuty na bazie nowego pochodzenia po ustawieniu w wybierzPochodzenie
+}
+
+/**
+ * Nawigacja do następnego kroku
+ */
+// eslint-disable-next-line no-unused-vars
+function nextStep(currentStep) {
+  if (currentStep === 1) {
+    if (!selectedOrigin) {
+      showError(t('messages.selectOriginFirst'));
+      return;
+    }
+    hideError();
+    showStep(2);
+    updateSummaryOrigin();
+    aktualizujDomyślneAtrybuty();
+  } else if (currentStep === 2) {
+    showStep(3);
+    updatePreviewCharacter();
+  } else if (currentStep === 3) {
+    showStep(4);
+    renderAttributesSlotsSection();
+  } else if (currentStep === 4) {
+    showStep(5);
+    renderProfessionsSection();
+    renderCuriosSection();
+  } else if (currentStep === 5) {
+    showStep(6);
+    renderSpellsSection();
+  } else if (currentStep === 6) {
+    showStep(7);
+    renderEquipmentSection();
+  } else if (currentStep === 7) {
+    showStep(8);
+    updatePreviewCharacter();
+  }
+}
+
+/**
+ * Nawigacja do poprzedniego kroku
+ */
+// eslint-disable-next-line no-unused-vars
+function prevStep(currentStep) {
+  if (currentStep === 2) {
+    showStep(1);
+  } else if (currentStep === 3) {
+    showStep(2);
+  } else if (currentStep === 4) {
+    showStep(3);
+  } else if (currentStep === 5) {
+    showStep(4);
+  } else if (currentStep === 6) {
+    showStep(5);
+  } else if (currentStep === 7) {
+    showStep(6);
+  } else if (currentStep === 8) {
+    showStep(7);
+  }
+}
+
+/**
+ * Pokazuje określony krok
+ */
+function showStep(stepNumber) {
+  // Ukryj wszystkie kroki
+  document.querySelectorAll('.step').forEach(step => {
+    step.classList.remove('active');
+  });
+
+  // Pokaż wybrany krok
+  document.getElementById(`step-${stepNumber}`).classList.add('active');
+  // aktualnyKrok = stepNumber; // Obecnie nieużywane
+  updateBreadcrumbs(stepNumber);
+
+  // Krok 8 nie zapisuje już postaci automatycznie - zapis następuje wyłącznie
+  // po kliknięciu "Zapisz postać" (zob. zapiszPostacNaZadanie()), żeby samo
+  // zajrzenie do podsumowania nie nadpisywało wcześniejszego zapisu.
+  if (stepNumber === 8) updateSaveButtonState();
+}
+
+/**
+ * Zapisuje (albo nadpisuje, jeśli edytowana postać już ma przypisane id w
+ * cache - np. po imporcie) bieżącą postać w localStorage, w tym samym
+ * formacie co eksport do JSON. Nic nie robi, jeśli postać jest niekompletna
+ * (zbudujDaneEksportu() zwraca wtedy null).
+ * @returns {boolean} czy zapis faktycznie nastąpił
+ */
+function saveCurrentCharacterToCache() {
+  const data = buildExportData();
+  if (!data) return false;
+  const id = currentSaveCacheId || generateSaveId();
+  // zapiszPostacDoCache() zwraca false, gdy localStorage odmówi zapisu
+  // (przepełniony limit, tryb prywatny, zablokowane dane witryny). Bez
+  // sprawdzenia tego wyniku postać byłaby oznaczona jako zapisana, mimo że
+  // w pamięci przeglądarki nic nie wylądowało.
+  if (!saveCharacterToCache(id, data)) return false;
+  currentSaveCacheId = id;
+  lastSavedSnapshot = snapshotForComparison(data);
+  return true;
+}
+
+/**
+ * Zrzut danych postaci używany wyłącznie do wykrywania zmian od ostatniego
+ * zapisu. Pomija `utworzono` (znacznik czasu generowany przy każdym
+ * wywołaniu zbudujDaneEksportu()) i całe `podsumowanie` (wyliczane z
+ * `wybory`, więc nie niesie własnej informacji).
+ * @param {Object} data - wynik buildExportData()
+ * @returns {string}
+ */
+function snapshotForComparison(data) {
+  return JSON.stringify({ wersjaEksportu: data.wersjaEksportu, wybory: data.wybory });
+}
+
+/** Czy od ostatniego zapisu w pamięci przeglądarki coś się w postaci zmieniło. */
+function hasUnsavedChanges() {
+  const data = buildExportData();
+  if (!data) return false;
+  return snapshotForComparison(data) !== lastSavedSnapshot;
+}
+
+/**
+ * Włącza/wyłącza przycisk "Zapisz postać" w Kroku 8 zależnie od tego, czy
+ * jest co zapisywać, i opisuje aktualny stan zapisu obok przycisku.
+ */
+function updateSaveButtonState() {
+  const btn = document.getElementById('btn-save-character');
+  const feedback = document.getElementById('final-actions-feedback');
+  if (!btn) return;
+
+  const zmiany = hasUnsavedChanges();
+  btn.disabled = !zmiany;
+  if (!feedback) return;
+  if (zmiany) {
+    feedback.className = 'final-actions-feedback';
+    feedback.textContent = lastSavedSnapshot ? t('messages.unsavedChanges') : t('messages.notSavedYet');
+  } else {
+    feedback.className = 'final-actions-feedback ok';
+    feedback.textContent = 'Wszystkie zmiany zapisane.';
+  }
+}
+
+/** Obsługa przycisku "Zapisz postać" w Kroku 8 - zapisuje do tego samego slotu w cache. */
+function saveCharacterOnDemand() {
+  const feedback = document.getElementById('final-actions-feedback');
+  if (!hasUnsavedChanges()) {
+    if (feedback) {
+      feedback.className = 'final-actions-feedback ok';
+      feedback.textContent = t('messages.nothingToSave');
+    }
+    updateSaveButtonState();
+    return;
+  }
+  if (!saveCurrentCharacterToCache()) {
+    // Zapis się nie udał - przycisk zostaje aktywny, a stan "niezapisane
+    // zmiany" nietknięty, żeby gracz nie stracił postaci w przekonaniu, że
+    // jest bezpieczna. Eksport do JSON działa niezależnie od localStorage.
+    if (feedback) {
+      feedback.className = 'final-actions-feedback error';
+      feedback.innerHTML = `${icon('warning')} Nie udało się zapisać w pamięci przeglądarki (może być pełna albo zablokowana). Użyj "Eksportuj do JSON", żeby nie stracić postaci.`;
+    }
+    return;
+  }
+  updateSaveButtonState();
+  if (feedback) {
+    feedback.className = 'final-actions-feedback ok';
+    feedback.innerHTML = `${icon('check')} ${t('messages.saves.saved')}`;
+  }
+}
+
+/**
+ * Obsługa przycisku "Awans" w Kroku 8: podnosi poziom postaci o 1 (maksimum
+ * to 10, bo tam kończy się Tabela Rozwoju w PG) i od razu pokazuje, co nowy
+ * poziom daje do wybrania - korzystając z tej samej listy "Możliwe
+ * przeoczenia", która pilnuje kompletności postaci (zob. calculateMissingItems()).
+ */
+async function promoteCharacter() {
+  const feedback = document.getElementById('final-actions-feedback');
+  const setFeedback = (klasa, tekst) => {
+    if (!feedback) return;
+    feedback.className = `final-actions-feedback ${klasa}`;
+    feedback.textContent = tekst;
+  };
+
+  if (!selectedOrigin) {
+    setFeedback('', t('messages.selectOriginInStep1'));
+    return;
+  }
+  if (selectedLevel >= 10) {
+    setFeedback('', t('messages.maxLevelReached'));
+    return;
+  }
+
+  const nowyPoziom = selectedLevel + 1;
+  const radio = document.querySelector(`input[name="poziom"][value="${nowyPoziom}"]`);
+  if (radio) radio.checked = true;
+  // Awans zakłada postać już używaną w grze, która ma swój majątek - w
+  // przeciwieństwie do ręcznej zmiany poziomu nie każemy więc losować
+  // srebrników od nowa.
+  await applyLevelChange(nowyPoziom, { keepSilverRoll: true });
+
+  const doWyboru = calculateMissingItems();
+  if (doWyboru.length > 0) {
+    setFeedback('info', t('messages.levelUp.toChoose', { level: nowyPoziom, count: doWyboru.length }));
+  } else {
+    setFeedback('ok', t('messages.levelUp.nothingToChoose', { level: nowyPoziom }));
+  }
+}
+
+/**
+ * Przechodzi do kroku z pełnym odświeżeniem UI zależnym od niego
+ */
+function randomizeToStep(stepNumber) {
+  // Proste reguły walidacji: nie pozwól przejść dalej bez wymagań
+  if (stepNumber === 2 && !selectedOrigin) return;
+  if (stepNumber === 3) {
+    if (!selectedOrigin) return;
+  }
+  if (stepNumber === 4) {
+    // Dla poziomu 0 nie wymagaj żadnych ścieżek
+    if (selectedLevel === 0) return;
+
+    // Wymagane ścieżki zgodnie z poziomem
+    const needExpert = selectedLevel >= 3;
+    const needMaster = selectedLevel >= 7;
+    if (!selectedPaths.nowicjusz) return;
+    if (needExpert && !selectedPaths.ekspert) return;
+    if (needMaster && !selectedPaths.mistrz) return;
+  }
+  if (stepNumber === 5) {
+    // Wymagane rozdanie punktów zwiększenia atrybutów (Krok 4)
+    const slotsAttr = calculateSlotsAttributes({
+      pathNoviceId: selectedPaths.nowicjusz || null,
+      pathExpertId: selectedPaths.ekspert || null,
+      pathMasterId: selectedPaths.mistrz || null
+    });
+    if (!slotsAttr.every(slotAttributesComplete)) return;
+  }
+  if (stepNumber === 6 || stepNumber === 7 || stepNumber === 8) {
+    // Wymagane profesje/języki i kurioza (Kroki 6 i 7 są opcjonalne, ale
+    // wciąż wymagają, że Krok 5 zostanie zakończony, tak jak wcześniej
+    // wymagał tego Krok 8)
+    const { kurioza } = calculateChoiceCount();
+    const { slots } = calculateSlotsCharacter();
+    if (!slots.every(slot => slotAnswerComplete(slot))) return;
+    if (selectedCurios.length < kurioza) return;
+  }
+  showStep(stepNumber);
+  if (stepNumber === 3) {
+    renderPathSectionsVisibility();
+    renderPathSection(1);
+    renderPathSection(3);
+    renderPathSection(7);
+    updateStep3NextButton();
+  }
+  if (stepNumber === 4) {
+    renderAttributesSlotsSection();
+  }
+  if (stepNumber === 5) {
+    renderProfessionsSection();
+    renderCuriosSection();
+  }
+  if (stepNumber === 6) {
+    renderSpellsSection();
+  }
+  if (stepNumber === 7) {
+    renderEquipmentSection();
+  }
+  if (stepNumber === 8) {
+    updatePreviewCharacter();
+  }
+}
+
+function updateBreadcrumbs(activeStep) {
+  const crumbs = document.querySelectorAll('#breadcrumbs .breadcrumb-item');
+  crumbs.forEach(c => {
+    const step = parseFloat(c.getAttribute('data-step'));
+    if (step === activeStep) c.classList.add('active'); else c.classList.remove('active');
+  });
+}
+
+/**
+ * Aktualizuje podsumowanie wybranego pochodzenia
+ */
+function updateSummaryOrigin() {
+  if (!selectedOrigin) return;
+    
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return;
+    
+  const container = document.getElementById('selected-origin-info');
+  container.innerHTML = `
+        <h4>${pochodzenie.nazwa}</h4>
+        <p><strong>${t('summary.descriptionColon')}</strong> ${pochodzenie.opis}</p>
+        <p><strong>${t('summary.sizeColon')}</strong> ${pochodzenie.rozmiar} | <strong>${t('attributes.speedColon')}</strong> ${pochodzenie.predkosc}</p>
+        <p><strong>${t('step5.languagesColon')}</strong> ${formatLanguagesOrigin(pochodzenie.jezyki)}</p>
+        <p><strong>${t('attributes.modifiersColon')}</strong> 
+            Siła ${pochodzenie.atrybuty_bazowe.sila - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.sila - 10}, 
+            Zręczność ${pochodzenie.atrybuty_bazowe.zrecznosc - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.zrecznosc - 10}, 
+            Intelekt ${pochodzenie.atrybuty_bazowe.intelekt - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.intelekt - 10}, 
+            Wola ${pochodzenie.atrybuty_bazowe.wola - 10 >= 0 ? '+' : ''}${pochodzenie.atrybuty_bazowe.wola - 10}
+        </p>
+    `;
+}
+
+/**
+ * Oblicza finalne atrybuty główne pochodzenia z uwzględnieniem opcjonalnej
+ * jednorazowej zmiany wartości (PG: "Możesz podnieść jedną z wartości o 1,
+ * jeśli zmniejszysz inną o 1. Wolno ci dokonać takiej zmiany tylko raz.")
+ * oraz bonusu do wybranych atrybutów przyznawanego przez samo pochodzenie
+ * (np. Człowiek: +1 do wybranego atrybutu, Elf: +1 do dwóch wybranych).
+ * @param {Object} pochodzenie - Obiekt pochodzenia (z origins.js)
+ * @param {string} [zmniejszony] - Atrybut obniżony o 1 (sila/zrecznosc/intelekt/wola)
+ * @param {string} [zwiekszony] - Atrybut podniesiony o 1 (musi różnić się od zmniejszony)
+ * @param {string[]} [bonusoweAtrybuty] - Atrybuty wybrane do bonusu z pochodzenia
+ * @returns {Object} Finalne wartości czterech atrybutów głównych
+ */
+function calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony, bonusAttributes) {
+  const atrybuty = { ...pochodzenie.atrybuty_bazowe };
+  if (zmniejszony && zwiekszony && zmniejszony !== zwiekszony) {
+    atrybuty[zmniejszony] -= 1;
+    atrybuty[zwiekszony] += 1;
+  }
+  if (pochodzenie.wybor_atrybutu && bonusAttributes) {
+    const wartosc = pochodzenie.wybor_atrybutu.wartosc || 1;
+    bonusAttributes.forEach(atr => {
+      if (atr && atrybuty[atr] !== undefined) atrybuty[atr] += wartosc;
+    });
+  }
+  return atrybuty;
+}
+
+/**
+ * Renderuje selecty pozwalające wybrać atrybut(y) bonusowe przyznawane przez
+ * samo pochodzenie (poza jednorazową zamianą wartości). Wywoływane raz przy
+ * wyborze/zmianie pochodzenia - dalsze odczyty wartości korzystają z już
+ * wyrenderowanych selectów (patrz pobierzWybraneAtrybutyBonusowe).
+ * @param {Object} pochodzenie
+ */
+function renderOriginAttributeChoiceSection(pochodzenie) {
+  const section = document.getElementById('origin-attribute-choice-section');
+  const selectsDiv = document.getElementById('origin-attribute-choice-selects');
+  const hint = document.getElementById('origin-attribute-choice-hint');
+  if (!section || !selectsDiv || !hint) return;
+
+  const wybor = pochodzenie && pochodzenie.wybor_atrybutu;
+  if (!wybor) {
+    section.style.display = 'none';
+    selectsDiv.innerHTML = '';
+    return;
+  }
+
+  section.style.display = 'block';
+  hint.textContent = `${pochodzenie.nazwa}: ${wybor.opis}. Wybierz ${wybor.ilosc > 1 ? `${wybor.ilosc} różne atrybuty` : 'atrybut'}.`;
+
+  const ATTRIBUTES = Object.keys(ATTRIBUTE_KEYS).map(id => [id, attributeLabel(id)]);
+  const optionsHtml = (selectId) => `
+    <option value="">${t('common.noSelection')}</option>
+    ${ATTRIBUTES.map(([val, label]) => `<option value="${val}" id="${selectId}-opt-${val}">${label}</option>`).join('')}
+  `;
+
+  selectsDiv.innerHTML = Array.from({ length: wybor.ilosc }, (_, i) => {
+    const selectId = `origin-attr-choice-${i}`;
+    return `
+      <div class="form-group">
+        <label for="${selectId}">${t('attributes.nthAttribute', { number: i + 1 })}</label>
+        <select id="${selectId}" class="origin-attr-choice-select">${optionsHtml(selectId)}</select>
+      </div>
+    `;
+  }).join('');
+
+  document.querySelectorAll('.origin-attr-choice-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      refreshSelectsChoiceAttribute();
+      updateCalculatedAttributes();
+    });
+  });
+  refreshSelectsChoiceAttribute();
+}
+
+/**
+ * Wyłącza w każdym selectcie wyboru atrybutu bonusowego opcje już wybrane
+ * w innych selectach, by nie dało się wybrać tego samego atrybutu dwa razy.
+ */
+function refreshSelectsChoiceAttribute() {
+  const selects = Array.from(document.querySelectorAll('.origin-attr-choice-select'));
+  const selected = selects.map(s => s.value).filter(Boolean);
+  selects.forEach(sel => {
+    Array.from(sel.options).forEach(opt => {
+      opt.disabled = !!opt.value && opt.value !== sel.value && selected.includes(opt.value);
+    });
+  });
+}
+
+/**
+ * Odczytuje aktualnie wybrane atrybuty bonusowe z pochodzenia z selectów
+ * wyrenderowanych przez renderOriginAttributeChoiceSection.
+ * @returns {string[]}
+ */
+function getSelectedAttributesBonus() {
+  return Array.from(document.querySelectorAll('.origin-attr-choice-select'))
+    .map(s => s.value)
+    .filter(Boolean);
+}
+
+/**
+ * Czyści wybór atrybutu(ów) bonusowego z pochodzenia (Krok 2).
+ */
+function resetChoiceAttributeOrigin() {
+  document.querySelectorAll('.origin-attr-choice-select').forEach(sel => { sel.value = ''; });
+  refreshSelectsChoiceAttribute();
+  updateCalculatedAttributes();
+}
+
+/**
+ * Aktualizuje wybory dostępne w selektach zamiany atrybutów, by nie można
+ * było wybrać tego samego atrybutu do obniżenia i podniesienia, oraz
+ * odświeża informację o puli atrybutów.
+ */
+function refreshAttributeSwapSelects(pochodzenie) {
+  const selDecreased = document.getElementById('attribute-decreased');
+  const selIncreased = document.getElementById('attribute-increased');
+  const info = document.getElementById('attribute-pool-info');
+  if (!selDecreased || !selIncreased) return;
+
+  const valueDecreased = selDecreased.value;
+  const valueIncreased = selIncreased.value;
+
+  Array.from(selDecreased.options).forEach(opt => {
+    opt.disabled = !!opt.value && opt.value === valueIncreased;
+  });
+  Array.from(selIncreased.options).forEach(opt => {
+    opt.disabled = !!opt.value && opt.value === valueDecreased;
+  });
+
+  if (info && pochodzenie) {
+    const pool = Object.values(pochodzenie.atrybuty_bazowe).reduce((a, b) => a + b, 0);
+    info.textContent = t('step2.attributePool', { pool });
+  }
+}
+
+/**
+ * Czyści wybór pochodzenia (Krok 1) i cały zależny od niego stan
+ * (poziom, ścieżki, profesje/języki, kurioza).
+ */
+function resetChoiceOrigin() {
+  resetStateAfterOriginChange();
+  selectedOrigin = null;
+  document.querySelectorAll('.origin-tile').forEach(tile => tile.classList.remove('selected'));
+  const info = document.getElementById('selected-origin-info');
+  if (info) info.innerHTML = '';
+  const message = document.getElementById('step-1')?.querySelector('.selection-message');
+  if (message) message.remove();
+  const nextButton = document.getElementById('btn-next-1');
+  if (nextButton) nextButton.disabled = true;
+}
+
+/**
+ * Czyści wybór poziomu postaci (Krok 2), wracając do poziomu 0.
+ */
+function resetLevel() {
+  const radio0 = document.querySelector('input[name="poziom"][value="0"]');
+  if (radio0) {
+    radio0.checked = true;
+    radio0.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
+/**
+ * Czyści jednorazową zamianę wartości atrybutów (Krok 2).
+ */
+function resetSwapAttributes() {
+  const selDecreased = document.getElementById('attribute-decreased');
+  const selIncreased = document.getElementById('attribute-increased');
+  if (selDecreased) selDecreased.value = '';
+  if (selIncreased) selIncreased.value = '';
+  updateCalculatedAttributes();
+}
+
+/**
+ * Czyści wybór jednej ścieżki (Krok 3) - nowicjusza, eksperckiej lub
+ * mistrzowskiej - wraz z korzyściami, które ta ścieżka przyznała.
+ * @param {'nowicjusz'|'ekspert'|'mistrz'} tier
+ */
+function resetPath(tier) {
+  const levelChoice = PATH_LEVEL_BY_TIER[tier];
+  if (!levelChoice) return;
+
+  if (grantedBenefitsWithPaths[levelChoice]) {
+    const removedBenefit = grantedBenefitsWithPaths[levelChoice];
+    // Wyczyść stan PRZED przeliczeniem, by sumujBonusyDrugorzedneZeSciezek()
+    // (wywoływane wewnątrz odejmijBenefity) nie liczyło już usuwanej ścieżki.
+    grantedBenefitsWithPaths[levelChoice] = null;
+    subtractBenefits(removedBenefit);
+  }
+  selectedPaths[tier] = '';
+
+  const summaryEl = document.getElementById(`path-summary-${levelChoice}`);
+  if (summaryEl) summaryEl.innerHTML = '';
+
+  renderPathSectionsVisibility();
+  renderPathSection(levelChoice);
+  updatePreviewCharacter();
+  updateStep3NextButton();
+  loadBenefitsLevel(selectedLevel);
+}
+
+/**
+ * Czyści wszystkie wybrane kurioza (Krok 5).
+ */
+function resetCurios() {
+  selectedCurios = [];
+  renderCuriosSection();
+  updateStep5NextButton();
+}
+
+/**
+ * Czyści wszystkie sloty profesji i języków (Krok 5), by umożliwić
+ * ponowny wybór od zera - w przeciwieństwie do lokalnego "Wyczyść" na
+ * pojedynczej karcie, ten przycisk resetuje całą sekcję Profesje/Języki.
+ */
+function resetAllProfessionsAndLanguages() {
+  answersSlots = {};
+  renderProfessionsSection();
+}
+
+/**
+ * Aktualizuje domyślne atrybuty bazujące na pochodzeniu (bez zmiany wartości)
+ */
+function aktualizujDomyślneAtrybuty() {
+  if (!selectedOrigin) return;
+
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return;
+
+  renderOriginAttributeChoiceSection(pochodzenie);
+
+  const attributesFinal = calculateAttributesMain(pochodzenie, undefined, undefined, getSelectedAttributesBonus());
+  displayAttributesMain(attributesFinal, pochodzenie);
+}
+
+/**
+ * Aktualizuje obliczone atrybuty na podstawie pochodzenia i (opcjonalnie)
+ * jednorazowej zamiany wartości wybranej w selektach.
+ */
+function updateCalculatedAttributes() {
+  if (!selectedOrigin) return;
+
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return;
+
+  refreshAttributeSwapSelects(pochodzenie);
+  const bonusAttributes = getSelectedAttributesBonus();
+
+  let attributesFinal;
+  if (document.getElementById('default-attributes').checked) {
+    attributesFinal = calculateAttributesMain(pochodzenie, undefined, undefined, bonusAttributes);
+  } else {
+    const zmniejszony = document.getElementById('attribute-decreased').value;
+    const zwiekszony = document.getElementById('attribute-increased').value;
+    attributesFinal = calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony, bonusAttributes);
+  }
+
+  // Dolicz wymuszone podwyżki atrybutów przyznane przez wybrane ścieżki
+  // (np. Moloch: sztywne +1 do Siły obok jednej podwyżki do wyboru).
+  const bonusySciezek = sumAttributeBonusesFromPaths();
+  Object.entries(bonusySciezek).forEach(([atrybut, wartosc]) => {
+    if (wartosc) attributesFinal[atrybut] += wartosc;
+  });
+
+  // Zsynchronizuj ukryte pola z finalnymi wartościami atrybutów głównych
+  ['sila', 'zrecznosc', 'intelekt', 'wola'].forEach(atr => {
+    const input = document.getElementById(`${atr}-base`);
+    if (input) input.value = attributesFinal[atr];
+  });
+
+  displayAttributesMain(attributesFinal, pochodzenie);
+}
+
+/**
+ * Wyświetla finalne atrybuty główne i przelicza atrybuty drugorzędne.
+ */
+function displayAttributesMain(attributesFinal, pochodzenie) {
+  document.getElementById('strength-final').textContent = attributesFinal.sila;
+  document.getElementById('agility-final').textContent = attributesFinal.zrecznosc;
+  document.getElementById('intellect-final').textContent = attributesFinal.intelekt;
+  document.getElementById('will-final').textContent = attributesFinal.wola;
+
+  // Modyfikator = wartość - 10 (przeciętna wartość atrybutu w PG)
+  document.getElementById('strength-mod').textContent = formatModifier(attributesFinal.sila - 10);
+  document.getElementById('agility-mod').textContent = formatModifier(attributesFinal.zrecznosc - 10);
+  document.getElementById('intellect-mod').textContent = formatModifier(attributesFinal.intelekt - 10);
+  document.getElementById('will-mod').textContent = formatModifier(attributesFinal.wola - 10);
+
+  updateAttributesSecondary(attributesFinal, pochodzenie);
+
+  // Aktywuj przycisk "Dalej" w kroku 2
+  document.getElementById('btn-next-2').disabled = false;
+}
+
+/**
+ * Mapowanie identyfikatorów atrybutów z danych na klucze w pliku językowym.
+ * Identyfikatory (`sila`, `zrecznosc`, ...) są częścią modelu danych i się nie
+ * tłumaczą; nazwy widoczne dla użytkownika przychodzą z i18n.
+ */
+const ATTRIBUTE_KEYS = { sila: 'strength', zrecznosc: 'agility', intelekt: 'intellect', wola: 'will' };
+const SECONDARY_ATTRIBUTE_KEYS = {
+  zdrowie: 'health', moc: 'power', obrona: 'defense', predkosc: 'speed', splugawienie: 'corruption'
+};
+
+/** Nazwa atrybutu głównego; nieznany identyfikator zwracamy bez zmian. */
+function attributeLabel(id) {
+  return ATTRIBUTE_KEYS[id] ? t(`attributes.${ATTRIBUTE_KEYS[id]}`) : id;
+}
+
+/** Nazwa atrybutu drugorzędnego (modyfikatory ścieżek na kafelkach, Krok 3). */
+function secondaryAttributeLabel(id) {
+  return SECONDARY_ATTRIBUTE_KEYS[id] ? t(`attributes.${SECONDARY_ATTRIBUTE_KEYS[id]}`) : id;
+}
+
+/**
+ * Sprawdza, czy dany slot zwiększenia atrybutów (Krok 4) ma kompletną
+ * odpowiedź: dokładnie `ilosc` różnych atrybutów wybranych.
+ */
+function slotAttributesComplete(slot) {
+  const selected = selectedAttributesSlots[slot.id] || [];
+  return selected.length === slot.ilosc;
+}
+
+/**
+ * Oblicza atrybuty główne postaci PRZED uwzględnieniem slotów Kroku 4:
+ * pochodzenie + jednorazowa zamiana wartości z Kroku 2.
+ */
+function calculateBaseAttributesBeforePaths() {
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return null;
+  const zmniejszony = document.getElementById('attribute-decreased')?.value;
+  const zwiekszony = document.getElementById('attribute-increased')?.value;
+  return calculateAttributesMain(pochodzenie, zmniejszony, zwiekszony);
+}
+
+/**
+ * Renderuje Krok 4: sloty zwiększenia atrybutów przyznane przez wybrane
+ * ścieżki (PG: "Zwiększ dwa/trzy dowolne o 1" przy wyborze ścieżki).
+ * Przelicza i zapisuje finalne atrybuty główne (bazowe + bonusy ze
+ * wszystkich slotów) do #strength-final itd., by kolejne kroki widziały
+ * poprawne wartości.
+ */
+function renderAttributesSlotsSection() {
+  const container = document.getElementById('attribute-slots');
+  if (!container) return;
+
+  const slots = calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  });
+
+  if (slots.length === 0) {
+    container.innerHTML = `<p class="hint">${t('step3.noAttributeSlots')}</p>`;
+  } else {
+    container.innerHTML = slots.map(slot => {
+      const selected = selectedAttributesSlots[slot.id] || [];
+      const limitReached = selected.length >= slot.ilosc;
+      const opcje = slot.dostepne.map(atr => {
+        const countAssigned = selected.filter(w => w === atr).length;
+        return `
+          <div class="attribute-stepper" data-slot-id="${slot.id}" data-attr="${atr}">
+            <span class="attribute-stepper-label">${attributeLabel(atr)}</span>
+            <button type="button" class="attribute-stepper-btn" data-delta="-1" ${countAssigned === 0 ? 'disabled' : ''}>−</button>
+            <span class="attribute-stepper-count">${countAssigned}</span>
+            <button type="button" class="attribute-stepper-btn" data-delta="1" ${limitReached ? 'disabled' : ''}>+</button>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="slot-card" data-slot-id="${slot.id}">
+          <div class="slot-source">
+            ${slot.source}
+            <button type="button" class="section-reset-btn" data-reset-attribute-slot="${slot.id}" title="${t('step3.resetPathSlotTitle')}">Wyczyść</button>
+          </div>
+          <div class="slot-description">${t('summary.assignPoints', { count: slot.ilosc, value: slot.wartosc, assigned: selected.length })}</div>
+          <div class="attribute-choice-list">${opcje}</div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.attribute-stepper-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const stepper = e.target.closest('.attribute-stepper');
+        const { slotId, attr } = stepper.dataset;
+        const delta = parseInt(e.target.dataset.delta);
+        const selected = [...(selectedAttributesSlots[slotId] || [])];
+        const slot = slots.find(s => s.id === slotId);
+        if (delta > 0 && selected.length < slot.ilosc) {
+          selected.push(attr);
+        } else if (delta < 0) {
+          const idx = selected.lastIndexOf(attr);
+          if (idx !== -1) selected.splice(idx, 1);
+        }
+        selectedAttributesSlots[slotId] = selected;
+        renderAttributesSlotsSection();
+      });
+    });
+    container.querySelectorAll('[data-reset-attribute-slot]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        delete selectedAttributesSlots[btn.dataset.resetAttributeSlot];
+        renderAttributesSlotsSection();
+      });
+    });
+  }
+
+  // Przelicz i zapisz finalne atrybuty główne (bazowe + wszystkie sloty)
+  const base = calculateBaseAttributesBeforePaths();
+  if (base) {
+    const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+    const final = { ...base };
+    slots.forEach(slot => {
+      (selectedAttributesSlots[slot.id] || []).forEach(atr => {
+        final[atr] += slot.wartosc;
+      });
+    });
+    displayAttributesMain(final, pochodzenie);
+  }
+
+  const btn = document.getElementById('btn-next-4');
+  if (btn) btn.disabled = !slots.every(slotAttributesComplete);
+}
+
+/**
+ * Sumuje bonusy do atrybutów drugorzędnych (Zdrowie, Moc, Obrona, Prędkość,
+ * Splugawienie) przyznane przez wszystkie aktualnie wybrane ścieżki.
+ * @returns {{zdrowie: number, moc: number, obrona: number, predkosc: number, splugawienie: number}}
+ */
+function sumBonusesSecondaryWithPaths() {
+  const sum = { zdrowie: 0, moc: 0, obrona: 0, predkosc: 0, splugawienie: 0 };
+  [1, 3, 7].forEach(levelChoice => {
+    const mod = grantedBenefitsWithPaths[levelChoice]?.pkt?.mod_drugorzedne;
+    if (!mod) return;
+    Object.keys(sum).forEach(k => { sum[k] += mod[k] || 0; });
+  });
+  return sum;
+}
+
+/**
+ * Aktualizuje atrybuty drugorzędne na podstawie atrybutów głównych i pochodzenia
+ */
+function updateAttributesSecondary(atrybuty, pochodzenie) {
+  // Oblicz atrybuty drugorzędne zgodnie z Podręcznikiem Głównym
+  const bonusesPaths = sumBonusesSecondaryWithPaths();
+  let zdrowie = atrybuty.sila + bonusesPaths.zdrowie;
+
+  // Dodaj bonus do zdrowia z poziomu 4 jeśli jest dostępny
+  if (selectedLevel >= 4 && pochodzenie.poziom_4 && pochodzenie.poziom_4.zdrowie) {
+    const healthBonus = parseInt(pochodzenie.poziom_4.zdrowie.replace('+', ''));
+    zdrowie += healthBonus;
+  }
+
+  const attributesSecondary = {
+    percepcja: atrybuty.intelekt,
+    obrona: atrybuty.zrecznosc + bonusesPaths.obrona,
+    zdrowie,
+    szybkosc_zdrowienia: Math.floor(atrybuty.sila / 4) || 1,
+    moc: bonusesPaths.moc,
+    predkosc: (pochodzenie.predkosc || 0) + bonusesPaths.predkosc,
+    splugawienie: bonusesPaths.splugawienie + calculateCorruptionFromCurrentMagic()
+  };
+
+  // Modyfikatory obrony na podstawie rozmiaru pochodzenia
+  if (pochodzenie.rozmiar === '1/4') {
+    attributesSecondary.obrona += 4;
+  } else if (pochodzenie.rozmiar === '1/2') {
+    attributesSecondary.obrona += 2;
+  } else if (pochodzenie.rozmiar === '2') {
+    attributesSecondary.obrona -= 2;
+  }
+  
+  // Wyświetl atrybuty drugorzędne w sekcji obliczonych atrybutów
+  const container = document.getElementById('calculated-attributes');
+  if (container) {
+    const secondaryAttrsDiv = document.getElementById('secondary-attributes-display');
+    if (!secondaryAttrsDiv) {
+      const secondaryDiv = document.createElement('div');
+      secondaryDiv.id = 'secondary-attributes-display';
+      secondaryDiv.className = 'secondary-attributes';
+      secondaryDiv.innerHTML = `
+        <h4>${t('attributes.secondaryHeadingColon')}</h4>
+        <div class="attributes-grid">
+          <div class="attribute-display">
+            <label>${t('attributes.perceptionColon')}</label>
+            <span class="attribute-value" id="perception-final">${attributesSecondary.percepcja}</span>
+          </div>
+          <div class="attribute-display">
+            <label>${t('attributes.defenseColon')}</label>
+            <span class="attribute-value" id="defense-final">${attributesSecondary.obrona}</span>
+          </div>
+          <div class="attribute-display">
+            <label>${t('attributes.healthColon')}</label>
+            <span class="attribute-value" id="health-final">${attributesSecondary.zdrowie}</span>
+          </div>
+          <div class="attribute-display">
+            <label>${t('attributes.healingRateColon')}</label>
+            <span class="attribute-value" id="healing-rate-final">${attributesSecondary.szybkosc_zdrowienia}</span>
+          </div>
+          <div class="attribute-display">
+            <label>${t('attributes.speedColon')}</label>
+            <span class="attribute-value" id="speed-final">${attributesSecondary.predkosc}</span>
+          </div>
+          <div class="attribute-display">
+            <label>${t('attributes.powerColon')}</label>
+            <span class="attribute-value" id="power-final">${attributesSecondary.moc}</span>
+          </div>
+          <div class="attribute-display">
+            <label>${t('attributes.corruptionColon')}</label>
+            <span class="attribute-value" id="corruption-final">${attributesSecondary.splugawienie}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(secondaryDiv);
+    } else {
+      // Aktualizuj istniejące wartości
+      document.getElementById('perception-final').textContent = attributesSecondary.percepcja;
+      document.getElementById('defense-final').textContent = attributesSecondary.obrona;
+      document.getElementById('health-final').textContent = attributesSecondary.zdrowie;
+      document.getElementById('healing-rate-final').textContent = attributesSecondary.szybkosc_zdrowienia;
+      document.getElementById('speed-final').textContent = attributesSecondary.predkosc;
+      document.getElementById('power-final').textContent = attributesSecondary.moc;
+      document.getElementById('corruption-final').textContent = attributesSecondary.splugawienie;
+    }
+  }
+}
+
+/**
+ * Przelicza atrybuty drugorzędne od nowa (np. po zmianie wyboru magii w
+ * Kroku 6, gdy poznanie/nauka czarnej magii zmienia Splugawienie) na
+ * podstawie atrybutów głównych aktualnie wyświetlonych w Kroku 2.
+ */
+function refreshAttributesSecondary() {
+  if (!selectedOrigin) return;
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return;
+  const atrybuty = {
+    sila: parseInt(document.getElementById('strength-final')?.textContent, 10) || 0,
+    zrecznosc: parseInt(document.getElementById('agility-final')?.textContent, 10) || 0,
+    intelekt: parseInt(document.getElementById('intellect-final')?.textContent, 10) || 0,
+    wola: parseInt(document.getElementById('will-final')?.textContent, 10) || 0
+  };
+  updateAttributesSecondary(atrybuty, pochodzenie);
+}
+
+/**
+ * Formatuje modyfikator atrybutu
+ * @param {number} modifier - Wartość modyfikatora
+ * @returns {string} Sformatowany modyfikator z + lub -
+ */
+function formatModifier(modifier) {
+  if (modifier >= 0) {
+    return `+${modifier}`;
+  } else {
+    return `${modifier}`;
+  }
+}
+
+
+/**
+ * Pobiera wszystkie cechy specjalne dla stanu rozwiniętego
+ * @param {Object} cechySpecjalne - Obiekt z cechami specjalnymi
+ * @returns {Array|null} Tablica ze wszystkimi cechami
+ */
+function getAllTraits(traitsSpecial) {
+  if (!traitsSpecial || Object.keys(traitsSpecial).length === 0) {
+    return null;
+  }
+    
+  const cechy = Object.entries(traitsSpecial);
+  return cechy.map(([nazwa, opis]) => ({
+    nazwa: formatNameTraits(nazwa),
+    opis
+  }));
+}
+
+
+/**
+ * Formatuje listę języków pochodzenia (kluczy z origins.js, np. 'mroczna_mowa')
+ * do czytelnych nazw z JEZYKI (np. 'Mroczna mowa') - inaczej wieloczłonowe
+ * klucze wyciekałyby do UI jako surowy tekst ze znakiem podkreślenia.
+ * @param {string[]} jezyki
+ * @returns {string}
+ */
+function formatLanguagesOrigin(jezyki) {
+  return (jezyki || []).map(j => LANGUAGES[j] || j).join(', ');
+}
+
+/**
+ * Formatuje opis bonusu profesyjnego/językowego pochodzenia (do wyświetlenia
+ * poza Krokiem 4, np. na rozwiniętym kafelku pochodzenia lub w podglądzie).
+ * @param {Object} pochodzenie - Obiekt pochodzenia (z origins.js)
+ * @returns {string} Opis bonusu
+ */
+function formatBonusProfessionsOrigin(pochodzenie) {
+  if (!pochodzenie.profesje || pochodzenie.profesje.length === 0) {
+    // Pochodzenie może nie dawać dodatkowego slotu, a mimo to mieć własną
+    // listę profesji, z której korzysta zamiast tabel z PG (mroczniak) -
+    // samo "brak" byłoby wtedy mylące.
+    const wlasna = pochodzenie.wlasne_profesje && t(`professions.categories.${pochodzenie.wlasne_profesje}`);
+    if (wlasna) {
+      return t('summary.ownProfessionListOnly', { category: wlasna });
+    }
+    return t('summary.noBonusProfessionOrLanguage');
+  }
+  const kategorie = pochodzenie.profesje.join(', ');
+  return pochodzenie.bonus_jezyk_lub_profesja
+    ? t('summary.categoriesOrNewLanguage', { categories: kategorie })
+    : `${kategorie} (gwarantowana)`;
+}
+
+/**
+ * Formatuje nazwę cechy specjalnej
+ * @param {string} nazwa - Nazwa cechy w formacie snake_case
+ * @returns {string} Sformatowana nazwa cechy
+ */
+function formatNameTraits(nazwa) {
+  return nazwa
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Przełącza stan rozwijania kafelka pochodzenia
+ * @param {string} originId - ID pochodzenia
+ */
+function toggleTileExpansion(originId) {
+  const tile = document.querySelector(`[data-origin-id="${originId}"]`);
+  if (!tile) {
+    return;
+  }
+    
+  const isExpanded = tile.classList.contains('expanded');
+    
+  if (isExpanded) {
+    // Zwiń kafelek
+    collapseTile(tile);
+  } else {
+    // Rozwiń kafelek (najpierw zwiń wszystkie inne)
+    collapseAllTiles();
+    expandTile(tile);
+  }
+}
+
+/**
+ * Rozwija kafelek pochodzenia
+ * @param {HTMLElement} tile - Element kafelka
+ */
+function expandTile(tile) {
+  tile.classList.remove('compact');
+  tile.classList.add('expanded');
+
+  // Pokaż rozwinięty kontent (górę obok obrazka i dół na całą szerokość), ukryj zwinięty
+  const collapsedContent = tile.querySelector('.tile-content-collapsed');
+  const expandedTop = tile.querySelector('.tile-content-expanded-top');
+  const expandedExtra = tile.querySelector('.tile-content-expanded-extra');
+
+  if (collapsedContent) {
+    collapsedContent.style.display = 'none';
+  }
+  if (expandedTop) {
+    expandedTop.style.display = 'block';
+  }
+  if (expandedExtra) {
+    expandedExtra.style.display = 'block';
+  }
+
+  // Przewiń do nagłówka rozwijanego kafelka, żeby było od razu widać, które
+  // pochodzenie zostało kliknięte - bez tego, jeśli kliknięcie trafiło w
+  // dolną część zwiniętego kafelka blisko dołu ekranu, po rozwinięciu widać
+  // by było środek nowej, długiej treści, a nie nazwę pochodzenia.
+  const header = tile.querySelector('.tile-header');
+  requestAnimationFrame(() => {
+    header?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+/**
+ * Zwijanie kafelka pochodzenia
+ * @param {HTMLElement} tile - Element kafelka
+ */
+function collapseTile(tile) {
+  tile.classList.remove('expanded');
+  tile.classList.add('compact');
+
+  // Pokaż zwinięty kontent, ukryj obie części rozwiniętego
+  const collapsedContent = tile.querySelector('.tile-content-collapsed');
+  const expandedTop = tile.querySelector('.tile-content-expanded-top');
+  const expandedExtra = tile.querySelector('.tile-content-expanded-extra');
+
+  if (collapsedContent) {
+    collapsedContent.style.display = 'block';
+  }
+  if (expandedTop) {
+    expandedTop.style.display = 'none';
+  }
+  if (expandedExtra) {
+    expandedExtra.style.display = 'none';
+  }
+}
+
+/**
+ * Zwijanie wszystkich kafelków pochodzenia
+ */
+function collapseAllTiles() {
+  const allTiles = document.querySelectorAll('.origin-tile');
+  allTiles.forEach(tile => {
+    if (tile.classList.contains('expanded')) {
+      collapseTile(tile);
+    }
+  });
+}
+
+/**
+ * Pokazuje komunikat o wyborze pochodzenia
+ * @param {string} originId - ID wybranego pochodzenia
+ */
+function showMessageChoice(originId) {
+  const pochodzenie = availableOrigin.find(p => p.id === originId);
+  if (!pochodzenie) {
+    return;
+  }
+    
+  // Utwórz komunikat
+  const message = document.createElement('div');
+  message.className = 'selection-message';
+  message.innerHTML = `
+        <div class="message-content">
+            <span class="message-icon">${icon('check')}</span>
+            <span class="message-text">${t('summary.selectedOriginColon')} <strong>${pochodzenie.nazwa}</strong></span>
+        </div>
+    `;
+    
+  // Dodaj komunikat do kroku 1
+  const step1 = document.getElementById('step-1');
+  if (step1) {
+    // Usuń poprzedni komunikat jeśli istnieje
+    const existingMessage = step1.querySelector('.selection-message');
+    if (existingMessage) {
+      existingMessage.remove();
+    }
+        
+    // Dodaj nowy komunikat
+    step1.appendChild(message);
+        
+    // Automatycznie usuń komunikat po 3 sekundach
+    setTimeout(() => {
+      if (message.parentNode) {
+        message.remove();
+      }
+    }, 3000);
+  }
+}
+
+/**
+ * Zamienia klucz w formacie snake_case (np. "znienawidzone_stworzenia") na
+ * czytelny tekst ("Znienawidzone stworzenia") - wyłącznie awaryjny fallback,
+ * gdy dla klucza brakuje właściwej, poprawnie sformatowanej nazwy w danych.
+ */
+function humanizeKeyTable(klucz) {
+  const tekst = klucz.replace(/_/g, ' ');
+  return tekst.charAt(0).toUpperCase() + tekst.slice(1);
+}
+
+/**
+ * Generuje sekcję z wynikami tabel losowych
+ * @param {string} originId - ID pochodzenia
+ * @returns {string} HTML sekcji z wynikami tabel
+ */
+function generateSectionsResultsTables(originId) {
+  if (!resultsTables[originId] || Object.keys(resultsTables[originId]).length === 0) {
+    return '';
+  }
+  
+  const pochodzenie = availableOrigin.find(p => p.id === originId);
+  if (!pochodzenie || !pochodzenie.tabele) {
+    return '';
+  }
+  
+  let html = '<div class="preview-section">';
+  html += `<h5>${icon('dice')} ${t('summary.randomTableResultsHeading')}</h5>`;
+
+  Object.entries(resultsTables[originId]).forEach(([tableName, result]) => {
+    // Nazwa tabeli pochodzi bezpośrednio z jej definicji (pochodzenie.tabele),
+    // a nie z osobno utrzymywanej listy - inaczej brakujący wpis pokazywałby
+    // surowy klucz (np. "znienawidzone_stworzenia") zamiast czytelnej nazwy.
+    const nameTable = pochodzenie.tabele[tableName]?.nazwa || humanizeKeyTable(tableName);
+    const resultIcon = result.typ === 'wybór' ? icon('target') : icon('dice');
+    const typeText = result.typ === 'wybór' ? 'Wybór' : 'Losowanie';
+
+    html += '<div class="table-result-item">';
+    html += '<div class="table-result-header">';
+    html += `<span class="table-result-name">${nameTable}</span>`;
+    html += `<span class="table-result-type">${resultIcon} ${typeText}</span>`;
+    html += '</div>';
+    html += '<div class="table-result-content">';
+    html += `<div class="table-result-roll">${t('summary.rollColon', { roll: result.rzut })}</div>`;
+    html += `<div class="table-result-outcome">${result.wynik}</div>`;
+    if (result.efekt) {
+      html += `<div class="table-result-effect"><strong>${t('summary.mechanicalEffectColon')}</strong> ${result.efekt}</div>`;
+    }
+    html += '</div>';
+    html += '</div>';
+  });
+  
+  html += '</div>';
+  return html;
+}
+
+/**
+ * Zwraca nazwę tieru poziomu postaci (0=startowy, 1-2=Nowicjusz,
+ * 3-6=Ekspert, 7-10=Mistrz), zgodnie z etykietami użytymi na kartach
+ * poziomu w Kroku 2.
+ * @param {number} poziom
+ * @returns {string}
+ */
+function nameTierLevel(poziom) {
+  if (poziom === 0) return t('summary.startingLevel');
+  if (poziom <= 2) return 'Nowicjusz';
+  if (poziom <= 6) return 'Ekspert';
+  return 'Mistrz';
+}
+
+/**
+ * Renderuje sekcję pochodzenia: nazwa, opis, cechy specjalne, rozmiar,
+ * prędkość bazowa, języki i bonus profesyjny/językowy z pochodzenia.
+ */
+function renderCardOriginSection(pochodzenie) {
+  const cechy = getAllTraits(pochodzenie.cechy_specjalne);
+  return `
+    <div class="preview-section">
+      <h5>${pochodzenie.nazwa}</h5>
+      <p>${pochodzenie.opis}</p>
+      <p><strong>${t('summary.sizeColon')}</strong> ${pochodzenie.rozmiar} | <strong>${t('attributes.baseSpeedColon')}</strong> ${pochodzenie.predkosc}</p>
+      <p><strong>${t('step5.languagesColon')}</strong> ${formatLanguagesOrigin(pochodzenie.jezyki)}</p>
+      <p><strong>${t('summary.originProfessionOrLanguage')}</strong> ${formatBonusProfessionsOrigin(pochodzenie)}</p>
+      ${cechy ? `
+        <div class="trait-list">
+          ${cechy.map(c => `<div class="trait-item"><strong>${c.nazwa}:</strong> ${c.opis}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję atrybutów podstawowych wraz z notatkami o jednorazowej
+ * zamianie wartości (Krok 2) i bonusie do atrybutu z pochodzenia, jeśli
+ * były użyte.
+ */
+function renderCardAttributesBasicSection(pochodzenie) {
+  const atrybuty = {
+    sila: parseInt(document.getElementById('strength-final').textContent),
+    zrecznosc: parseInt(document.getElementById('agility-final').textContent),
+    intelekt: parseInt(document.getElementById('intellect-final').textContent),
+    wola: parseInt(document.getElementById('will-final').textContent)
+  };
+
+  const notes = [];
+  const defaultAttributes = document.getElementById('default-attributes');
+  if (defaultAttributes && !defaultAttributes.checked) {
+    const zmniejszony = document.getElementById('attribute-decreased')?.value;
+    const zwiekszony = document.getElementById('attribute-increased')?.value;
+    if (zmniejszony && zwiekszony) {
+      notes.push(`Zamiana wartości: −1 ${attributeLabel(zmniejszony)}, +1 ${attributeLabel(zwiekszony)}.`);
+    }
+  }
+  const bonusAttributes = getSelectedAttributesBonus();
+  if (pochodzenie.wybor_atrybutu && bonusAttributes.length > 0) {
+    const bonusValue = pochodzenie.wybor_atrybutu.wartosc || 1;
+    notes.push(`Bonus z pochodzenia: ${bonusAttributes.map(a => `${attributeLabel(a)} +${bonusValue}`).join(', ')}.`);
+  }
+
+  return `
+    <div class="preview-section">
+      <h5>${t('summary.basicAttributesHeading')}</h5>
+      <div class="attributes-grid">
+        <div class="attribute-box"><strong>${t('attributes.strength')}</strong><br>${atrybuty.sila}</div>
+        <div class="attribute-box"><strong>${t('attributes.agility')}</strong><br>${atrybuty.zrecznosc}</div>
+        <div class="attribute-box"><strong>${t('attributes.intellect')}</strong><br>${atrybuty.intelekt}</div>
+        <div class="attribute-box"><strong>${t('attributes.will')}</strong><br>${atrybuty.wola}</div>
+      </div>
+      ${notes.map(n => `<p class="hint">${n}</p>`).join('')}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję atrybutów drugorzędnych, czytając już poprawnie
+ * przeliczone wartości (łącznie z bonusami ze ścieżek) z Kroku 2 -
+ * patrz aktualizujAtrybutyDrugorzedne().
+ */
+function renderCardAttributesSecondarySection() {
+  const read = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
+  return `
+    <div class="preview-section">
+      <h5>${t('summary.secondaryAttributesHeading')}</h5>
+      <div class="attributes-grid">
+        <div class="attribute-box"><strong>${t('attributes.perception')}</strong><br>${read('perception-final')}</div>
+        <div class="attribute-box"><strong>${t('attributes.defense')}</strong><br>${read('defense-final')}</div>
+        <div class="attribute-box"><strong>${t('attributes.health')}</strong><br>${read('health-final')}</div>
+        <div class="attribute-box"><strong>${t('attributes.healingRate')}</strong><br>${read('healing-rate-final', '1')}</div>
+        <div class="attribute-box"><strong>${t('attributes.speed')}</strong><br>${read('speed-final')}</div>
+        <div class="attribute-box"><strong>${t('attributes.power')}</strong><br>${read('power-final')}</div>
+        <div class="attribute-box"><strong>${t('attributes.corruption')}</strong><br>${read('corruption-final')}</div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje wybraną korzyść z pochodzenia na poziomie 4 (spell/talent/inna
+ * opcja wybrana w radiobuttonach sekcji "Korzyści z Pochodzenia").
+ */
+function renderCardLevel4Section(pochodzenie) {
+  if (selectedLevel < 4 || !pochodzenie.poziom_4) return '';
+  const selectedOption = document.querySelector(`input[name="origin-option-${pochodzenie.id}"]:checked`)?.value;
+  const healthBonus = parseInt((pochodzenie.poziom_4.zdrowie || '+0').replace('+', '')) || 0;
+
+  // Karta postaci musi zawierać pełny opis wybranej korzyści, a nie tylko jej
+  // nazwę - inaczej gracz musi wracać do Kroku 2, żeby sprawdzić, co dany
+  // talent robi.
+  const nazwaTalentu = selectedOption ? talentNameFromOriginOption(selectedOption) : null;
+  let szczegol = '';
+  if (nazwaTalentu) {
+    szczegol = `<div class="trait-list"><div class="trait-item"><strong>${nazwaTalentu}:</strong> ${getTalentDescription(nazwaTalentu)}</div></div>`;
+  } else if (selectedOption === '1 zaklęcie') {
+    szczegol = `<p class="hint">${t('summary.learnOneSpellFromKnown')}</p>`;
+  } else if (selectedOption === 'zwiększenie Zdrowia o 4') {
+    szczegol = `<p class="hint">${t('summary.healthIncreaseDescription')}</p>`;
+  }
+
+  return `
+    <div class="preview-section">
+      <h5>${t('summary.originBenefitLevel4')}</h5>
+      ${healthBonus > 0 ? `<p><strong>${t('attributes.healthColon')}</strong> +${healthBonus}</p>` : ''}
+      <p><strong>${t('summary.selectedOptionColon')}</strong> ${selectedOption || t('summary.notChosen')}</p>
+      ${szczegol}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję wybranych ścieżek wraz z talentami i magią, które
+ * przyznają, oraz zasoby (srebrniki, kurioza) przyznane wraz z poziomem.
+ */
+function renderCardPathsSection() {
+  const labelsTier = { 1: 'Nowicjusz', 3: 'Ekspert', 7: 'Mistrz' };
+  const sections = [1, 3, 7].map(levelChoice => {
+    const benefit = grantedBenefitsWithPaths[levelChoice];
+    if (!benefit) return '';
+    const pkt = benefit.pkt || {};
+    const talenty = (pkt.talenty || []).map(talent => `<div class="trait-item"><strong>${talent.nazwa}:</strong> ${talent.opis}</div>`).join('');
+    const magia = (pkt.zaklecia || []).map(z => `<div class="trait-item"><strong>${t('summary.magicColon')}</strong> ${z.opis}</div>`).join('');
+    const zPuli = getPoolGrants(levelChoice)
+      .flatMap(g => g.wybrane.map(nazwaTalentu => `<div class="trait-item"><strong>${nazwaTalentu}:</strong> ${getTalentDescription(nazwaTalentu)}</div>`))
+      .join('');
+    return `
+      <div class="path-benefit-item">
+        <h6>${labelsTier[levelChoice]}: ${benefit.sciezkaNazwa || benefit.pathId} (poziom ${levelChoice}) ${renderSourceTag(benefit.zrodlo || 'PG')}</h6>
+        ${talenty || magia || zPuli ? `<div class="trait-list">${talenty}${magia}${zPuli}</div>` : ''}
+      </div>
+    `;
+  }).filter(Boolean);
+
+  if (sections.length === 0) return '';
+
+  return `
+    <div class="preview-section">
+      <h5>${t('summary.chosenPaths')}</h5>
+      ${sections.join('')}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję zasobów: srebrniki wylosowane za poziomy powyżej 0
+ * i liczbę dostępnych kuriozów.
+ */
+function renderCardResourcesSection() {
+  if (selectedLevel <= 0) return '';
+  const silver = randomizedSilver != null ? randomizedSilver : t('summary.notRolled');
+  return `
+    <div class="preview-section">
+      <h5>${t('summary.resourcesHeading')}</h5>
+      <p><strong>${t('summary.silverColon')}</strong> ${silver} | <strong>${t('summary.curiosColon')}</strong> ${numberCurios}</p>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję znanych tradycji i zaklęć wybranych opcjonalnie
+ * w Kroku 6, na podstawie rozwiązanych atomowych wyborów magii.
+ */
+function renderCardSpellsSection() {
+  const atoms = getCurrentAtomsMagic();
+  if (atoms.length === 0) return '';
+  const { resolutions, knownTraditions } = calculateResolutionMagic(atoms, magicChoices);
+  const traditionsList = [...knownTraditions].map(id => TRADITIONS[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, localeTag()));
+  const zaklecia = resolutions
+    .flatMap(r => {
+      if (r.mode === 'zaklecie' && r.spellId) return [r.spellId];
+      if (r.mode === 'tradycja' && r.darmowyZaklecieId) return [r.darmowyZaklecieId];
+      return [];
+    })
+    .map(id => SPELLS.find(s => s.id === id))
+    .filter(Boolean);
+
+  if (traditionsList.length === 0 && zaklecia.length === 0) return '';
+
+  const traditionsHtml = traditionsList.length
+    ? `<div class="trait-item"><strong>${t('summary.knownTraditionsColon')}</strong> ${traditionsList.join(', ')}</div>`
+    : '';
+  const spellsHtml = zaklecia
+    .map(s => `<div class="trait-item"><strong>${s.nazwa}</strong> ${renderSourceTag(s.zrodlo)} <em>(${s.tradycjaNazwa}, krąg ${s.krag}, ${s.kategoria === 'atak' ? 'atak' : 'użytkowe'})</em>: ${s.opis}</div>`)
+    .join('');
+
+  return `
+    <div class="preview-section">
+      <h5>${t('summary.magicHeading')}</h5>
+      <div class="trait-list">${traditionsHtml}${spellsHtml}</div>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję ekwipunku (Krok 7): przedmioty posiadane przez postać
+ * (wyposażenie startowe pozostałe po sprzedaży + zakupy w sklepie) wraz
+ * z dostępną gotówką. Pomija Zamożność bez wybranego poziomu.
+ */
+function renderCardEquipmentSection() {
+  const state = calculateStateEquipment();
+  if (!state) return '';
+
+  const entries = [...state.ownedStarting, ...state.purchasedEntries];
+  if (entries.length === 0) return '';
+
+  const entriesHtml = entries.map(p => {
+    const nazwa = p.zwojZaklecie
+      ? `Zwój (${TRADITIONS[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
+      : (p.itemId ? (getItem(p.itemId)?.nazwa || p.itemId) : p.tekst);
+    const item = p.itemId ? getItem(p.itemId) : null;
+    const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
+    const stats = item ? formatStatsItem(item) : null;
+    return `<div class="trait-item">${nazwa}${ilosc}${item ? ` ${renderSourceTag(item.zrodlo)}` : ''}${stats ? `<br><small>${stats}</small>` : ''}</div>`;
+  }).join('');
+
+  return `
+    <div class="preview-section">
+      <h5>${t('equipment.equipmentSectionHeading', { wealth: state.wealthentry.nazwa })}</h5>
+      <div class="trait-list">${entriesHtml}</div>
+      <p><strong>${t('equipment.cashColon')}</strong> ${formatCopperbits(state.cashCopperbits)}</p>
+    </div>
+  `;
+}
+
+/**
+ * Buduje kompletną, czytelną Kartę Postaci ze wszystkich informacji
+ * zebranych w kreatorze: pochodzenia, atrybutów, ścieżek z talentami,
+ * profesji/języków/kuriozów, zaklęć, ekwipunku, zasobów i wyników tabel
+ * losowych. Używana jako żywy podgląd w Kroku 8.
+ * @returns {string} HTML karty postaci (bez zewnętrznego <h4>/nagłówka)
+ */
+function generateCardCharacterHtml() {
+  if (!selectedOrigin) return '';
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return '';
+
+  return `
+    <div class="preview-section">
+      <p><strong>${t('summary.levelColon')}</strong> ${selectedLevel} (${nameTierLevel(selectedLevel)})</p>
+    </div>
+    ${renderCardOriginSection(pochodzenie)}
+    ${renderCardAttributesBasicSection(pochodzenie)}
+    ${renderCardAttributesSecondarySection()}
+    ${renderCardLevel4Section(pochodzenie)}
+    ${renderCardPathsSection()}
+    ${renderProfessionsAndCuriosSummary()}
+    ${renderCardSpellsSection()}
+    ${renderCardEquipmentSection()}
+    ${renderCardResourcesSection()}
+    ${generateSectionsResultsTables(pochodzenie.id)}
+  `;
+}
+
+/**
+ * Aktualizuje podgląd postaci (Krok 7) - żywa, aktualizowana na bieżąco
+ * wersja Karty Postaci, zanim użytkownik kliknie "Utwórz Postać".
+ */
+function updatePreviewCharacter() {
+  if (!selectedOrigin) return;
+  renderMissingItemsWarning();
+  updateSaveButtonState();
+  const container = document.getElementById('character-preview');
+  if (!container) return;
+  const title = characterName ? `${t('summary.previewHeading')}: ${characterName}` : t('summary.previewHeading');
+  container.innerHTML = `<h4>${icon('scroll')} ${title}</h4>${generateCardCharacterHtml()}`;
+}
+
+/**
+ * Sprawdza wybory, które w tej aplikacji nigdzie nie są wymuszone (Kroki 6
+ * i 7 są w pełni opcjonalne z punktu widzenia nawigacji, a Krok 2 ma kilka
+ * pomocniczych wyborów bez blokady "Dalej"), a które w praktyce są ważne
+ * dla kompletności postaci wg podręcznika. Wywoływana wyłącznie do
+ * poinformowania gracza w Kroku 8 - nigdy do blokowania nawigacji między
+ * krokami.
+ * @returns {string[]} lista opisów brakujących elementów (pusta = nic nie brakuje)
+ */
+function calculateMissingItems() {
+  if (!selectedOrigin) return [];
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return [];
+
+  const missing = [];
+
+  // Ścieżki (Krok 3)
+  if (selectedLevel >= 1 && !selectedPaths.nowicjusz) {
+    missing.push(t('summary.missing.novicePath'));
+  }
+  if (selectedLevel >= 3 && !selectedPaths.ekspert) {
+    missing.push(t('summary.missing.expertPath'));
+  }
+  if (selectedLevel >= 7 && !selectedPaths.mistrz) {
+    missing.push(t('summary.missing.masterPath'));
+  }
+
+  // Talenty do wyboru z pul przyznanych przez ścieżki (Krok 3)
+  getPoolGrants().forEach(g => {
+    const brakuje = g.ilosc - g.wybrane.length;
+    if (brakuje > 0) {
+      const pula = TALENT_POOLS[g.pula];
+      missing.push(`Nie wybrano ${brakuje} z ${g.ilosc} talentów z puli "${pula ? pula.nazwa : g.pula}" - ${g.pathName}, poziom ${g.poziom} (Krok 3).`);
+    }
+  });
+
+  // Bonus do atrybutu z pochodzenia (Krok 2, np. Człowiek +1, Elf +1 i +1)
+  if (pochodzenie.wybor_atrybutu && getSelectedAttributesBonus().length < pochodzenie.wybor_atrybutu.ilosc) {
+    missing.push(t('summary.missing.originAttributeBonus', { origin: pochodzenie.nazwa }));
+  }
+
+  // Atrybuty główne do rozdania (Krok 4)
+  const slotsAttr = calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  });
+  if (!slotsAttr.every(slotAttributesComplete)) {
+    missing.push(t('summary.missing.attributePoints'));
+  }
+
+  // Korzyść z Pochodzenia na poziomie 4 (Krok 2)
+  if (selectedLevel >= 4 && pochodzenie.poziom_4?.opcje?.length > 0 && !getCurrentSelectedLevel4Option()) {
+    missing.push(t('summary.missing.originLevel4Benefit'));
+  }
+
+  // Srebrniki za poziom (Krok 2, sekcja "Zasoby")
+  if (selectedLevel > 0 && randomizedSilver === null) {
+    missing.push(t('summary.missing.silver'));
+  }
+
+  // Profesje i języki (Krok 5)
+  const { slots } = calculateSlotsCharacter();
+  if (!slots.every(slot => slotAnswerComplete(slot))) {
+    missing.push(t('summary.missing.professionSlots'));
+  }
+
+  // Kurioza (Krok 5)
+  const { kurioza } = calculateChoiceCount();
+  if (selectedCurios.length < kurioza) {
+    missing.push(t('summary.missing.curios', { chosen: selectedCurios.length, total: kurioza }));
+  }
+
+  // Magia (Krok 6) - tylko jeśli pochodzenie/ścieżki faktycznie coś przyznają
+  const atomsMagic = getCurrentAtomsMagic();
+  if (atomsMagic.length > 0) {
+    const { resolutions } = calculateResolutionMagic(atomsMagic, magicChoices);
+    if (resolutions.some(r => !r.complete)) {
+      missing.push(t('summary.missing.magicChoices'));
+    }
+  }
+
+  // Zamożność i wyposażenie startowe (Krok 7)
+  if (!equipmentWealthId) {
+    missing.push(t('summary.missing.wealth'));
+  } else {
+    const incompleteGear = calculateAtomsGear(equipmentWealthId).some(atom => {
+      const wybor = equipmentChoices[atom.id];
+      if (atom.rodzaj === 'wybor_przedmiotu') return !wybor?.itemId;
+      if (!wybor) return true;
+      if (wybor.typ === 'zwoj_zaklecie') return !wybor.spellId;
+      if (wybor.typ === 'przedmiot') return !wybor.itemId;
+      return false;
+    });
+    if (incompleteGear) {
+      missing.push(t('summary.missing.gearChoices'));
+    }
+  }
+
+  return missing;
+}
+
+/**
+ * Renderuje na górze Kroku 8 listę rzeczy, które gracz mógł przeoczyć (zob.
+ * calculateMissingItems()) - czysto informacyjnie, nie blokuje eksportu.
+ */
+function renderMissingItemsWarning() {
+  const container = document.getElementById('missing-items-warning');
+  if (!container) return;
+
+  const missing = calculateMissingItems();
+  if (missing.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="missing-items-warning">
+      <h4>${icon('warning')} ${t('summary.possibleOversights')}</h4>
+      <ul>${missing.map(item => `<li>${item}</li>`).join('')}</ul>
+    </div>
+  `;
+}
+
+// ========== AC-016: Obsługa Korzyści Poziomu ==========
+
+/**
+ * Załaduj korzyści dla wybranego poziomu
+ */
+async function loadBenefitsLevel(poziom) {
+  if (!selectedOrigin) {
+    const section = document.getElementById('level-benefits-section');
+    if (section) {
+      section.style.display = 'none';
+    }
+    return;
+  }
+
+  // Poziom 0 to postać startowa - tabela Rozwoju w PG zaczyna się dopiero od
+  // poziomu 1, więc GAME_DATA.poziomy[0] celowo nie istnieje. Bez tego
+  // wyjścia obliczKorzysciPoziomu() rzucałoby wyjątek przy każdym powrocie
+  // na poziom 0 i sekcja wchodziła w awaryjny fallback.
+  if (poziom === 0) {
+    displayStartingLevelBenefits();
+    return;
+  }
+
+  try {
+    const spec = {
+      pochodzenie: selectedOrigin,
+      sciezka_nowicjusza: selectedPaths.nowicjusz || null,
+      sciezka_ekspercka: selectedPaths.ekspert || null,
+      sciezka_mistrzowska: selectedPaths.mistrz || null
+    };
+    // Korzyści są skumulowane - pokazujemy każdy poziom od 1 do wybranego,
+    // nie tylko sam wybrany, żeby postać widziała cały swój dotychczasowy rozwój.
+    const benefitsAllLevels = [];
+    for (let p = 1; p <= poziom; p++) {
+      benefitsAllLevels.push(calculateBenefitsLevel(p, spec));
+    }
+    displayBenefitsLevel(benefitsAllLevels, poziom);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(t('messages.loadBenefitsError'), error);
+    // Fallback - wyświetl podstawowe informacje
+    displayLevelBenefitsFallback(poziom);
+  }
+}
+
+/**
+ * Renderuje sekcję korzyści dla poziomu startowego (0), na którym postać ma
+ * wyłącznie to, co daje pochodzenie - żadna ścieżka nie jest jeszcze wybrana.
+ */
+function displayStartingLevelBenefits() {
+  const section = document.getElementById('level-benefits-section');
+  const levelName = document.getElementById('selected-level-name');
+  const content = document.getElementById('level-benefits-content');
+  if (!section || !content) return;
+
+  section.style.display = 'block';
+  if (levelName) levelName.textContent = t('summary.startingLevelOrigin');
+  content.innerHTML = `
+    <div class="benefit-category">
+      <h5>${t('summary.startingCharacter')}</h5>
+      <p>${t('summary.level0Description')}</p>
+      <p class="hint">${t('step3.firstPathHint')}</p>
+    </div>
+  `;
+}
+
+/**
+ * Fallback dla wyświetlania korzyści poziomu
+ */
+function displayLevelBenefitsFallback(poziom) {
+  const section = document.getElementById('level-benefits-section');
+  const levelName = document.getElementById('selected-level-name');
+  
+  section.style.display = 'block';
+  
+  // Podstawowe nazwy poziomów
+  const namesLevels = {
+    1: 'Nowicjusz',
+    2: 'Nowicjusz', 
+    3: 'Ekspert',
+    4: 'Ekspert',
+    5: 'Ekspert',
+    6: 'Ekspert',
+    7: 'Mistrz',
+    8: 'Mistrz',
+    9: 'Mistrz',
+    10: 'Mistrz'
+  };
+  
+  const nameLevel = namesLevels[poziom] || t('summary.unknownLevel');
+  const namePaths = poziom === 4 ? t('summary.originAsSource') : t('summary.noPath');
+  levelName.textContent = `${nameLevel} (${namePaths})`;
+  
+  // Resetuj wszystkie sekcje
+  // Sprawdź czy elementy istnieją przed ustawieniem display
+  const elements = [
+    'secondary-attributes-growth',
+    'primary-attributes-choice', 
+    'talents-section',
+    'magic-section',
+    'languages-professions-section'
+  ];
+  
+  elements.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.style.display = 'none';
+    }
+  });
+  
+  // Wyświetl podstawowe informacje
+  const content = document.getElementById('level-benefits-content');
+  if (content) {
+    content.innerHTML = `
+      <div class="benefit-category">
+        <h5>${t('summary.basicInfoHeading')}</h5>
+        <p>Poziom ${poziom} - ${nameLevel}</p>
+        <p><em>${t('summary.benefitsAfterChoices')}</em></p>
+      </div>
+    `;
+  }
+}
+
+/**
+ * Wyświetla skumulowane korzyści postaci od poziomu 1 do wybranego poziomu -
+ * jeden blok `.path-benefit-item` (z nagłówkiem "Poziom N - ...") na każdy
+ * poziom z tej listy, w kolejności rosnącej.
+ * @param {Object[]} benefitsAllLevels - wynik calculateBenefitsLevel() dla każdego poziomu 1..poziom
+ * @param {number} poziom - wybrany (docelowy) poziom postaci
+ */
+function displayBenefitsLevel(benefitsAllLevels, poziom) {
+  const section = document.getElementById('level-benefits-section');
+  const levelName = document.getElementById('selected-level-name');
+  const content = document.getElementById('level-benefits-content');
+  if (!section || !content) return;
+
+  section.style.display = 'block';
+  if (levelName) levelName.textContent = poziom;
+
+  content.innerHTML = benefitsAllLevels.map(renderOneLevelBenefitsBlock).join('');
+}
+
+/**
+ * Renderuje blok korzyści jednego poziomu w skumulowanej liście (nagłówek
+ * "Poziom N - Nazwa (Źródło)" + kategorie korzyści tego poziomu).
+ */
+function renderOneLevelBenefitsBlock(benefits) {
+  const nameLevel = benefits.nazwa_poziomu || t('summary.unknownLevel');
+  const nazwaZrodla = benefits.nazwa_sciezki
+    || (benefits.zrodlo_korzysci === 'pochodzenie' ? t('summary.originAsSource') : t('summary.noPath'));
+  // Etykieta źródła tylko dla korzyści ze ścieżki - przy korzyściach z
+  // pochodzenia `nazwaZrodla` to samo słowo "Pochodzenie", nie nazwa własna.
+  const sourceTag = benefits.nazwa_sciezki ? ` ${renderSourceTag(benefits.zrodlo_sciezki || 'PG')}` : '';
+  return `
+    <div class="path-benefit-item">
+      <h6>${t('summary.levelWithSource', { level: benefits.poziom, name: nameLevel, source: nazwaZrodla })}${sourceTag}</h6>
+      ${benefits.opis_poziomu ? `<p class="hint">${benefits.opis_poziomu}</p>` : ''}
+      ${renderBenefitsLevelHtml(benefits.korzyści || {}, benefits)}
+    </div>
+  `;
+}
+
+/**
+ * Składa HTML listy korzyści jednego poziomu - jeden blok `.benefit-category`
+ * na kategorię korzyści. Obsługuje wszystkie pola występujące w blokach
+ * `poziom_N` danych ścieżek i pochodzeń: atrybuty drugorzędne (zdrowie, moc,
+ * obrona, percepcja, prędkość, splugawienie), punkty atrybutów głównych,
+ * talenty, magię, języki/profesje oraz opcje do wyboru (poziom 4 pochodzenia).
+ */
+function renderBenefitsLevelHtml(korzysci, benefits = {}) {
+  const block = (tytul, tresc) => `
+    <div class="benefit-category">
+      <h5>${tytul}</h5>
+      ${tresc}
+    </div>
+  `;
+  const blocks = [];
+
+  const secondary = [
+    [t('attributes.health'), korzysci.zdrowie],
+    [t('attributes.power'), korzysci.moc],
+    [t('attributes.defense'), korzysci.obrona],
+    [t('attributes.perception'), korzysci.percepcja],
+    [t('attributes.speed'), korzysci.predkosc],
+    [t('attributes.corruption'), korzysci.splugawienie]
+  ].filter(([, wartosc]) => wartosc).map(([nazwa, wartosc]) => `${nazwa} ${wartosc}`);
+  if (secondary.length) {
+    blocks.push(block(t('summary.secondaryAttributes'), `<p>${secondary.join(' · ')}</p>`));
+  }
+
+  const attributes = korzysci.atrybuty_glowne;
+  if (attributes && attributes.typ === 'wybor') {
+    const available = (attributes.dostepne || []).map(a => attributeLabel(a)).join(', ');
+    blocks.push(block(t('summary.mainAttributes'), `
+      <p>${t('attributes.toAssign')} <strong>${attributes.ilosc}</strong> ${t('summary.pointsMaxPerAttribute', { max: attributes.wartosc })}</p>
+      ${available ? `<p class="hint">Do wyboru: ${available}.</p>` : ''}
+      <p class="hint">${t('summary.pointsInStep4')}</p>
+    `));
+  }
+
+  if (korzysci.talenty && korzysci.talenty.length > 0) {
+    const items = korzysci.talenty
+      .map(talent => `<li><strong>${talent}</strong> - ${getTalentDescription(talent)}</li>`)
+      .join('');
+    blocks.push(block('Talenty', `<ul>${items}</ul>`));
+  }
+
+  if (korzysci.magia) {
+    blocks.push(block('Magia', `
+      <p>${descriptionMagic(korzysci.magia)}</p>
+      <p class="hint">${t('summary.magicInStep6')}</p>
+    `));
+  }
+
+  if (korzysci.jezyki_profesje) {
+    blocks.push(block(t('summary.languagesAndProfessions'), `
+      <p>${korzysci.jezyki_profesje.opis}</p>
+      <p class="hint">${t('summary.slotsInStep5')}</p>
+    `));
+  }
+
+  if (korzysci.ekwipunek) {
+    blocks.push(block('Ekwipunek', `
+      <p>${korzysci.ekwipunek}</p>
+      <p class="hint">${t('summary.pathGearHint')}</p>
+    `));
+  }
+
+  if (korzysci.talenty_do_wyboru) {
+    const { pula: pulaId, ilosc } = korzysci.talenty_do_wyboru;
+    const pula = TALENT_POOLS[pulaId];
+    if (pula) {
+      const items = Object.values(pula.grupy)
+        .map(grupa => `<li><strong>${grupa.nazwa}</strong> - ${grupa.talenty.join(', ')}</li>`)
+        .join('');
+      blocks.push(block(`${pula.nazwa} do wyboru`, `
+        <p>${t('summary.toChooseColon')} <strong>${ilosc}</strong>${t('summary.choiceInStep3')}</p>
+        <ul>${items}</ul>
+      `));
+    }
+  }
+
+  if (korzysci.opcje && korzysci.opcje.length > 0) {
+    const items = korzysci.opcje.map(opcja => `<li>${opcja}</li>`).join('');
+    blocks.push(block('Do wyboru', `
+      <ul>${items}</ul>
+      <p class="hint">${t('summary.choiceInOriginBenefits')}</p>
+    `));
+  }
+
+  if (blocks.length) return blocks.join('');
+
+  // Brak korzyści prawie zawsze znaczy "nie wybrano jeszcze ścieżki, z której
+  // ten poziom je czerpie" - powiedz to wprost zamiast sugerować, że poziom
+  // niczego nie daje.
+  const tierLabels = {
+    sciezka_nowicjusza: t('summary.tierNovice'),
+    sciezka_ekspercka: t('summary.tierExpert'),
+    sciezka_mistrzowska: t('summary.tierMaster')
+  };
+  const tier = tierLabels[benefits.zrodlo_korzysci];
+  if (!tier) return `<p class="hint">${t('summary.noBenefitsAtLevel')}</p>`;
+  // Nazwa ścieżki jest ustawiona tylko wtedy, gdy ścieżka faktycznie została
+  // wybrana - inaczej brak korzyści znaczy po prostu "nie ma jeszcze z czego".
+  return benefits.nazwa_sciezki
+    ? `<p class="hint">${t('summary.noBenefitsForPath', { tier, path: benefits.nazwa_sciezki })}</p>`
+    : `<p class="hint">${t('summary.benefitFromTier', { tier })}</p>`;
+}
+
+/** Wersja schematu danych eksportu/importu postaci - zwiększana przy niekompatybilnych zmianach struktury. */
+const EXPORT_VERSION = 2; // v2: dodano sekcję ekwipunku (Krok 7 - Zamożność, wyposażenie startowe, sklep)
+
+/**
+ * Buduje kompletny, wersjonowany obiekt zawierający WSZYSTKIE wybory dokonane
+ * przez gracza w kreatorze (sekcja `wybory` - jedyne źródło potrzebne do
+ * wiernego odtworzenia postaci przy imporcie) oraz czytelne podsumowanie
+ * nazw i wartości (sekcja `podsumowanie` - dla kogoś otwierającego plik
+ * ręcznie). Zwraca `null`, gdy nie wybrano jeszcze pochodzenia.
+ */
+function buildExportData() {
+  if (!selectedOrigin) return null;
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return null;
+
+  const readText = (id, domyslnie = '0') => document.getElementById(id)?.textContent ?? domyslnie;
+
+  const atomsMagic = getCurrentAtomsMagic();
+  const { resolutions, knownTraditions } = calculateResolutionMagic(atomsMagic, magicChoices);
+  const zaklecia = resolutions
+    .flatMap(r => {
+      if (r.mode === 'zaklecie' && r.spellId) return [r.spellId];
+      if (r.mode === 'tradycja' && r.darmowyZaklecieId) return [r.darmowyZaklecieId];
+      return [];
+    })
+    .map(id => SPELLS.find(s => s.id === id))
+    .filter(Boolean);
+
+  const script = new Set(getLanguagesWithScript());
+  const jezyki = getSpokenLanguages().map(k => {
+    const nazwa = LANGUAGES[k] || k;
+    return script.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
+  });
+
+  const namePaths = (levelChoice, pathId) => {
+    if (!pathId) return null;
+    const list = getPathsForLevel(levelChoice);
+    return list.find(p => p.id === pathId)?.nazwa || pathId;
+  };
+
+  return {
+    wersjaEksportu: EXPORT_VERSION,
+    utworzono: new Date().toISOString(),
+    // Surowe wybory gracza - jedyna sekcja odczytywana przy imporcie.
+    wybory: {
+      imie: characterName || '',
+      pochodzenie: selectedOrigin,
+      bonusoweAtrybutyPochodzenia: getSelectedAttributesBonus(),
+      opcjaPoziom4: getCurrentSelectedLevel4Option(),
+      wynikiTabelPochodzenia: JSON.parse(JSON.stringify(resultsTables[selectedOrigin] || {})),
+      poziom: selectedLevel,
+      atrybutyGlowne: {
+        domyslne: document.getElementById('default-attributes')?.checked ?? true,
+        zmniejszony: document.getElementById('attribute-decreased')?.value || '',
+        zwiekszony: document.getElementById('attribute-increased')?.value || ''
+      },
+      sciezki: { ...selectedPaths },
+      talentyZPuli: JSON.parse(JSON.stringify(poolTalentChoices)),
+      atrybutySloty: JSON.parse(JSON.stringify(selectedAttributesSlots)),
+      profesjeJezykiSloty: JSON.parse(JSON.stringify(answersSlots)),
+      kurioza: [...selectedCurios],
+      magia: {
+        wybory: JSON.parse(JSON.stringify(magicChoices)),
+        ryzykoWyniki: JSON.parse(JSON.stringify(magicRiskResults))
+      },
+      srebrniki: randomizedSilver,
+      ekwipunek: {
+        zamoznoscId: equipmentWealthId,
+        zamoznoscWynik: equipmentWealthResult,
+        gotowkaPoczatkowaWynik: equipmentStartingCashRoll,
+        wybory: JSON.parse(JSON.stringify(equipmentChoices)),
+        sprzedane: [...equipmentSold],
+        zakupione: JSON.parse(JSON.stringify(equipmentPurchased))
+      }
+    },
+    // Czytelne podsumowanie (nazwy zamiast id) - wyłącznie informacyjne, nie
+    // jest odczytywane przy imporcie.
+    podsumowanie: {
+      imie: characterName || null,
+      pochodzenie: pochodzenie.nazwa,
+      poziom: selectedLevel,
+      poziomNazwa: nameTierLevel(selectedLevel),
+      atrybutyGlowne: {
+        sila: readText('strength-final'),
+        zrecznosc: readText('agility-final'),
+        intelekt: readText('intellect-final'),
+        wola: readText('will-final')
+      },
+      attributesSecondary: {
+        percepcja: readText('perception-final'),
+        obrona: readText('defense-final'),
+        zdrowie: readText('health-final'),
+        szybkoscZdrowienia: readText('healing-rate-final', '1'),
+        predkosc: readText('speed-final'),
+        moc: readText('power-final'),
+        splugawienie: readText('corruption-final')
+      },
+      sciezki: {
+        nowicjusz: namePaths(1, selectedPaths.nowicjusz),
+        ekspert: namePaths(3, selectedPaths.ekspert),
+        mistrz: namePaths(7, selectedPaths.mistrz)
+      },
+      profesje: selectedProfessions.map(id => availableProfessions.find(p => p.id === id)?.nazwa || id),
+      jezyki,
+      kurioza: selectedCurios.map(id => availableCurios.find(c => c.id === id)?.nazwa || id),
+      tradycje: [...knownTraditions].map(id => TRADITIONS[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, localeTag())),
+      zaklecia: zaklecia.map(s => s.nazwa),
+      srebrniki: randomizedSilver,
+      ekwipunek: (() => {
+        const state = calculateStateEquipment();
+        if (!state) return null;
+        const entries = [...state.ownedStarting, ...state.purchasedEntries].map(p => {
+          if (p.zwojZaklecie) {
+            const spell = p.zwojZaklecie.spellId ? SPELLS.find(s => s.id === p.zwojZaklecie.spellId) : null;
+            return `Zwój (${TRADITIONS[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${spell ? `: ${spell.nazwa}` : ''})`;
+          }
+          const nazwa = p.itemId ? (getItem(p.itemId)?.nazwa || p.itemId) : p.tekst;
+          return p.ilosc > 1 ? `${nazwa} ×${p.ilosc}` : nazwa;
+        });
+        return { zamoznosc: state.wealthentry.nazwa, przedmioty: entries, gotowka: formatCopperbits(state.cashCopperbits) };
+      })()
+    }
+  };
+}
+
+/**
+ * Sprowadza tekst do postaci bezpiecznej jako fragment nazwy pliku: usuwa
+ * polskie znaki diakrytyczne, zamienia wszystko poza literami/cyframi na
+ * myślniki i przycina wielokrotne/skrajne myślniki. Zwraca '' dla pustego
+ * lub samych znaków specjalnych wejścia (wywołujący ma wtedy własny fallback).
+ */
+function sanitizeForFilename(text) {
+  if (!text) return '';
+  return text
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // usuń diakrytyki (ą -> a, ł zostaje, bo to nie akcent)
+    .replace(/ł/g, 'l').replace(/Ł/g, 'L')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Eksportuje postać jako JSON - pełny, wersjonowany zrzut wszystkich
+ * wyborów dokonanych w kreatorze (zob. zbudujDaneEksportu()).
+ */
+// eslint-disable-next-line no-unused-vars
+function exportJSON() {
+  currentCharacter = buildExportData();
+  if (!currentCharacter) {
+    showError(t('messages.selectOriginBeforeExport'));
+    return;
+  }
+
+  const dataStr = JSON.stringify(currentCharacter, null, 2);
+  const dataUri = `data:application/json;charset=utf-8,${ encodeURIComponent(dataStr)}`;
+
+  const namePart = sanitizeForFilename(currentCharacter.wybory.imie) || currentCharacter.wybory.pochodzenie;
+  const exportFileDefaultName = `postac-${namePart}-${new Date().toISOString().split('T')[0]}.json`;
+
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+}
+
+/**
+ * Pokazuje komunikat błędu
+ */
+function showError(message) {
+  const errorDiv = document.getElementById('error');
+  if (!errorDiv) return;
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+}
+
+/**
+ * Chowa komunikat błędu. Bez tego baner raz pokazany (np. próba przejścia
+ * dalej bez pochodzenia albo nieudany eksport) wisiał do końca sesji, na
+ * każdym kroku kreatora - bo showError() nie miał żadnego odpowiednika.
+ */
+function hideError() {
+  const errorDiv = document.getElementById('error');
+  if (!errorDiv) return;
+  errorDiv.textContent = '';
+  errorDiv.style.display = 'none';
+}
+
+// ========== IMPORT POSTACI Z PLIKU JSON (Krok 1) ==========
+
+/**
+ * Pokazuje w Kroku 1 wynik importu postaci - pojedynczą wiadomość sukcesu
+ * albo nagłówek błędu wraz z listą konkretnych problemów znalezionych
+ * w pliku (zob. walidujDaneImportu()). Celowo NIE przewija strony - użytkownik
+ * kliknął import z górnej części Kroku 1, więc komunikat (tuż pod przyciskiem)
+ * jest już w jego polu widzenia; import nie powinien same z siebie przesuwać
+ * widoku (w przeciwieństwie do ręcznego wyboru pochodzenia/poziomu itd.),
+ * żeby użytkownik zdążył przeczytać komunikat i sam zdecydował, co dalej.
+ */
+function showImportMessage(typ, message, errorList = []) {
+  const box = document.getElementById('import-feedback');
+  if (!box) return;
+  box.className = `import-feedback ${typ}`;
+  const listHtml = errorList.length
+    ? `<ul>${errorList.map(b => `<li>${b}</li>`).join('')}</ul>`
+    : '';
+  box.innerHTML = `${message}${listHtml}`;
+  box.style.display = 'block';
+}
+
+/**
+ * Waliduje strukturę i zawartość pliku importu postaci: sprawdza obecność
+ * wymaganych pól oraz to, czy wszystkie odwołania do danych gry
+ * (pochodzenie, ścieżki, profesje, języki, kurioza, tradycje magiczne,
+ * zaklęcia) istnieją w AKTUALNEJ bazie danych aplikacji - plik mógł
+ * zostać wyeksportowany z innej, starszej wersji kreatora. Zwraca tablicę
+ * czytelnych komunikatów błędów po polsku; pusta tablica oznacza, że plik
+ * jest poprawny i bezpieczny do zaimportowania.
+ */
+function validateImportData(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return [t('messages.import.notObject')];
+  }
+
+  const errors = [];
+  if (data.wersjaEksportu !== EXPORT_VERSION) {
+    errors.push(t('messages.import.unsupportedVersion', { found: data.wersjaEksportu ?? t('common.none'), expected: EXPORT_VERSION }));
+  }
+
+  const w = data.wybory;
+  if (!w || typeof w !== 'object' || Array.isArray(w)) {
+    errors.push(t('messages.import.missingChoices'));
+    return errors;
+  }
+
+  if (!w.pochodzenie || typeof w.pochodzenie !== 'string') {
+    errors.push(t('messages.import.missingOrigin'));
+  } else if (!availableOrigin.some(p => p.id === w.pochodzenie)) {
+    errors.push(t('messages.import.unknownOrigin', { id: w.pochodzenie }));
+  }
+
+  if (typeof w.poziom !== 'number' || !Number.isInteger(w.poziom) || w.poziom < 0 || w.poziom > 10) {
+    errors.push(t('messages.import.invalidLevel', { value: w.poziom }));
+  }
+
+  const ATTRIBUTE_NAMES = ['sila', 'zrecznosc', 'intelekt', 'wola'];
+  if (w.atrybutyGlowne && typeof w.atrybutyGlowne === 'object') {
+    ['zmniejszony', 'zwiekszony'].forEach(pole => {
+      const wartosc = w.atrybutyGlowne[pole];
+      if (wartosc && !ATTRIBUTE_NAMES.includes(wartosc)) {
+        errors.push(`Nieznany atrybut w polu "atrybutyGlowne.${pole}": "${wartosc}".`);
+      }
+    });
+  }
+  if (Array.isArray(w.bonusoweAtrybutyPochodzenia)) {
+    w.bonusoweAtrybutyPochodzenia.forEach(atr => {
+      if (atr && !ATTRIBUTE_NAMES.includes(atr)) {
+        errors.push(`Nieznany bonusowy atrybut pochodzenia: "${atr}".`);
+      }
+    });
+  }
+
+  if (w.sciezki && typeof w.sciezki === 'object') {
+    const groups = { nowicjusz: 1, ekspert: 3, mistrz: 7 };
+    Object.entries(groups).forEach(([klucz, levelChoice]) => {
+      const pathId = w.sciezki[klucz];
+      if (!pathId) return;
+      if (!getPathsForLevel(levelChoice).some(p => p.id === pathId)) {
+        errors.push(t('messages.import.unknownPath', { tier: klucz, id: pathId }));
+      }
+    });
+  }
+
+  if (w.atrybutySloty && typeof w.atrybutySloty === 'object') {
+    Object.entries(w.atrybutySloty).forEach(([slotId, wartosci]) => {
+      if (!Array.isArray(wartosci)) {
+        errors.push(t('messages.import.invalidAttributeSlot', { slot: slotId }));
+        return;
+      }
+      wartosci.forEach(atr => {
+        if (!ATTRIBUTE_NAMES.includes(atr)) {
+          errors.push(t('messages.import.unknownAttribute', { attribute: atr, slot: slotId }));
+        }
+      });
+    });
+  }
+
+  if (w.profesjeJezykiSloty && typeof w.profesjeJezykiSloty === 'object') {
+    Object.entries(w.profesjeJezykiSloty).forEach(([slotId, answer]) => {
+      if (!answer || typeof answer !== 'object') return;
+      if (answer.mode === 'profesja' && answer.profesjaId && !availableProfessions.some(p => p.id === answer.profesjaId)) {
+        errors.push(t('messages.import.unknownProfession', { id: answer.profesjaId, slot: slotId }));
+      } else if ((answer.mode === 'jezyk_nowy' || answer.mode === 'jezyk_pismo') && answer.jezyk && !LANGUAGES[answer.jezyk]) {
+        errors.push(t('messages.import.unknownLanguage', { id: answer.jezyk, slot: slotId }));
+      }
+    });
+  }
+
+  if (Array.isArray(w.kurioza)) {
+    w.kurioza.forEach(id => {
+      if (!availableCurios.some(c => c.id === id)) {
+        errors.push(t('messages.import.unknownCurio', { id }));
+      }
+    });
+  }
+
+  if (w.magia && w.magia.wybory && typeof w.magia.wybory === 'object') {
+    Object.entries(w.magia.wybory).forEach(([atomId, wybor]) => {
+      if (!wybor || typeof wybor !== 'object') return;
+      if (wybor.tradycjaId && !TRADITIONS[wybor.tradycjaId]) {
+        errors.push(t('messages.import.unknownTradition', { id: wybor.tradycjaId, atom: atomId }));
+      }
+      ['spellId', 'darmowyZaklecieId'].forEach(pole => {
+        const spellId = wybor[pole];
+        if (spellId && !SPELLS.some(s => s.id === spellId)) {
+          errors.push(t('messages.import.unknownSpell', { id: spellId, atom: atomId }));
+        }
+      });
+    });
+  }
+
+  if (w.srebrniki !== null && w.srebrniki !== undefined && typeof w.srebrniki !== 'number') {
+    errors.push(t('messages.import.invalidSilver', { value: w.srebrniki }));
+  }
+
+  if (w.ekwipunek && typeof w.ekwipunek === 'object') {
+    const eq = w.ekwipunek;
+    if (eq.zamoznoscId && !WEALTH[eq.zamoznoscId]) {
+      errors.push(t('messages.import.unknownWealth', { id: eq.zamoznoscId }));
+    }
+    if (eq.wybory && typeof eq.wybory === 'object') {
+      Object.entries(eq.wybory).forEach(([atomId, wybor]) => {
+        if (!wybor || typeof wybor !== 'object') return;
+        if (wybor.itemId && !getItem(wybor.itemId)) {
+          errors.push(t('messages.import.unknownItem', { id: wybor.itemId, atom: atomId }));
+        }
+        if (wybor.typ === 'zwoj_zaklecie') {
+          if (wybor.tradycjaId && !TRADITIONS[wybor.tradycjaId]) {
+            errors.push(t('messages.import.unknownScrollTradition', { id: wybor.tradycjaId, atom: atomId }));
+          }
+          if (wybor.spellId && !SPELLS.some(s => s.id === wybor.spellId)) {
+            errors.push(t('messages.import.unknownScrollSpell', { id: wybor.spellId, atom: atomId }));
+          }
+        }
+      });
+    }
+    if (Array.isArray(eq.zakupione)) {
+      eq.zakupione.forEach(z => {
+        if (z && z.itemId && !getItem(z.itemId)) {
+          errors.push(t('messages.import.unknownBoughtItem', { id: z.itemId }));
+        }
+      });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Odtwarza w widocznym kafelku pochodzenia (Krok 1) zapisane wyniki tabel
+ * losowych, dokładnie w tym samym formacie, w jakim wyświetla je losowanie
+ * na żywo (zob. losujZTabeliUI()/zastosujWybranaOpcje()) - używane po
+ * imporcie, żeby kafelek pokazywał te same wyniki co zapisany stan.
+ */
+function restoreTableResultsToDom(originId) {
+  const wyniki = resultsTables[originId] || {};
+  Object.entries(wyniki).forEach(([tableName, wynik]) => {
+    const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+    if (!resultDiv) return;
+    const typeLabel = wynik.typ === 'wybór'
+      ? `${icon('target')} ${t('summary.choice')}`
+      : `${icon('dice')} ${t('summary.rollResult')}`;
+    const efekt = wynik.efekt ? `<br><strong>${t('summary.mechanicalEffectColon')}</strong> ${wynik.efekt}` : '';
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      <div class="roll-result-content">
+        <div class="roll-dice" data-result-type="${wynik.typ === 'wybór' ? 'wybor' : 'losowanie'}">${typeLabel}: ${wynik.rzut}</div>
+        <div class="roll-outcome">${wynik.wynik}</div>
+        ${efekt}
+      </div>
+    `;
+  });
+}
+
+/**
+ * Odtwarza w kreatorze WSZYSTKIE wybory z zaimportowanego, już zwalidowanego
+ * pliku (zob. zbudujDaneEksportu()) - dla każdego kroku wywołuje dokładnie
+ * te same funkcje i interakcje (kliknięcia, zdarzenia change), które
+ * wykonałby użytkownik ręcznie, dzięki czemu korzysta z tej samej logiki
+ * co normalny przepływ kreatora zamiast duplikować ją osobno.
+ */
+async function importCharacter(data) {
+  const w = data.wybory;
+
+  // 0. Imię postaci (Krok 8) - niezależne od pochodzenia/poziomu/itd.,
+  // więc może być przywrócone w dowolnym miejscu tej sekwencji.
+  characterName = w.imie || '';
+  const nameInput = document.getElementById('character-name');
+  if (nameInput) nameInput.value = characterName;
+
+  // 1. Pochodzenie
+  selectOrigin(w.pochodzenie, { autoScroll: false });
+
+  // 2. Wyniki tabel pochodzenia (wybierzPochodzenie zeruje wynikiTabel - nadpisz PO)
+  resultsTables[w.pochodzenie] = JSON.parse(JSON.stringify(w.wynikiTabelPochodzenia || {}));
+  restoreTableResultsToDom(w.pochodzenie);
+
+  // 3. Bonusowe atrybuty pochodzenia (np. Elf: 2 wybory)
+  const bonusSelects = document.querySelectorAll('.origin-attr-choice-select');
+  (w.bonusoweAtrybutyPochodzenia || []).forEach((wartosc, i) => {
+    if (bonusSelects[i] && wartosc) {
+      bonusSelects[i].value = wartosc;
+      bonusSelects[i].dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+
+  // 4. Poziom - ta sama sekwencja co listener zmiany radiobuttona (Krok 2)
+  selectedLevel = w.poziom;
+  const levelInput = document.querySelector(`input[name="poziom"][value="${w.poziom}"]`);
+  if (levelInput) levelInput.checked = true;
+  updatePathsVisibility(selectedLevel);
+  await updatePathsLevel(selectedLevel);
+  updatePathsSectionTitle(selectedLevel);
+  updateWealthSection(selectedLevel);
+  updateOriginBenefits(selectedLevel);
+  renderPathSectionsVisibility();
+  await renderPathSection(1);
+  await renderPathSection(3);
+  await renderPathSection(7);
+  await loadBenefitsLevel(selectedLevel);
+
+  // 5. Wybrana opcja korzyści z pochodzenia na poziomie 4 (np. "1 zaklęcie")
+  if (w.opcjaPoziom4) {
+    const radio = Array.from(document.querySelectorAll(`input[name="origin-option-${w.pochodzenie}"]`))
+      .find(r => r.value === w.opcjaPoziom4);
+    if (radio) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  // 6. Atrybuty główne: domyślne albo jednorazowa zamiana -1/+1 (Krok 2)
+  const chkDefault = document.getElementById('default-attributes');
+  chkDefault.checked = w.atrybutyGlowne?.domyslne ?? true;
+  const customDiv = document.getElementById('custom-attributes');
+  if (customDiv) customDiv.style.display = chkDefault.checked ? 'none' : 'block';
+  if (!chkDefault.checked) {
+    document.getElementById('attribute-decreased').value = w.atrybutyGlowne?.zmniejszony || '';
+    document.getElementById('attribute-increased').value = w.atrybutyGlowne?.zwiekszony || '';
+  }
+  updateCalculatedAttributes();
+
+  // 7. Ścieżki (Krok 3) - kliknij przyciski wyboru tak, jak zrobiłby użytkownik
+  [[1, w.sciezki?.nowicjusz], [3, w.sciezki?.ekspert], [7, w.sciezki?.mistrz]].forEach(([levelChoice, pathId]) => {
+    if (!pathId) return;
+    document.querySelector(`button[data-path-id="${pathId}"][data-pick-level="${levelChoice}"]`)?.click();
+  });
+
+  // 7b. Talenty wybrane z pul przyznanych przez ścieżki - przywracane PO
+  // kliknięciu ścieżek, bo ich wybór czyści stan nadań z poprzedniej ścieżki.
+  poolTalentChoices = JSON.parse(JSON.stringify(w.talentyZPuli || {}));
+  refreshPathSummaries();
+
+  // 8. Sloty zwiększenia atrybutów (Krok 4)
+  selectedAttributesSlots = JSON.parse(JSON.stringify(w.atrybutySloty || {}));
+  renderAttributesSlotsSection();
+
+  // 9. Profesje i języki (Krok 5)
+  answersSlots = JSON.parse(JSON.stringify(w.profesjeJezykiSloty || {}));
+  renderProfessionsSection();
+
+  // 10. Kurioza (Krok 5)
+  selectedCurios = [...(w.kurioza || [])];
+  renderCuriosSection();
+  updateStep5NextButton();
+
+  // 11. Srebrniki (Krok 5) - tylko suma jest zapisywana, pojedyncze rzuty są ulotne
+  randomizedSilver = (typeof w.srebrniki === 'number') ? w.srebrniki : null;
+  const wealthSpan = document.getElementById('wealth-summary');
+  if (wealthSpan && randomizedSilver != null) {
+    wealthSpan.textContent = `Srebrniki: ${randomizedSilver} (zaimportowano)`;
+  }
+
+  // 12. Magia: tradycje i zaklęcia (Krok 6)
+  magicChoices = JSON.parse(JSON.stringify(w.magia?.wybory || {}));
+  magicRiskResults = JSON.parse(JSON.stringify(w.magia?.ryzykoWyniki || {}));
+  renderSpellsSection();
+
+  // 13. Ekwipunek: zamożność, startowe wyposażenie i sklep (Krok 7)
+  equipmentWealthId = w.ekwipunek?.zamoznoscId || null;
+  equipmentWealthResult = (typeof w.ekwipunek?.zamoznoscWynik === 'number') ? w.ekwipunek.zamoznoscWynik : null;
+  equipmentStartingCashRoll = (typeof w.ekwipunek?.gotowkaPoczatkowaWynik === 'number') ? w.ekwipunek.gotowkaPoczatkowaWynik : null;
+  equipmentChoices = JSON.parse(JSON.stringify(w.ekwipunek?.wybory || {}));
+  equipmentSold = [...(w.ekwipunek?.sprzedane || [])];
+  equipmentPurchased = JSON.parse(JSON.stringify(w.ekwipunek?.zakupione || []));
+  renderEquipmentSection();
+
+  updatePreviewCharacter();
+}
+
+/**
+ * Obsługuje wybrany plik importu: odczytuje go, parsuje jako JSON, waliduje
+ * (zob. walidujDaneImportu()) i - jeśli poprawny - odtwarza całą postać
+ * w kreatorze (zob. zaimportujPostac()). Pokazuje czytelne komunikaty
+ * błędów w Kroku 1, gdy plik jest uszkodzony, ma złą strukturę albo
+ * odwołuje się do pochodzeń/ścieżek/profesji/kuriozów/tradycji/zaklęć,
+ * które nie istnieją w aktualnej bazie danych aplikacji.
+ */
+function handleFileImport(file) {
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    let data;
+    try {
+      data = JSON.parse(e.target.result);
+    } catch (err) {
+      showImportMessage('error', t('messages.import.notJson'));
+      return;
+    }
+
+    const errors = validateImportData(data);
+    if (errors.length > 0) {
+      showImportMessage('error', t('messages.import.failed'), errors);
+      return;
+    }
+
+    try {
+      await importCharacter(data);
+      // Zapisz zaimportowaną postać w cache przeglądarki od razu, pod nowym
+      // id - dalsze zmiany trafią do tego samego zapisu po kliknięciu
+      // "Zapisz postać" w Kroku 8 (zob. zapiszPostacNaZadanie()). Gdy
+      // localStorage odmówi zapisu, sam import i tak się udał, więc mówimy
+      // o tym wprost zamiast udawać, że postać jest już w pamięci.
+      const nowyId = generateSaveId();
+      const zapisano = saveCharacterToCache(nowyId, data);
+      if (zapisano) {
+        currentSaveCacheId = nowyId;
+        lastSavedSnapshot = snapshotForComparison(data);
+      }
+      showImportMessage('success', zapisano
+        ? `${icon('check')} Postać została pomyślnie zaimportowana. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`
+        : `${icon('check')} Postać została pomyślnie zaimportowana, ale nie udało się jej zapisać w pamięci przeglądarki (może być pełna albo zablokowana) - pracujesz na danych z pliku.`);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(t('messages.import.error'), err);
+      showImportMessage('error', t('messages.import.unexpectedError', { message: err.message }));
+    }
+  };
+  reader.onerror = () => {
+    showImportMessage('error', t('messages.import.unreadable'));
+  };
+  reader.readAsText(file);
+}
+
+// ========== SYSTEM POMOCY (LIGHTBOX) ==========
+
+/**
+ * Otwiera lightbox pomocy
+ */
+// eslint-disable-next-line no-unused-vars
+function openHelp() {
+  const lightbox = document.getElementById('help-lightbox');
+  if (!lightbox) return;
+  
+  lightbox.style.display = 'flex';
+  document.body.style.overflow = 'hidden'; // Zablokuj scroll tła
+  
+  // Załaduj domyślną treść (Szybki Start)
+  loadHelpContent('start');
+  
+  // Focus na modal
+  setTimeout(() => {
+    const closeButton = lightbox.querySelector('.help-close');
+    if (closeButton) closeButton.focus();
+  }, 100);
+}
+
+/**
+ * Zamyka lightbox pomocy
+ */
+// eslint-disable-next-line no-unused-vars
+function closeHelp() {
+  const lightbox = document.getElementById('help-lightbox');
+  if (!lightbox) return;
+  
+  lightbox.style.display = 'none';
+  document.body.style.overflow = 'auto'; // Odblokuj scroll
+  
+  // Zwróć focus na przycisk pomocy
+  const helpButton = document.getElementById('btn-help');
+  if (helpButton) helpButton.focus();
+}
+
+/**
+ * Przełącza zakładki w pomocy
+ * @param {string} tabId - ID zakładki ('start', 'glossary', 'faq', 'shortcuts')
+ */
+// eslint-disable-next-line no-unused-vars
+function switchHelpTab(tabId) {
+  // Usuń active ze wszystkich zakładek
+  document.querySelectorAll('.help-tab').forEach(tab => {
+    tab.classList.remove('active');
+    tab.setAttribute('aria-selected', 'false');
+  });
+  
+  // Dodaj active do klikniętej zakładki (znajdź po onclick)
+  const tabs = document.querySelectorAll('.help-tab');
+  tabs.forEach(tab => {
+    const onclickAttr = tab.getAttribute('onclick');
+    if (onclickAttr && onclickAttr.includes(`'${tabId}'`)) {
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+    }
+  });
+  
+  // Załaduj treść zakładki
+  loadHelpContent(tabId);
+}
+
+/**
+ * Ładuje treść wybranej zakładki
+ * @param {string} tabId - ID zakładki
+ */
+function loadHelpContent(tabId) {
+  const contentArea = document.getElementById('help-content');
+  if (!contentArea) return;
+  
+  // Treść pomocy jest częścią paczki językowej (i18n/pl/help.js), więc
+  // tłumaczy się razem z resztą interfejsu - nie trzeba już sprawdzać, czy
+  // osobny skrypt globalny się doładował.
+  const known = ['start', 'glossary', 'faq', 'shortcuts'];
+  contentArea.innerHTML = t(`help.${known.includes(tabId) ? tabId : 'start'}`);
+  
+  // Przewiń do góry
+  contentArea.scrollTop = 0;
+}
+
+/**
+ * Inicjalizuje event listenery dla systemu pomocy
+ */
+function initializeHelpSystem() {
+  // Przycisk otwierania pomocy
+  const helpButton = document.getElementById('btn-help');
+  if (helpButton) {
+    helpButton.addEventListener('click', openHelp);
+  }
+  
+  // Klawisz ESC zamyka pomoc
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const lightbox = document.getElementById('help-lightbox');
+      if (lightbox && lightbox.style.display === 'flex') {
+        closeHelp();
+      }
+    }
+  });
+  
+  // F1 otwiera pomoc
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'F1') {
+      e.preventDefault();
+      openHelp();
+    }
+  });
+  
+  // Kliknięcie poza modalem zamyka pomoc
+  const lightbox = document.getElementById('help-lightbox');
+  if (lightbox) {
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeHelp();
+      }
+    });
+  }
+}
+
+/**
+ * Obsługuje zastosowanie wybranej opcji z dropdowna
+ * @param {string} originId - ID pochodzenia
+ * @param {string} tableName - Nazwa tabeli
+ */
+function applySelectedOptions(originId, tableName) {
+  const dropdown = document.getElementById(`table-select-${originId}-${tableName}`);
+  const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+  const applyBtn = document.querySelector(`.apply-selection-btn[data-origin-id="${originId}"][data-table-name="${tableName}"]`);
+  
+  if (!dropdown || !resultDiv) return;
+  
+  const selectedOption = dropdown.options[dropdown.selectedIndex];
+  if (!selectedOption || !selectedOption.value) return;
+  
+  const rzut = selectedOption.value;
+  const wynik = selectedOption.dataset.wynik;
+  
+  // Zapisz wynik w globalnej zmiennej
+  if (!resultsTables[originId]) {
+    resultsTables[originId] = {};
+  }
+  resultsTables[originId][tableName] = {
+    rzut,
+    wynik,
+    typ: 'wybór'
+  };
+  
+  // Wyświetl wynik
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `
+    <div class="roll-result-content">
+      <div class="roll-dice" data-result-type="wybor">${icon('target')} ${t('summary.choice')}: ${rzut}</div>
+      <div class="roll-outcome">${wynik}</div>
+    </div>
+  `;
+  
+  // Ukryj przycisk "Zastosuj wybór"
+  if (applyBtn) {
+    applyBtn.style.display = 'none';
+  }
+  
+  // Zresetuj dropdown
+  dropdown.selectedIndex = 0;
+}
+
+/**
+ * Obsługuje losowanie z tabeli w UI
+ * @param {string} originId - ID pochodzenia
+ * @param {string} tableName - Nazwa tabeli
+ */
+async function randomizeWithTableUi(originId, tableName) {
+  try {
+    // Wyświetl loading
+    const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+    if (resultDiv) {
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `<div class="loading">${icon('dice')} ${t('professions.rollingEllipsis')}</div>`;
+    }
+    
+    // Wykonaj losowanie
+    const wynik = rollTable(originId, tableName);
+
+    // Zapisz wynik w globalnej zmiennej
+    if (!resultsTables[originId]) {
+      resultsTables[originId] = {};
+    }
+    resultsTables[originId][tableName] = {
+      rzut: wynik.rzut,
+      wynik: wynik.wynik,
+      efekt: wynik.efekt,
+      typ: 'losowanie'
+    };
+
+    // Wyświetl wynik
+    if (resultDiv) {
+      const efekt = wynik.efekt ? `<br><strong>${t('summary.mechanicalEffectColon')}</strong> ${wynik.efekt}` : '';
+      resultDiv.innerHTML = `
+        <div class="roll-result-content">
+          <div class="roll-dice" data-result-type="losowanie">${icon('dice')} ${t('summary.rollResult')}: ${wynik.rzut}</div>
+          <div class="roll-outcome">${wynik.wynik}</div>
+          ${efekt}
+        </div>
+      `;
+    }
+    
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(t('messages.rollTableError'), error);
+    const resultDiv = document.getElementById(`roll-result-${originId}-${tableName}`);
+    if (resultDiv) {
+      resultDiv.innerHTML = `<div class="error">${icon('x')} ${t('messages.errorPrefix')} ${error.message}</div>`;
+    }
+  }
+}
+
+/**
+ * Renderuje podsumowanie wybranych profesji i kuriozów w podglądzie postaci
+ * @returns {string} HTML z podsumowaniem profesji i kuriozów
+ */
+function renderProfessionsAndCuriosSummary() {
+  const professions = selectedProfessions.map(id => {
+    const prof = availableProfessions.find(p => p.id === id);
+    return prof ? prof.nazwa : id;
+  });
+
+  const curios = selectedCurios.map(id => {
+    const curio = availableCurios.find(c => c.id === id);
+    return curio ? curio.nazwa : id;
+  });
+
+  const script = new Set(getLanguagesWithScript());
+  const jezyki = getSpokenLanguages().map(k => {
+    const nazwa = LANGUAGES[k] || k;
+    return script.has(k) ? `${nazwa} (czytanie/pisanie)` : nazwa;
+  });
+
+  if (professions.length === 0 && curios.length === 0 && jezyki.length === 0) {
+    return '';
+  }
+
+  return `
+    <div class="preview-section">
+      <h5>${t('summary.professionsLanguagesCurios')}</h5>
+      ${professions.length > 0 ? `<p><strong>${t('summary.professionsColon')}</strong> ${professions.join(', ')}</p>` : ''}
+      ${jezyki.length > 0 ? `<p><strong>${t('step5.languagesColon')}</strong> ${jezyki.join(', ')}</p>` : ''}
+      ${curios.length > 0 ? `<p><strong>${t('summary.curiosColon')}</strong> ${curios.join(', ')}</p>` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Ładuje dane profesji i kuriozów
+ */
+async function loadProfessionsAndCurios() {
+  try {
+    const profData = getProfessionsUi();
+    availableProfessions = profData.profesje;
+
+    const curiosData = getCuriosUi();
+    availableCurios = curiosData.kurioza;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn(t('professions.loadError'), e);
+  }
+}
+
+/**
+ * Oblicza ilość kuriozów do wyboru na podstawie poziomu (progi 1/3/7).
+ * Profesje i języki liczone są przez system slotów - patrz obliczSlotyPostaci().
+ */
+function calculateChoiceCount() {
+  const poziom = selectedLevel;
+  let kurioza = 0;
+
+  if (selectedOrigin) kurioza += 1; // Każde pochodzenie daje 1 kurioza
+  if (poziom >= 1) kurioza += 1;
+  if (poziom >= 3) kurioza += 1;
+  if (poziom >= 7) kurioza += 1;
+
+  return { kurioza };
+}
+
+/**
+ * Oblicza wszystkie sloty językowo-profesyjne przyznane postaci na podstawie
+ * wybranego pochodzenia i ścieżek (patrz logic/languages-professions.js).
+ */
+function calculateSlotsCharacter() {
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin) || null;
+  return calculateSlotsProfessionsAndLanguages({
+    pochodzenie,
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  });
+}
+
+/** Etykiety kategorii profesji używane w PROFESSIONS.tables/dostepneProfesje. */
+/**
+ * Kategorie profesji należące do konkretnych pochodzeń - widoczne wyłącznie dla
+ * postaci tego pochodzenia (zob. `wlasne_profesje` w data/origins.js).
+ */
+const ORIGINS_OWN_PROFESSION_CATEGORIES = { mroczniak: 'mroczniackie' };
+
+/**
+ * Zwraca profesje z dostepneProfesje dopuszczone przez kategorie slotu,
+ * z wyłączeniem profesji już przypisanych do innych slotów.
+ */
+function professionsForSlot(slot) {
+  const all = slot.kategorie.includes('dowolna');
+  // Pochodzenie może mieć własną listę profesji, z której korzysta zamiast
+  // tabel z PG (mroczniak) - jest wtedy dopuszczalna w każdym slocie, a dla
+  // pozostałych pochodzeń nie pojawia się w ogóle.
+  const pochodzenie = selectedOrigin && availableOrigin.find(p => p.id === selectedOrigin);
+  const wlasna = pochodzenie && pochodzenie.wlasne_profesje;
+  const taken = new Set(
+    Object.entries(answersSlots)
+      .filter(([id, answer]) => id !== slot.id && answer && answer.mode === 'profesja' && answer.profesjaId)
+      .map(([, answer]) => answer.profesjaId)
+  );
+  return availableProfessions.filter(p => {
+    if (taken.has(p.id)) return false;
+    if (!isSourceEnabled(p.zrodlo)) return false;
+    const cat = p.kategoria;
+    // Kategorie własne pochodzeń są widoczne tylko dla tego pochodzenia -
+    // również wtedy, gdy slot dopuszcza "dowolną" profesję.
+    const wlasneKategorie = new Set(Object.values(ORIGINS_OWN_PROFESSION_CATEGORIES));
+    if (wlasneKategorie.has(cat)) return cat === wlasna;
+    if (all) return true;
+    return slot.kategorie.includes(cat);
+  });
+}
+
+/**
+ * Znane języki (mówione) wraz ze źródłem każdego z nich: bazowe z
+ * pochodzenia + wyuczone w slotach jezyk_nowy.
+ * @returns {Array<{jezyk: string, source: string}>}
+ */
+function getLanguagesWithDetails() {
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  const wynik = [];
+  if (pochodzenie) {
+    pochodzenie.jezyki.forEach(j => wynik.push({ jezyk: j, source: `Pochodzenie: ${pochodzenie.nazwa}` }));
+  }
+  const { slots } = calculateSlotsCharacter();
+  slots.forEach(slot => {
+    const answer = answersSlots[slot.id];
+    if (answer && answer.mode === 'jezyk_nowy' && answer.jezyk && !wynik.some(w => w.jezyk === answer.jezyk)) {
+      wynik.push({ jezyk: answer.jezyk, source: slot.source });
+    }
+  });
+  return wynik;
+}
+
+/** Znane języki (mówione), bez informacji o źródle - patrz pobierzJezykiZeSzczegolami(). */
+function getSpokenLanguages() {
+  return getLanguagesWithDetails().map(w => w.jezyk);
+}
+
+/**
+ * Języki, w których postać umie czytać/pisać, wraz ze źródłem: automatyczne
+ * (Magik - wszystkie znane; niektóre pochodzenia - konkretny język, patrz
+ * origins.js) lub wybrane wprost w slocie typu jezyk_pismo.
+ * @returns {Array<{jezyk: string, source: string}>}
+ */
+function getScriptWithDetails() {
+  const { autoScriptAllKnown, autoScriptAllKnownSource, autoScriptWithOrigin, autoScriptWithOriginSource, slots } = calculateSlotsCharacter();
+
+  if (autoScriptAllKnown) {
+    return getLanguagesWithDetails().map(w => ({ jezyk: w.jezyk, source: autoScriptAllKnownSource }));
+  }
+
+  const wynik = autoScriptWithOrigin.map(j => ({ jezyk: j, source: autoScriptWithOriginSource }));
+  slots.forEach(slot => {
+    const answer = answersSlots[slot.id];
+    if (answer && answer.mode === 'jezyk_pismo' && answer.jezyk && !wynik.some(w => w.jezyk === answer.jezyk)) {
+      wynik.push({ jezyk: answer.jezyk, source: slot.source });
+    }
+  });
+  return wynik;
+}
+
+/** Języki z pismem, bez informacji o źródle - patrz pobierzPismoZeSzczegolami(). */
+function getLanguagesWithScript() {
+  return getScriptWithDetails().map(w => w.jezyk);
+}
+
+/**
+ * Renderuje kartę jednego slotu profesyjno-językowego (wybór trybu + odpowiedni picker).
+ */
+function renderSlotCard(slot) {
+  const answer = answersSlots[slot.id] || {};
+  const mode = answer.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
+
+  const labelsModes = { profesja: t('professions.slotProfession'), jezyk_nowy: t('professions.modeNewLanguage'), jezyk_pismo: t('professions.modeWriting') };
+  const modesHtml = slot.opcje.length > 1 ? `
+    <div class="slot-mode-toggle" role="radiogroup">
+      ${slot.opcje.map(o => `
+        <label class="slot-mode-option">
+          <input type="radio" name="mode-${slot.id}" value="${o}" ${mode === o ? 'checked' : ''}>
+          ${labelsModes[o]}
+        </label>
+      `).join('')}
+    </div>
+  ` : '';
+
+  let pickerHtml = '';
+  if (mode === 'profesja') {
+    const optionsProf = professionsForSlot(slot);
+    const groups = {};
+    optionsProf.forEach(p => { (groups[p.kategoria] = groups[p.kategoria] || []).push(p); });
+    pickerHtml = `
+      <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="profesjaId">
+        <option value="">${t('step5.selectProfessionPlaceholder')}</option>
+        ${Object.entries(groups).map(([cat, profs]) => `
+          <optgroup label="${cat}">
+            ${profs.map(p => `<option value="${p.id}" ${answer.profesjaId === p.id ? 'selected' : ''}>${p.nazwa}</option>`).join('')}
+          </optgroup>
+        `).join('')}
+      </select>
+    `;
+  } else if (mode === 'jezyk_nowy') {
+    const known = new Set(getSpokenLanguages());
+    const optionsJ = Object.entries(LANGUAGES).filter(([klucz]) => !known.has(klucz) || klucz === answer.jezyk);
+    pickerHtml = `
+      <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="jezyk">
+        <option value="">${t('step5.selectLanguagePlaceholder')}</option>
+        ${optionsJ.map(([klucz, nazwa]) => `<option value="${klucz}" ${answer.jezyk === klucz ? 'selected' : ''}>${nazwa}</option>`).join('')}
+      </select>
+    `;
+  } else if (mode === 'jezyk_pismo') {
+    const spoken = getSpokenLanguages();
+    const alreadyScript = new Set(getLanguagesWithScript());
+    const optionsJ = spoken.filter(k => !alreadyScript.has(k) || k === answer.jezyk);
+    pickerHtml = `
+      <select class="slot-value-select" data-slot-id="${slot.id}" data-slot-field="jezyk">
+        <option value="">${t('step5.selectLanguagePlaceholder')}</option>
+        ${optionsJ.map(klucz => `<option value="${klucz}" ${answer.jezyk === klucz ? 'selected' : ''}>${LANGUAGES[klucz] || klucz}</option>`).join('')}
+      </select>
+    `;
+  }
+
+  return `
+    <div class="slot-card" data-slot-id="${slot.id}">
+      <div class="slot-source">
+        ${slot.source}
+        <button type="button" class="section-reset-btn" data-reset-jp-slot="${slot.id}" title="${t('step5.clearSlotTitle')}">Wyczyść</button>
+      </div>
+      ${slot.opis ? `<div class="slot-description">${slot.opis}</div>` : ''}
+      ${modesHtml}
+      ${pickerHtml}
+    </div>
+  `;
+}
+
+/**
+ * Renderuje sekcję profesji (sloty) i sekcję znanych języków w Kroku 5.
+ */
+function renderProfessionsSection() {
+  const container = document.getElementById('professions-slots');
+  if (!container) return;
+
+  const { slots } = calculateSlotsCharacter();
+
+  container.innerHTML = slots.map(slot => renderSlotCard(slot)).join('');
+
+  container.querySelectorAll('input[type="radio"][name^="mode-"]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const slotId = e.target.closest('.slot-card').dataset.slotId;
+      setSlotAnswer(slotId, { mode: e.target.value, profesjaId: null, jezyk: null });
+    });
+  });
+  container.querySelectorAll('.slot-value-select').forEach(select => {
+    select.addEventListener('change', (e) => {
+      const { slotId, slotField } = e.target.dataset;
+      setSlotAnswer(slotId, { [slotField]: e.target.value || null });
+    });
+  });
+  container.querySelectorAll('[data-reset-jp-slot]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      delete answersSlots[btn.dataset.resetJpSlot];
+      renderProfessionsSection();
+    });
+  });
+
+  syncSelectedProfessions();
+  updateSelectedProfessions();
+  renderLanguagesSummary();
+  updateStep5NextButton();
+}
+
+/**
+ * Scala częściową odpowiedź w slot i przerenderowuje sekcję.
+ */
+function setSlotAnswer(slotId, patch) {
+  answersSlots[slotId] = { ...answersSlots[slotId], ...patch };
+  renderProfessionsSection();
+}
+
+/**
+ * Odtwarza płaską listę wybranych profesji (do podglądu/eksportu postaci)
+ * na podstawie aktualnych odpowiedzi slotów.
+ */
+function syncSelectedProfessions() {
+  selectedProfessions = Object.values(answersSlots)
+    .filter(answer => answer && answer.mode === 'profesja' && answer.profesjaId)
+    .map(answer => answer.profesjaId);
+}
+
+/**
+ * Kody podręczników w kolejności, w jakiej mają się pokazać w popupie filtra.
+ * Pełne nazwy (tytuły książek) są w pliku językowym -
+ * i18n/pl/professions.js -> professions.sources.
+ */
+const SOURCE_CODES = [
+  'PG', 'SUP', 'NW', 'RA', 'SP', 'GP', 'GWP', 'CS', 'ZDW', 'PZ', 'UŁ', 'PS'
+];
+
+/** Pełna nazwa podręcznika dla kodu ze pola `zrodlo`; nieznany kod zwracamy bez zmian. */
+function sourceName(kod) {
+  const nazwa = t(`professions.sources.${kod}`);
+  return nazwa.startsWith('professions.sources.') ? kod : nazwa;
+}
+
+/**
+ * Dodatki, które nie mają polskiego wydania - ich treść jest tłumaczeniem
+ * własnym, więc każdy pochodzący z nich element dostaje w UI etykietę "beta".
+ * Trzymamy to przy kodzie źródła, a nie przy pojedynczych wpisach danych, żeby
+ * nowa ścieżka, zaklęcie czy talent z takiego dodatku były oznaczone
+ * automatycznie, samym ustawieniem `zrodlo`.
+ */
+const BETA_SOURCES = new Set(['ZDW', 'PZ', 'UŁ', 'PS']);
+
+/**
+ * Renderuje żółtą etykietę "beta" dla treści z dodatków bez polskiego wydania.
+ * Zwraca pusty string dla źródeł, które mają oficjalne polskie tłumaczenie.
+ */
+function renderBetaTag(source) {
+  if (!BETA_SOURCES.has(source)) return '';
+  return '<span class="beta-tag" title="Dodatek bez polskiego wydania - tłumaczenie własne, treść może się jeszcze zmienić">beta</span>';
+}
+
+/**
+ * Renderuje podsumowanie znanych języków (mówionych i z pismem) w Kroku 5.
+ */
+/**
+ * Renderuje małą, czerwoną etykietę ze źródłem danego wyboru (np.
+ * "Pochodzenie: Człowiek" albo "Ścieżka: Łotr (poziom 1)"). Etykieta ma
+ * atrybut title z pełną nazwą podręcznika, widoczny jako tooltip po
+ * najechaniu wskaźnikiem myszy.
+ */
+/**
+ * Zlicza, ile elementów kreatora pochodzi z danego podręcznika - żeby gracz
+ * wyłączający dodatek widział, czego właściwie dotyczy jego decyzja.
+ */
+function countContentBySource() {
+  const licznik = {};
+  const dodaj = (zrodlo, ile = 1) => {
+    const k = zrodlo || 'PG';
+    licznik[k] = (licznik[k] || 0) + ile;
+  };
+  Object.values(GAME_DATA.pochodzenia || {}).forEach(o => dodaj(o.zrodlo));
+  ['sciezki_nowicjuszy', 'sciezki_ekspertow', 'sciezki_mistrzow'].forEach(g => {
+    Object.values(GAME_DATA[g] || {}).forEach(p => dodaj(p.zrodlo));
+  });
+  SPELLS.forEach(z => dodaj(z.zrodlo));
+  EQUIPMENT.forEach(i => dodaj(i.zrodlo));
+  Object.values(TRADITIONS).forEach(tradycja => dodaj(tradycja.zrodlo));
+  availableProfessions.forEach(pr => dodaj(pr.zrodlo));
+  return licznik;
+}
+
+/** Otwiera popup wyboru podręczników (boczne menu). */
+function openSourcesPicker() {
+  const overlay = document.getElementById('sources-overlay');
+  if (!overlay) return;
+  renderSourcesPickerBody();
+  overlay.hidden = false;
+}
+
+function closeSourcesPicker() {
+  const overlay = document.getElementById('sources-overlay');
+  if (overlay) overlay.hidden = true;
+}
+
+/** Rysuje listę podręczników z przełącznikami. */
+function renderSourcesPickerBody() {
+  const body = document.getElementById('sources-body');
+  if (!body) return;
+  const wylaczone = getDisabledSources();
+  const licznik = countContentBySource();
+  const kody = SOURCE_CODES.slice()
+    .filter(k => k === ALWAYS_ENABLED_SOURCE || licznik[k])
+    .sort((a, b) => (a === ALWAYS_ENABLED_SOURCE ? -1 : b === ALWAYS_ENABLED_SOURCE ? 1 : (licznik[b] || 0) - (licznik[a] || 0)));
+
+  const wiersze = kody.map(kod => {
+    const zawsze = kod === ALWAYS_ENABLED_SOURCE;
+    const wlaczony = zawsze || !wylaczone.has(kod);
+    return `
+      <label class="source-row${wlaczony ? '' : ' disabled-source'}">
+        <input type="checkbox" data-source-code="${kod}" ${wlaczony ? 'checked' : ''} ${zawsze ? 'disabled' : ''}>
+        <span class="source-row-name">
+          ${sourceName(kod)} ${renderSourceTag(kod)}
+        </span>
+        <span class="source-row-count">${t('professions.sourcesPicker.elementCount', { count: licznik[kod] || 0 })}</span>
+        ${zawsze ? `<span class="hint">${t('professions.sourcesPicker.alwaysOn')}</span>` : ''}
+      </label>
+    `;
+  }).join('');
+
+  // Etykieta przełącznika pokazuje akcję, którą wykona: dopóki cokolwiek
+  // w grupie jest wyłączone, przycisk włącza całą grupę - dopiero gdy wszystko
+  // jest włączone, zaczyna wyłączać.
+  const przelaczalne = kody.filter(k => k !== ALWAYS_ENABLED_SOURCE);
+  const beta = przelaczalne.filter(k => BETA_SOURCES.has(k));
+  const wszystkieWlaczone = przelaczalne.length > 0 && przelaczalne.every(k => !wylaczone.has(k));
+  const betaWlaczone = beta.length > 0 && beta.every(k => !wylaczone.has(k));
+
+  body.innerHTML = `
+    <div class="source-bulk-actions">
+      ${przelaczalne.length ? `<button type="button" class="btn-secondary small" id="btn-sources-all">
+        ${icon('refresh')} ${wszystkieWlaczone ? t('professions.sourcesPicker.disableAll') : t('professions.sourcesPicker.enableAll')}
+      </button>` : ''}
+      ${beta.length ? `<button type="button" class="btn-secondary small" id="btn-sources-beta">
+        ${icon('refresh')} ${betaWlaczone ? t('professions.sourcesPicker.disableBeta') : t('professions.sourcesPicker.enableBeta')}
+      </button>` : ''}
+    </div>
+    <p class="hint">${t('professions.sourcesPicker.hint')}</p>
+    <p class="hint">${t('professions.sourcesPicker.changeNote')}</p>
+    <div class="source-list">${wiersze}</div>
+    <p class="hint" id="sources-feedback"></p>
+  `;
+  body.querySelectorAll('input[data-source-code]').forEach(input => {
+    input.addEventListener('change', () => toggleSource(input.dataset.sourceCode, input.checked));
+  });
+  document.getElementById('btn-sources-all')?.addEventListener('click', () => {
+    toggleSourceGroup(przelaczalne, !wszystkieWlaczone);
+  });
+  document.getElementById('btn-sources-beta')?.addEventListener('click', () => {
+    toggleSourceGroup(beta, !betaWlaczone);
+  });
+}
+
+/** Włącza albo wyłącza naraz grupę podręczników (przyciski zbiorcze). */
+function toggleSourceGroup(kody, wlaczone) {
+  const zapisano = setSourcesEnabled(kody, wlaczone);
+  renderSourcesPickerBody();
+  const feedback = document.getElementById('sources-feedback');
+  if (feedback && !zapisano) {
+    feedback.textContent = t('messages.saves.preferenceNotStored');
+  }
+  refreshAfterSourceChange();
+}
+
+/** Włącza/wyłącza podręcznik i odświeża wszystkie listy kreatora. */
+function toggleSource(kod, wlaczony) {
+  const zapisano = setSourceEnabled(kod, wlaczony);
+  renderSourcesPickerBody();
+  const feedback = document.getElementById('sources-feedback');
+  if (feedback && !zapisano) {
+    feedback.textContent = t('messages.saves.preferenceNotStored');
+  }
+  refreshAfterSourceChange();
+}
+
+/**
+ * Przerysowuje listy zależne od filtra podręczników. Wybory już dokonane
+ * zostają - celowo, bo ciche kasowanie gotowej postaci byłoby gorsze niż
+ * niespójność, o której popup wprost uprzedza.
+ */
+function refreshAfterSourceChange() {
+  if (availableOrigin.length) generateTilesOrigins(availableOrigin);
+  if (selectedOrigin) {
+    // Kafelki powstały od nowa, więc trzeba z powrotem oznaczyć wybrany -
+    // chyba że gracz właśnie wyłączył podręcznik, z którego pochodzi.
+    document.querySelector(`.origin-tile[data-origin-id="${selectedOrigin}"]`)?.classList.add('selected');
+    [1, 3, 7].forEach(renderPathSection);
+    renderProfessionsSection();
+    renderSpellsSection();
+    updatePreviewCharacter();
+  }
+}
+
+function renderSourceTag(source) {
+  if (!source) return '';
+  const fullName = sourceName(source);
+  return `<span class="source-tag" title="${fullName}">(${source})</span>${renderBetaTag(source)}`;
+}
+
+function renderLanguagesSummary() {
+  const summary = document.getElementById('languages-known-summary');
+  const list = document.getElementById('language-slots');
+  if (!summary || !list) return;
+
+  const { autoScriptAllKnown, autoScriptAllKnownSource } = calculateSlotsCharacter();
+  const spokenDetails = getLanguagesWithDetails();
+  const scriptByLanguage = new Map(getScriptWithDetails().map(w => [w.jezyk, w.source]));
+
+  summary.innerHTML = spokenDetails.length
+    ? t('professions.knownLanguagesSummary', { languages: spokenDetails.map(w => LANGUAGES[w.jezyk] || w.jezyk).join(', ') })
+    : t('professions.noOriginSelected');
+
+  list.innerHTML = spokenDetails.map(({ jezyk, source }) => {
+    const scriptSource = scriptByLanguage.get(jezyk);
+    return `
+      <div class="language-chip">
+        <div class="language-chip-row">
+          <span class="language-name">${LANGUAGES[jezyk] || jezyk}</span>
+          ${renderSourceTag(source)}
+        </div>
+        <div class="language-chip-row">
+          <span class="language-flags">${scriptSource ? t('professions.spokenAndScript') : t('professions.spokenOnly')}</span>
+          ${scriptSource ? renderSourceTag(scriptSource) : ''}
+        </div>
+      </div>
+    `;
+  }).join('') + (autoScriptAllKnown ? `<p class="hint">${t('professions.autoScriptAllKnown', { source: renderSourceTag(autoScriptAllKnownSource) })}</p>` : '');
+}
+
+
+/**
+ * Aktualizuje listę wybranych profesji (pigułki pod slotami)
+ */
+function updateSelectedProfessions() {
+  const listDiv = document.getElementById('professions-list');
+  if (!listDiv) return;
+
+  const { slots } = calculateSlotsCharacter();
+
+  listDiv.innerHTML = slots.map(slot => {
+    const answer = answersSlots[slot.id];
+    if (!answer || answer.mode !== 'profesja' || !answer.profesjaId) return '';
+    const prof = availableProfessions.find(p => p.id === answer.profesjaId);
+    if (!prof) return '';
+    return `
+      <div class="selected-item">
+        <button class="remove-btn" data-remove-profession-id="${prof.id}">×</button>
+        <span>${prof.nazwa}</span>
+        ${renderSourceTag(slot.source)}
+      </div>
+    `;
+  }).join('');
+  listDiv.querySelectorAll('[data-remove-profession-id]').forEach(btn => {
+    btn.addEventListener('click', () => removeProfession(btn.dataset.removeProfessionId));
+  });
+}
+
+/**
+ * Usuwa profesję z wybranych, czyszcząc odpowiedź slotu, do którego była przypisana.
+ */
+function removeProfession(professionId) {
+  const slotId = Object.keys(answersSlots).find(id => {
+    const answer = answersSlots[id];
+    return answer && answer.mode === 'profesja' && answer.profesjaId === professionId;
+  });
+  if (slotId) {
+    answersSlots[slotId] = { ...answersSlots[slotId], profesjaId: null };
+  }
+  renderProfessionsSection();
+}
+
+/**
+ * Renderuje sekcję kuriozów
+ */
+function renderCuriosSection() {
+  const grid = document.getElementById('curios-grid');
+  const countSpan = document.getElementById('curios-count');
+  const listDiv = document.getElementById('curios-list');
+  
+  if (!grid || !countSpan || !listDiv) return;
+  
+  const { kurioza } = calculateChoiceCount();
+  countSpan.textContent = kurioza;
+  
+  // Wyczyść grid
+  grid.innerHTML = '';
+  
+  // Grupuj kurioza według kategorii
+  const kategorie = {};
+  availableCurios.forEach(curio => {
+    if (!kategorie[curio.kategoria]) {
+      kategorie[curio.kategoria] = [];
+    }
+    kategorie[curio.kategoria].push(curio);
+  });
+  
+  // Renderuj kafelki
+  Object.entries(kategorie).forEach(([_katId, curios]) => {
+    curios.forEach(curio => {
+      const tile = renderCurioTile(curio);
+      grid.appendChild(tile);
+    });
+  });
+  
+  // Aktualizuj listę wybranych
+  updateSelectedCurios();
+}
+
+/**
+ * Renderuje kafel kurioza
+ */
+function renderCurioTile(curio) {
+  const isSelected = selectedCurios.includes(curio.id);
+  const tile = document.createElement('div');
+  tile.className = `curio-tile ${isSelected ? 'selected' : ''}`;
+  tile.dataset.curioId = curio.id;
+  
+  tile.innerHTML = `
+    <div class="tile-category">${curio.numerTabeli ? t('professions.curioTable', { number: curio.numerTabeli }) : ''}</div>
+    <div class="tile-title">${curio.nazwa || ''}</div>
+    ${curio.opis ? `<div class="tile-description">${curio.opis}</div>` : ''}
+  `;
+  
+  // Event listenery
+  tile.addEventListener('click', () => toggleCurio(curio.id));
+  
+  return tile;
+}
+
+/**
+ * Przełącza wybór kurioza
+ */
+function toggleCurio(curioId) {
+  const { kurioza } = calculateChoiceCount();
+  
+  if (selectedCurios.includes(curioId)) {
+    // Usuń z wybranych
+    selectedCurios = selectedCurios.filter(id => id !== curioId);
+  } else {
+    // Dodaj do wybranych (jeśli nie przekracza limitu)
+    if (selectedCurios.length < kurioza) {
+      selectedCurios.push(curioId);
+    }
+  }
+  
+  renderCuriosSection();
+  updateStep5NextButton();
+}
+
+
+/**
+ * Sprawdza, czy dany slot profesyjno-językowy ma kompletną odpowiedź.
+ */
+function slotAnswerComplete(slot) {
+  const answer = answersSlots[slot.id];
+  // Gdy slot ma tylko jedną dozwoloną opcję (np. 'tylko_profesja'), UI nie
+  // renderuje przełącznika trybu (radiogroup) - tryb trzeba więc wywnioskować
+  // tak samo, jak robi to renderSlotCard(), inaczej odpowiedź nigdy nie
+  // zostanie uznana za kompletną, mimo wybranej wartości w widocznym select.
+  const mode = answer?.mode || (slot.opcje.length === 1 ? slot.opcje[0] : null);
+  if (!mode) return false;
+  return mode === 'profesja' ? !!answer?.profesjaId : !!answer?.jezyk;
+}
+
+/**
+ * Zwraca dostępne wartości dla danego trybu ('profesja'/'jezyk_nowy'/
+ * 'jezyk_pismo') w kontekście danego slotu.
+ */
+function valueOptionsForMode(slot, mode) {
+  if (mode === 'profesja') {
+    return professionsForSlot(slot).map(p => p.id);
+  }
+  if (mode === 'jezyk_nowy') {
+    const known = new Set(getSpokenLanguages());
+    return Object.keys(LANGUAGES).filter(k => !known.has(k));
+  }
+  if (mode === 'jezyk_pismo') {
+    const alreadyScript = new Set(getLanguagesWithScript());
+    return getSpokenLanguages().filter(k => !alreadyScript.has(k));
+  }
+  return [];
+}
+
+/**
+ * Zwraca kopię tablicy w losowej, jednorodnej kolejności (Fisher-Yates).
+ * `array.sort(() => Math.random() - 0.5)` NIE daje jednorodnego rozkładu -
+ * w większości silników JS faworyzuje pierwszy element, co w praktyce
+ * sprawiało, że losowanie "zawsze" wybierało tryb 'profesja' (bo jest
+ * pierwszy w liście `opcje`).
+ */
+function randomOrder(array) {
+  const wynik = [...array];
+  for (let i = wynik.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [wynik[i], wynik[j]] = [wynik[j], wynik[i]];
+  }
+  return wynik;
+}
+
+/**
+ * Losuje odpowiedzi (profesja/język) dla wszystkich nierozdanych jeszcze
+ * slotów. Jeśli użytkownik już wybrał tryb danego slotu (np. "Nowy język"),
+ * losowanie respektuje ten wybór i dobiera tylko wartość w jego ramach -
+ * nie zmienia trybu na inny. Tryb losuje się jednorodnie tylko dla slotów,
+ * których użytkownik jeszcze w żaden sposób nie dotknął.
+ */
+function randomizeProfessionsCentrally() {
+  const { slots } = calculateSlotsCharacter();
+
+  for (const slot of slots) {
+    if (slotAnswerComplete(slot)) continue;
+
+    const selectedMode = answersSlots[slot.id]?.mode;
+    const modes = selectedMode ? [selectedMode] : randomOrder(slot.opcje);
+
+    for (const mode of modes) {
+      const opcje = valueOptionsForMode(slot, mode);
+      if (opcje.length === 0) continue;
+      const pick = opcje[Math.floor(Math.random() * opcje.length)];
+      answersSlots[slot.id] = mode === 'profesja' ? { mode, profesjaId: pick } : { mode, jezyk: pick };
+      break;
+    }
+  }
+
+  renderProfessionsSection();
+}
+
+/**
+ * Losuje kurioza zgodnie z aktualnym limitem brakujących wyborów
+ */
+function randomizeCuriosCentrally() {
+  const { kurioza } = calculateChoiceCount();
+  const remaining = Math.max(0, kurioza - selectedCurios.length);
+  if (remaining === 0) return;
+  const available = availableCurios.filter(c => !selectedCurios.includes(c.id));
+  for (let i = 0; i < remaining && available.length > 0; i++) {
+    const idx = Math.floor(Math.random() * available.length);
+    const pick = available.splice(idx, 1)[0];
+    selectedCurios.push(pick.id);
+  }
+  renderCuriosSection();
+  updateStep5NextButton();
+}
+
+/**
+ * Aktualizuje listę wybranych kuriozów
+ */
+function updateSelectedCurios() {
+  const listDiv = document.getElementById('curios-list');
+  if (!listDiv) return;
+  
+  listDiv.innerHTML = selectedCurios.map(id => {
+    const curio = availableCurios.find(c => c.id === id);
+    return curio ? `
+      <div class="selected-item">
+        <button class="remove-btn" data-remove-curio-id="${id}">×</button>
+        <span>${curio.nazwa}</span>
+      </div>
+    ` : '';
+  }).join('');
+  listDiv.querySelectorAll('[data-remove-curio-id]').forEach(btn => {
+    btn.addEventListener('click', () => removeCurio(btn.dataset.removeCurioId));
+  });
+}
+
+/**
+ * Usuwa kurioza z wybranych
+ */
+function removeCurio(curioId) {
+  selectedCurios = selectedCurios.filter(id => id !== curioId);
+  renderCuriosSection();
+  updateStep5NextButton();
+}
+
+/**
+ * Aktualizuje przycisk "Dalej" w Kroku 5
+ */
+function updateStep5NextButton() {
+  const btn = document.getElementById('btn-next-5');
+  if (!btn) return;
+
+  const { kurioza } = calculateChoiceCount();
+  const { slots } = calculateSlotsCharacter();
+  const hasRequiredProfessions = slots.every(slot => slotAnswerComplete(slot));
+  const hasRequiredCurios = selectedCurios.length >= kurioza;
+
+  btn.disabled = !(hasRequiredProfessions && hasRequiredCurios);
+}
+
+/**
+ * Zwraca wybraną opcję radiową sekcji "Korzyści z Pochodzenia" (poziom 4),
+ * jeśli już wybrana - potrzebne do ustalenia, czy pochodzenie przyznaje
+ * dodatkowy atomowy wybór zaklęcia na tym poziomie ("1 zaklęcie").
+ */
+function getCurrentSelectedLevel4Option() {
+  if (!selectedOrigin) return null;
+  return document.querySelector(`input[name="origin-option-${selectedOrigin}"]:checked`)?.value || null;
+}
+
+/**
+ * Oblicza aktualne atomowe wybory magii (jeden atom = jedna karta w Kroku
+ * 4.5) na podstawie pochodzenia, wybranych ścieżek i poziomu postaci.
+ */
+function getCurrentAtomsMagic() {
+  if (!selectedOrigin) return [];
+  const pochodzenie = availableOrigin.find(p => p.id === selectedOrigin);
+  if (!pochodzenie) return [];
+  return calculateSlotsMagic({
+    pochodzenie,
+    wybranaOpcjaPoziom4: getCurrentSelectedLevel4Option(),
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null,
+    selectedLevel
+  });
+}
+
+/** Odczytuje aktualną Moc postaci - limit kręgu zaklęć dostępnych do nauki. */
+function getCurrentPower() {
+  return parseInt(document.getElementById('power-final')?.textContent, 10) || 0;
+}
+
+/**
+ * Renderuje Krok 6: jedną kartę na każdy atomowy wybór magii faktycznie
+ * przyznany przez pochodzenie/ścieżki na obecnym poziomie postaci (zamiast
+ * swobodnie przeglądanej biblioteki) - w pełni zgodne z zasadami nauki
+ * tradycji i zaklęć z podręcznika (zob. logic/magic.js).
+ */
+function renderSpellsSection() {
+  const atoms = getCurrentAtomsMagic();
+  const container = document.getElementById('magic-slots-container');
+  const hint = document.getElementById('known-traditions-hint');
+  if (!container) return;
+
+  if (atoms.length === 0) {
+    container.innerHTML = '<p class="hint">Żadna z dotychczas wybranych ścieżek (ani pochodzenie) nie przyznaje magii na obecnym poziomie postaci - ten krok jest w pełni opcjonalny.</p>';
+    if (hint) hint.innerHTML = '';
+    return;
+  }
+
+  const { resolutions, knownTraditions } = calculateResolutionMagic(atoms, magicChoices);
+  recalculateBlackMagicWithTraditions(resolutions);
+
+  if (hint) {
+    const names = [...knownTraditions].map(id => TRADITIONS[id]?.nazwa || id).sort((a, b) => a.localeCompare(b, localeTag()));
+    hint.innerHTML = names.length
+      ? `<strong>${t('summary.knownTraditionsColon')}</strong> ${names.join(', ')}`
+      : t('magic.noTraditionsYet');
+  }
+
+  // Kontekst potrzebny kartom, żeby wyjaśnić brak zaklęć do wyboru: czy
+  // jakakolwiek karta w tym kroku może jeszcze przyznać tradycję.
+  const traditionObtainable = resolutions.some(r =>
+    ['wymuszona_tradycja', 'wybor', 'wybor_fixed'].includes(r.atom.rodzaj));
+  container.innerHTML = resolutions.map(r => renderCardMagic(r, { knownTraditions, traditionObtainable })).join('');
+  attachHandleCardsMagic(container);
+  refreshAttributesSecondary();
+}
+
+/**
+ * Przelicza (od zera, na podstawie aktualnych rozwiązań) zbiór tradycji
+ * czarnej magii już poznanych - za każdą przysługuje jednorazowo 1 punkt
+ * Splugawienia. Liczone od zera przy każdym renderze, żeby wycofanie
+ * wcześniejszego wyboru poprawnie usunęło też przyznane Splugawienie.
+ */
+function recalculateBlackMagicWithTraditions(resolutions) {
+  const updatedSet = new Set();
+  resolutions.forEach(r => {
+    if (r.mode === 'tradycja' && r.tradycjaId && isBlackMagic(r.tradycjaId)) updatedSet.add(r.tradycjaId);
+  });
+  magicBlackMagicTooTraditions = updatedSet;
+}
+
+/**
+ * Suma Splugawienia przyznanego przez magię: 1 punkt za każdą poznaną
+ * tradycję czarnej magii, plus 1 punkt za każdy rzut ryzyka, który się
+ * powiódł (nauka kolejnego zaklęcia czarnej magii z już znanej tradycji).
+ */
+function calculateCorruptionFromCurrentMagic() {
+  const withTraditions = magicBlackMagicTooTraditions.size;
+  const withRisk = Object.values(magicRiskResults).filter(w => w.przyznane).length;
+  return withTraditions + withRisk;
+}
+
+/** Renderuje pojedynczą kartę jednego atomowego wyboru magii. */
+/**
+ * Czy z danego slotu da się w tej chwili nauczyć jakiegokolwiek zaklęcia.
+ * Zaklęcia poznaje się wyłącznie z tradycji już znanych (PG), więc postać
+ * bez żadnej tradycji nie ma z czego wybierać.
+ */
+function spellOptionsAvailable(knownTraditions, tradycjaOgraniczenie = null) {
+  return getSpellsToLearning({
+    knownTraditions: knownTraditions || new Set(),
+    moc: getCurrentPower(),
+    tradycjaOgraniczenie: tradycjaOgraniczenie || null
+  }).length > 0;
+}
+
+/**
+ * Zwraca wyjaśnienie, dlaczego z tego slotu nie da się wybrać zaklęcia
+ * (albo null, gdy da się normalnie wybrać). Rozróżnia trzy przyczyny, bo
+ * podpowiedź "zmień korzyść poziomu 4" byłaby myląca, gdy tradycję wciąż
+ * można poznać w innej karcie tego kroku.
+ */
+function spellBlockadeMessage(ctx, tradycjaOgraniczenie = null) {
+  const known = (ctx && ctx.knownTraditions) || new Set();
+  if (spellOptionsAvailable(known, tradycjaOgraniczenie)) return null;
+
+  if (known.size === 0 && ctx && ctx.traditionObtainable) {
+    return `${icon('info')} ${t('magic.blockade.traditionFirst')}`;
+  }
+  if (known.size === 0) {
+    return `${icon('warning')} ${t('magic.blockade.deadEnd')}`;
+  }
+  return `${icon('info')} ${t('magic.blockade.noSpellInPower', { power: getCurrentPower() })}`;
+}
+
+function renderCardMagic(resolution, ctx) {
+  const { atom, mode, tradycjaId, spellId, darmowyZaklecieId, complete, blackMagicRisk } = resolution;
+  const isBlackTradition = mode === 'tradycja' && isBlackMagic(tradycjaId);
+  const classes = ['magic-slot-card'];
+  if (complete) classes.push('complete');
+  if (isBlackTradition || blackMagicRisk) classes.push('black-magic');
+
+  let bodyHtml = '';
+  if (atom.rodzaj === 'wymuszona_tradycja') {
+    bodyHtml = renderChoiceTraditions(atom.id, atom.kategoria, tradycjaId);
+    if (tradycjaId) bodyHtml += renderChoiceFreeSpells(atom.id, tradycjaId, darmowyZaklecieId);
+  } else if (atom.rodzaj === 'wybor_fixed') {
+    const traditionName = TRADITIONS[atom.tradycjaNazwa]?.nazwa || atom.tradycjaNazwa;
+    if (mode === 'tradycja') {
+      bodyHtml = `<p class="magic-slot-status ok">${icon('book')} ${t('magic.traditionNotKnownYet', { tradition: traditionName })}</p>`;
+      bodyHtml += renderChoiceFreeSpells(atom.id, atom.tradycjaNazwa, darmowyZaklecieId);
+    } else {
+      bodyHtml = renderChoiceSpells(atom.id, spellId, atom.tradycjaNazwa, spellBlockadeMessage(ctx, atom.tradycjaNazwa));
+    }
+  } else if (atom.rodzaj === 'wybor') {
+    bodyHtml = `
+      <div class="magic-slot-mode-toggle">
+        <button type="button" class="magic-mode-option magic-mode-option--tradition ${mode === 'tradycja' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="tradycja">
+          ${icon('book')}
+          <span class="magic-mode-option-text"><strong>${t('magic.newTradition')}</strong><small>${t('magic.newTraditionHint')}</small></span>
+        </button>
+        <button type="button" class="magic-mode-option magic-mode-option--spell ${mode === 'zaklecie' ? 'active' : ''}" data-magic-mode="${atom.id}" data-mode-value="zaklecie">
+          ${icon('sparkle')}
+          <span class="magic-mode-option-text"><strong>${t('magic.spellOption')}</strong><small>${t('magic.spellOptionHint')}</small></span>
+        </button>
+      </div>
+    `;
+    if (mode === 'tradycja') {
+      bodyHtml += renderChoiceTraditions(atom.id, atom.kategoria, tradycjaId);
+      if (tradycjaId) bodyHtml += renderChoiceFreeSpells(atom.id, tradycjaId, darmowyZaklecieId);
+    } else if (mode === 'zaklecie') {
+      bodyHtml += renderChoiceSpells(atom.id, spellId, null, spellBlockadeMessage(ctx));
+    }
+  } else if (atom.rodzaj === 'zaklecie_tylko') {
+    bodyHtml = renderChoiceSpells(atom.id, spellId, null, spellBlockadeMessage(ctx));
+  }
+
+  return `
+    <div class="${classes.join(' ')}" data-magic-slot="${atom.id}">
+      <p class="magic-slot-source">${atom.source}</p>
+      <p class="magic-slot-desc">${atomDescription(atom)}</p>
+      ${bodyHtml}
+      ${renderBlackMagicWarning(resolution)}
+      <p class="magic-slot-status ${complete ? 'ok' : ''}">${complete ? `${icon('check')} Rozwiązano` : 'Nierozwiązane (opcjonalne)'}</p>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje przycisk otwarcia popupu wyboru nowej tradycji dla danego
+ * atomu wraz z kafelkiem aktualnego wyboru (jeśli już dokonano) - bez
+ * dropdownów, wybór odbywa się w popupie na kafelkach (zob. otworzTradycjaPicker()).
+ */
+function renderChoiceTraditions(atomId, kategoria, currentChoice) {
+  const nazwa = currentChoice ? (TRADITIONS[currentChoice]?.nazwa || currentChoice) : null;
+  const black = currentChoice && isBlackMagic(currentChoice);
+  return `
+    <div class="magic-slot-picker magic-slot-picker--tradition">
+      <span class="magic-slot-picker-label">${icon('book')} ${t('magic.traditionLabel')}</span>
+      ${nazwa ? `
+        <div class="magic-picked-chip">${nazwa}${black ? ` ${icon('warning')}` : ''}
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="tradycjaId" title="${t('magic.removeChoice')}">${icon('x')}</button>
+        </div>
+      ` : ''}
+      <button type="button" class="btn-secondary small" data-open-tradition-picker="${atomId}" data-category="${(kategoria || ['dowolna']).join(',')}">${nazwa ? t('magic.changeTradition') : t('magic.chooseTradition')}</button>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje przycisk otwarcia popupu wyboru zaklęcia do nauki dla danego
+ * atomu wraz z kafelkiem aktualnego wyboru (jeśli już dokonano) - bez
+ * dropdownów, wybór odbywa się w popupie na kafelkach (zob. otworzZakleciePicker()).
+ * Popup sam ograniczy listę do tradycji już znanych (albo `tradycjaOgraniczenie`,
+ * dla wybor_fixed) i kręgu nie wyższego niż Moc postaci.
+ */
+function renderChoiceSpells(atomId, currentChoice, tradycjaOgraniczenie = null, blockade = null) {
+  const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
+  // Gdy nie ma z czego wybierać, nie pokazujemy przycisku prowadzącego do
+  // pustego popupu - zamiast tego wyjaśniamy, dlaczego i co z tym zrobić.
+  if (blockade && !spell) {
+    return `
+      <div class="magic-slot-picker magic-slot-picker--spell">
+        <span class="magic-slot-picker-label">${icon('sparkle')} ${t('magic.spellLabel')}</span>
+        <div class="magic-slot-blocked">${blockade}</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="magic-slot-picker magic-slot-picker--spell">
+      <span class="magic-slot-picker-label">${icon('sparkle')} Zaklęcie</span>
+      ${spell ? `
+        <div class="magic-picked-chip">${t('magic.spellChip', { name: spell.nazwa, tradition: spell.tradycjaNazwa, circle: spell.krag })}${isBlackMagic(spell.tradycja) ? ` ${icon('warning')}` : ''}
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="spellId" title="${t('magic.removeChoice')}">${icon('x')}</button>
+        </div>
+      ` : ''}
+      <button type="button" class="btn-secondary small" data-open-spell-picker="${atomId}" data-tradition-restriction="${tradycjaOgraniczenie || ''}">${spell ? t('magic.changeSpell') : t('magic.chooseSpell')}</button>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje przycisk otwarcia popupu wyboru DARMOWEGO zaklęcia kręgu 0
+ * przyznawanego automatycznie przy poznaniu nowej tradycji ("Poznawanie
+ * tradycji", PG) wraz z kafelkiem aktualnego wyboru - analogicznie do
+ * renderujWyborZaklecia(), ale ograniczone wyłącznie do kręgu 0 danej
+ * tradycji (zob. otworzDarmoweZakleciePicker()).
+ */
+function renderChoiceFreeSpells(atomId, tradycjaId, currentChoice) {
+  const spell = currentChoice ? SPELLS.find(s => s.id === currentChoice) : null;
+  return `
+    <div class="magic-slot-picker magic-slot-picker--spell magic-slot-picker-secondary">
+      <span class="magic-slot-picker-label">${icon('sparkle')} ${t('magic.freeSpellCircleZero')}</span>
+      ${spell ? `
+        <div class="magic-picked-chip">${t('magic.spellChipCircleZero', { name: spell.nazwa })}
+          <button type="button" class="chip-remove" data-magic-clear="${atomId}" data-clear-field="darmowyZaklecieId" title="${t('magic.removeChoice')}">${icon('x')}</button>
+        </div>
+      ` : ''}
+      <button type="button" class="btn-secondary small" data-open-free-spell-picker="${atomId}" data-tradition-free="${tradycjaId}">${spell ? t('magic.changeFreeSpell') : t('magic.chooseFreeSpell')}</button>
+    </div>
+  `;
+}
+
+/**
+ * Renderuje ostrzeżenie/informację o czarnej magii dla danej karty: albo
+ * informację o automatycznym Splugawieniu za poznanie tradycji, albo
+ * widget rzutu ryzyka (k6) przy nauce kolejnego zaklęcia czarnej magii.
+ */
+function renderBlackMagicWarning(resolution) {
+  const { atom, mode, tradycjaId, spellId, blackMagicRisk } = resolution;
+  if (mode === 'tradycja' && tradycjaId && isBlackMagic(tradycjaId)) {
+    return `<div class="black-magic-warning">${icon('warning')} ${t('magic.blackMagicGrantsCorruption', { tradition: TRADITIONS[tradycjaId]?.nazwa || tradycjaId })} <strong>${t('magic.oneCorruptionPoint')}</strong>.</div>`;
+  }
+  if (blackMagicRisk) {
+    const wynik = magicRiskResults[atom.id];
+    if (wynik && wynik.spellId === spellId) {
+      return `<div class="black-magic-warning">${icon('warning')} ${t('magic.blackMagicRiskRoll')} <span class="black-magic-roll-result">${t('magic.d6Result', { roll: wynik.rzut })}</span> ${wynik.przyznane ? '→ +1 Splugawienie' : '→ bez efektu'}.</div>`;
+    }
+    return `
+      <div class="black-magic-warning">
+        ${icon('warning')} ${t('magic.blackMagicRiskHint', { known: blackMagicRisk.liczbaZnanychPrzed })}
+        <button type="button" class="btn-secondary small" data-magic-roll="${atom.id}" data-roll-spell="${spellId}" data-roll-limit="${blackMagicRisk.liczbaZnanychPrzed}">${t('magic.rollD6')}</button>
+      </div>
+    `;
+  }
+  return '';
+}
+
+/** Podłącza obsługę zdarzeń dla wszystkich kart magii w kontenerze (delegacja przez ponowny render). */
+function attachHandleCardsMagic(container) {
+  container.querySelectorAll('[data-magic-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const atomId = btn.dataset.magicMode;
+      const mode = btn.dataset.modeValue;
+      if ((magicChoices[atomId] || {}).mode === mode) return;
+      magicChoices[atomId] = { mode };
+      delete magicRiskResults[atomId];
+      renderSpellsSection();
+    });
+  });
+  container.querySelectorAll('[data-open-tradition-picker]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const atomId = btn.dataset.openTraditionPicker;
+      const kategoria = btn.dataset.category.split(',').filter(Boolean);
+      const { knownTraditions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
+      openTraditionPicker(atomId, kategoria, knownTraditions);
+    });
+  });
+  container.querySelectorAll('[data-open-spell-picker]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const atomId = btn.dataset.openSpellPicker;
+      const tradycjaOgraniczenie = btn.dataset.traditionRestriction || null;
+      const { knownTraditions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
+      openSpellPicker(atomId, knownTraditions, getCurrentPower(), tradycjaOgraniczenie);
+    });
+  });
+  container.querySelectorAll('[data-open-free-spell-picker]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openFreeSpellPicker(btn.dataset.openFreeSpellPicker, btn.dataset.traditionFree);
+    });
+  });
+  container.querySelectorAll('[data-magic-clear]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const atomId = btn.dataset.magicClear;
+      const wybor = { ...(magicChoices[atomId] || {}) };
+      delete wybor[btn.dataset.clearField];
+      magicChoices[atomId] = wybor;
+      delete magicRiskResults[atomId];
+      renderSpellsSection();
+    });
+  });
+  container.querySelectorAll('[data-magic-roll]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const atomId = btn.dataset.magicRoll;
+      const spellId = btn.dataset.rollSpell;
+      const limit = parseInt(btn.dataset.rollLimit, 10);
+      const rzut = Math.floor(Math.random() * 6) + 1;
+      magicRiskResults[atomId] = { spellId, rzut, przyznane: rzut < limit };
+      renderSpellsSection();
+    });
+  });
+}
+
+/**
+ * Stan aktualnie otwartego popupu wyboru magii (Krok 6) - `null` gdy
+ * popup jest zamknięty. Patrz otworzTradycjaPicker()/otworzZakleciePicker().
+ */
+let magicPicker = null;
+
+/**
+ * Otwiera popup wyboru nowej tradycji (kafelki, bez dropdownów) dla danego atomu.
+ * `docelowy` ('magia' domyślnie, albo 'ekwipunek') decyduje, do którego stanu
+ * trafi wynik wyboru - zob. wybierzTradycjaZPickera(). Ten sam popup obsługuje
+ * więc zarówno poznawanie tradycji w Kroku 6, jak i "zwój z zaklęciem kręgu 0"
+ * w Kroku Ekwipunek.
+ */
+function openTraditionPicker(atomId, kategoria, knownTraditions, target = 'magia') {
+  magicPicker = { atomId, kind: 'tradycja', kategoria, knownTraditions, search: '', target };
+  const title = document.getElementById('magic-picker-title');
+  if (title) title.textContent = t('magic.chooseTradition');
+  // Odkryj popup PRZED renderowaniem treści - fokus na polu wyszukiwania
+  // (ustawiany w renderMagicPickerBody()) nie zadziała na elemencie, który
+  // wciąż jest ukryty atrybutem [hidden].
+  const overlay = document.getElementById('magic-picker-overlay');
+  if (overlay) overlay.hidden = false;
+  renderMagicPickerBody();
+}
+
+/** Otwiera popup wyboru zaklęcia do nauki (kafelki, bez dropdownów) dla danego atomu. */
+function openSpellPicker(atomId, knownTraditions, moc, tradycjaOgraniczenie) {
+  magicPicker = {
+    atomId, kind: 'zaklecie', knownTraditions, moc, tradycjaOgraniczenie,
+    search: '', filterKrag: null, filterKategoria: null, filterTradycja: null
+  };
+  const title = document.getElementById('magic-picker-title');
+  if (title) title.textContent = t('magic.chooseSpell');
+  const overlay = document.getElementById('magic-picker-overlay');
+  if (overlay) overlay.hidden = false;
+  renderMagicPickerBody();
+}
+
+/**
+ * Otwiera popup wyboru DARMOWEGO zaklęcia kręgu 0 danej tradycji, przyznanego
+ * automatycznie przy jej poznaniu ("Poznawanie tradycji", PG) - kafelki
+ * ograniczone wyłącznie do kręgu 0 tej jednej, konkretnej tradycji.
+ */
+function openFreeSpellPicker(atomId, tradycjaId, target = 'magia') {
+  magicPicker = { atomId, kind: 'darmowe_zaklecie', tradycjaId, search: '', target };
+  const title = document.getElementById('magic-picker-title');
+  if (title) title.textContent = t('magic.chooseFreeSpell');
+  const overlay = document.getElementById('magic-picker-overlay');
+  if (overlay) overlay.hidden = false;
+  renderMagicPickerBody();
+}
+
+/** Zamyka popup wyboru magii bez dokonywania wyboru. */
+function closeMagicPicker() {
+  const overlay = document.getElementById('magic-picker-overlay');
+  if (overlay) overlay.hidden = true;
+  magicPicker = null;
+}
+
+/**
+ * Renderuje zawartość popupu wyboru magii: pole wyszukiwania (statyczne,
+ * nieprzerenderowywane przy każdym wpisanym znaku, by nie tracić fokusu)
+ * i pod nim dynamiczny obszar z chipami filtrów i siatką kafelków.
+ */
+function renderMagicPickerBody() {
+  const body = document.getElementById('magic-picker-body');
+  if (!body || !magicPicker) return;
+  const placeholder = magicPicker.kind === 'tradycja'
+    ? 'Szukaj tradycji...'
+    : (magicPicker.kind === 'darmowe_zaklecie' ? t('magic.searchFreeSpell') : t('magic.searchSpell'));
+  body.innerHTML = `
+    <input type="text" class="picker-search" id="picker-search-input" placeholder="${placeholder}">
+    <div id="picker-dynamic"></div>
+  `;
+  const input = document.getElementById('picker-search-input');
+  input.value = magicPicker.search;
+  input.addEventListener('input', () => {
+    magicPicker.search = input.value;
+    rerenderPickerDynamic();
+  });
+  input.focus();
+  rerenderPickerDynamic();
+}
+
+/** Przerenderowuje tylko chipy filtrów + siatkę kafelków popupu (pole wyszukiwania zostaje niezmienione, by nie tracić fokusu/kursora). */
+function rerenderPickerDynamic() {
+  const el = document.getElementById('picker-dynamic');
+  if (!el || !magicPicker) return;
+  if (magicPicker.kind === 'tradycja') el.innerHTML = renderTraditionPickerDynamicHtml();
+  else if (magicPicker.kind === 'darmowe_zaklecie') el.innerHTML = renderFreeSpellPickerDynamicHtml();
+  else el.innerHTML = renderSpellPickerDynamicHtml();
+  attachHandlePickerDynamic(el);
+}
+
+/** Renderuje kafelki tradycji dostępnych do poznania w popupie, po zastosowaniu wyszukiwania tekstowego. */
+function renderTraditionPickerDynamicHtml() {
+  const all = getTraditionsForCategory(magicPicker.kategoria, magicPicker.knownTraditions);
+  const search = magicPicker.search.trim().toLowerCase();
+  const wynik = search ? all.filter(tradycja => tradycja.nazwa.toLowerCase().includes(search)) : all;
+
+  const tiles = wynik.map(tradycja => `
+    <button type="button" class="picker-tile" data-pick-tradition="${tradycja.id}">
+      <div class="picker-tile-header"><span>${tradycja.nazwa}</span></div>
+      ${tradycja.opis ? `<p class="picker-tile-description">${tradycja.opis}</p>` : ''}
+      ${tradycja.czarnaMagia ? `<div class="picker-tile-warning">${icon('warning')} ${t('magic.blackMagicShort')}</div>` : ''}
+    </button>
+  `).join('') || `<p class="hint">${t('magic.noTraditionsMatchSearch')}</p>`;
+
+  return `
+    <p class="picker-results-count hint">${t('magic.foundTraditions', { found: wynik.length, total: all.length })}</p>
+    <div class="picker-tile-grid">${tiles}</div>
+  `;
+}
+
+/**
+ * Zwraca id-y zaklęć już wybranych w INNYCH slotach magii (nie w
+ * `wylaczAtomId`, czyli slocie właśnie edytowanym) - używane do wyszarzenia
+ * ich w popupie, bo nauka tego samego zaklęcia drugi raz nie ma sensu.
+ */
+function getTakenSpells(disableAtomId) {
+  const { resolutions } = calculateResolutionMagic(getCurrentAtomsMagic(), magicChoices);
+  const taken = new Set();
+  resolutions.forEach(r => {
+    if (r.atom.id === disableAtomId) return;
+    if (r.mode === 'zaklecie' && r.spellId) taken.add(r.spellId);
+    if (r.mode === 'tradycja' && r.darmowyZaklecieId) taken.add(r.darmowyZaklecieId);
+  });
+  return taken;
+}
+
+/** Renderuje kafelki zaklęć dostępnych do nauki w popupie, po zastosowaniu wyszukiwania i chipów filtrów. */
+function renderSpellPickerDynamicHtml() {
+  const { knownTraditions, moc, tradycjaOgraniczenie, search, filterKrag, filterKategoria, filterTradycja } = magicPicker;
+  const all = getSpellsToLearning({ knownTraditions, moc, tradycjaOgraniczenie });
+
+  const circles = [...new Set(all.map(s => s.krag))].sort((a, b) => a - b);
+  const traditionsInSet = [...new Map(all.map(s => [s.tradycja, s.tradycjaNazwa])).entries()]
+    .sort((a, b) => a[1].localeCompare(b[1], localeTag()));
+
+  let wynik = all;
+  if (filterKrag !== null) wynik = wynik.filter(s => s.krag === filterKrag);
+  if (filterKategoria) wynik = wynik.filter(s => s.kategoria === filterKategoria);
+  if (filterTradycja) wynik = wynik.filter(s => s.tradycja === filterTradycja);
+  const searchLower = search.trim().toLowerCase();
+  if (searchLower) wynik = wynik.filter(s => `${s.nazwa} ${s.opis}`.toLowerCase().includes(searchLower));
+
+  const traditionChips = traditionsInSet.length > 1
+    ? traditionsInSet.map(([id, nazwa]) => `<button type="button" class="picker-filter-chip ${filterTradycja === id ? 'active' : ''}" data-filter-tradition="${id}">${nazwa}</button>`).join('')
+    : '';
+  const circleChips = circles.length > 1
+    ? circles.map(k => `<button type="button" class="picker-filter-chip ${filterKrag === k ? 'active' : ''}" data-filter-circle="${k}">${t('magic.circleFilterChip', { circle: k })}</button>`).join('')
+    : '';
+  const catChips = [['atak', t('magic.categoryAttack')], ['uzytkowe', t('magic.categoryUtility')]]
+    .map(([id, etykieta]) => `<button type="button" class="picker-filter-chip ${filterKategoria === id ? 'active' : ''}" data-filter-category="${id}">${etykieta}</button>`).join('');
+  const chipsHtml = (traditionChips || circleChips || catChips)
+    ? `<div class="picker-filter-chips">${traditionChips}${circleChips}${catChips}</div>`
+    : '';
+
+  const taken = getTakenSpells(magicPicker.atomId);
+  const tiles = wynik
+    .slice()
+    .sort((a, b) => a.tradycjaNazwa.localeCompare(b.tradycjaNazwa, localeTag()) || a.krag - b.krag || a.nazwa.localeCompare(b.nazwa, localeTag()))
+    .map(s => {
+      const isTaken = taken.has(s.id);
+      return `
+      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-spell="${s.id}">
+        <div class="picker-tile-header">
+          <span>${s.nazwa}</span>
+          ${renderSourceTag(s.zrodlo)}
+        </div>
+        <div class="picker-tile-meta">${t('magic.spellMetaCircle', { tradition: s.tradycjaNazwa, circle: s.krag, category: s.kategoria === 'atak' ? t('magic.categoryAttack') : t('magic.categoryUtility') })}</div>
+        <p class="picker-tile-description">${s.opis}</p>
+        ${isTaken ? `<div class="picker-tile-taken">${t('step5.alreadyChosenElsewhere')}</div>` : ''}
+        ${!isTaken && isBlackMagic(s.tradycja) ? `<div class="picker-tile-warning">${icon('warning')} Czarna magia</div>` : ''}
+      </button>
+    `;
+    }).join('') || '<p class="hint">Brak zaklęć spełniających kryteria wyszukiwania.</p>';
+
+  return `
+    ${chipsHtml}
+    <p class="picker-results-count hint">${t('magic.foundSpells', { found: wynik.length, total: all.length })}</p>
+    <div class="picker-tile-grid">${tiles}</div>
+  `;
+}
+
+/**
+ * Renderuje kafelki zaklęć kręgu 0 danej tradycji w popupie wyboru
+ * darmowego zaklęcia ("Poznawanie tradycji", PG) - bez chipów filtrów, bo
+ * krąg jest już z definicji ograniczony do 0, a tradycja jest ustalona.
+ */
+function renderFreeSpellPickerDynamicHtml() {
+  const { tradycjaId, search } = magicPicker;
+  const all = getCircleZeroSpells(tradycjaId);
+  const searchLower = search.trim().toLowerCase();
+  const wynik = searchLower ? all.filter(s => `${s.nazwa} ${s.opis}`.toLowerCase().includes(searchLower)) : all;
+
+  const taken = getTakenSpells(magicPicker.atomId);
+  const tiles = wynik
+    .slice()
+    .sort((a, b) => a.nazwa.localeCompare(b.nazwa, localeTag()))
+    .map(s => {
+      const isTaken = taken.has(s.id);
+      return `
+      <button type="button" class="picker-tile ${isTaken ? 'disabled' : ''}" ${isTaken ? 'disabled' : ''} data-pick-free-spell="${s.id}">
+        <div class="picker-tile-header">
+          <span>${s.nazwa}</span>
+          ${renderSourceTag(s.zrodlo)}
+        </div>
+        <div class="picker-tile-meta">${t('magic.spellMetaCircleZero', { tradition: s.tradycjaNazwa, category: s.kategoria === 'atak' ? t('magic.categoryAttack') : t('magic.categoryUtility') })}</div>
+        <p class="picker-tile-description">${s.opis}</p>
+        ${isTaken ? `<div class="picker-tile-taken">${t('step5.alreadyChosenElsewhere')}</div>` : ''}
+      </button>
+    `;
+    }).join('') || '<p class="hint">Brak zaklęć kręgu 0 spełniających kryteria wyszukiwania.</p>';
+
+  return `
+    <p class="picker-results-count hint">${t('magic.foundSpellsCircleZero', { found: wynik.length, total: all.length })}</p>
+    <div class="picker-tile-grid">${tiles}</div>
+  `;
+}
+
+/** Podłącza obsługę chipów filtrów i kafelków w dynamicznym obszarze popupu. */
+function attachHandlePickerDynamic(container) {
+  container.querySelectorAll('[data-filter-circle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = parseInt(btn.dataset.filterCircle, 10);
+      magicPicker.filterKrag = magicPicker.filterKrag === val ? null : val;
+      rerenderPickerDynamic();
+    });
+  });
+  container.querySelectorAll('[data-filter-category]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.filterCategory;
+      magicPicker.filterKategoria = magicPicker.filterKategoria === val ? null : val;
+      rerenderPickerDynamic();
+    });
+  });
+  container.querySelectorAll('[data-filter-tradition]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.filterTradition;
+      magicPicker.filterTradycja = magicPicker.filterTradycja === val ? null : val;
+      rerenderPickerDynamic();
+    });
+  });
+  container.querySelectorAll('[data-pick-tradition]').forEach(btn => {
+    btn.addEventListener('click', () => selectTraditionWithPicker(btn.dataset.pickTradition));
+  });
+  container.querySelectorAll('[data-pick-spell]').forEach(btn => {
+    btn.addEventListener('click', () => selectSpellWithPicker(btn.dataset.pickSpell));
+  });
+  container.querySelectorAll('[data-pick-free-spell]').forEach(btn => {
+    btn.addEventListener('click', () => selectFreeSpellWithPicker(btn.dataset.pickFreeSpell));
+  });
+}
+
+/**
+ * Zatwierdza wybór tradycji dokonany w popupie. Poznanie tradycji przyznaje
+ * automatycznie jedno jej zaklęcie kręgu 0 ("Poznawanie tradycji", PG), więc
+ * zamiast zamykać popup, przechodzi wprost do wyboru tego darmowego
+ * zaklęcia - albo, gdy tradycja ma tylko jedno zaklęcie kręgu 0, wybiera je
+ * automatycznie, bez dodatkowego kliknięcia.
+ */
+function selectTraditionWithPicker(tradycjaId) {
+  const atomId = magicPicker.atomId;
+  const target = magicPicker.target || 'magia';
+
+  if (target === 'ekwipunek') {
+    const wybor = equipmentChoices[atomId] || {};
+    equipmentChoices[atomId] = { ...wybor, typ: 'zwoj_zaklecie', tradycjaId, spellId: null };
+    const circleZero = getCircleZeroSpells(tradycjaId);
+    if (circleZero.length === 1) {
+      equipmentChoices[atomId].spellId = circleZero[0].id;
+      closeMagicPicker();
+    } else if (circleZero.length > 1) {
+      openFreeSpellPicker(atomId, tradycjaId, 'ekwipunek');
+    } else {
+      closeMagicPicker();
+    }
+    renderEquipmentSection();
+    return;
+  }
+
+  const wybor = magicChoices[atomId] || {};
+  magicChoices[atomId] = { ...wybor, mode: wybor.mode || 'tradycja', tradycjaId, darmowyZaklecieId: null };
+
+  const circleZero = getCircleZeroSpells(tradycjaId);
+  if (circleZero.length === 1) {
+    magicChoices[atomId].darmowyZaklecieId = circleZero[0].id;
+    closeMagicPicker();
+  } else if (circleZero.length > 1) {
+    openFreeSpellPicker(atomId, tradycjaId);
+  } else {
+    closeMagicPicker();
+  }
+  renderSpellsSection();
+}
+
+/** Zatwierdza wybór zaklęcia dokonany w popupie, zamyka go i przerenderowuje Krok 6. */
+function selectSpellWithPicker(spellId) {
+  const atomId = magicPicker.atomId;
+  const wybor = magicChoices[atomId] || {};
+  magicChoices[atomId] = { ...wybor, mode: wybor.mode || 'zaklecie', spellId };
+  delete magicRiskResults[atomId];
+  closeMagicPicker();
+  renderSpellsSection();
+}
+
+/** Zatwierdza wybór darmowego zaklęcia kręgu 0 dokonany w popupie, zamyka go i przerenderowuje Krok 6. */
+function selectFreeSpellWithPicker(spellId) {
+  const atomId = magicPicker.atomId;
+  const target = magicPicker.target || 'magia';
+
+  if (target === 'ekwipunek') {
+    const wybor = equipmentChoices[atomId] || {};
+    equipmentChoices[atomId] = { ...wybor, spellId };
+    closeMagicPicker();
+    renderEquipmentSection();
+    return;
+  }
+
+  const wybor = magicChoices[atomId] || {};
+  magicChoices[atomId] = { ...wybor, darmowyZaklecieId: spellId };
+  closeMagicPicker();
+  renderSpellsSection();
+}
+
+/** Czyści wszystkie wybory magii dokonane w Kroku 6. */
+function resetMagic() {
+  magicChoices = {};
+  magicRiskResults = {};
+  magicBlackMagicTooTraditions = new Set();
+  renderSpellsSection();
+}
+
+// ========== KROK 7: EKWIPUNEK (Zamożność, wyposażenie startowe, sklep) ==========
+
+/** Rzuca podaną liczbą kostek k6 (zapis "NkM", tylko k6 używane w tabelach zamożności) i zwraca sumę oczek. */
+function rollDice(save) {
+  const [iloscKostekTxt, scianTxt] = save.split('k');
+  const diceCount = parseInt(iloscKostekTxt, 10) || 1;
+  const faces = parseInt(scianTxt, 10) || 6;
+  let sum = 0;
+  for (let i = 0; i < diceCount; i++) sum += Math.floor(Math.random() * faces) + 1;
+  return sum;
+}
+
+/** Renderuje całą sekcję Kroku 7 (Zamożność, wyposażenie startowe, sklep). */
+function renderEquipmentSection() {
+  renderWealthGrid();
+  renderGearStarting();
+  renderShopSection();
+}
+
+/** Renderuje kafelki wyboru Zamożności wraz z ewentualnym wynikiem rzutu 3k6. */
+function renderWealthGrid() {
+  const grid = document.getElementById('wealth-grid');
+  const resultEl = document.getElementById('wealth-roll');
+  if (!grid) return;
+
+  if (resultEl) {
+    resultEl.textContent = equipmentWealthResult != null
+      ? t('equipment.wealthRoll3d6', { result: equipmentWealthResult })
+      : '';
+  }
+
+  grid.innerHTML = Object.values(WEALTH).map(z => {
+    const range = z.zakres3k6[0] === z.zakres3k6[1] ? `${z.zakres3k6[0]}` : `${z.zakres3k6[0]}–${z.zakres3k6[1]}`;
+    const selected = equipmentWealthId === z.id;
+    return `
+      <button type="button" class="picker-tile zamoznosc-tile ${selected ? 'selected' : ''}" data-select-wealth="${z.id}">
+        <div class="picker-tile-header">
+          <span>${z.nazwa}</span>
+          ${selected ? `<span class="wealth-badge">${icon('check')} Wybrano</span>` : ''}
+        </div>
+        <div class="picker-tile-meta">${t('equipment.range3d6', { range })}</div>
+        <p class="picker-tile-description">${z.opis}</p>
+      </button>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('[data-select-wealth]').forEach(btn => {
+    btn.addEventListener('click', () => wybierzZamoznosc(btn.dataset.selectWealth, null));
+  });
+}
+
+/** Losuje Zamożność rzutem 3k6 i wybiera odpowiedni poziom z tabeli. */
+function randomizeWealth() {
+  const wynik = rollDice('3k6');
+  const wealthentry = getWealthForRoll(wynik);
+  if (wealthentry) wybierzZamoznosc(wealthentry.id, wynik);
+}
+
+/**
+ * Ustawia poziom Zamożności (ręcznie klikniętej albo wylosowanej) i losuje
+ * startową gotówkę (PG: "sakiewka z NkM ..."). Czyści wybory wyposażenia
+ * startowego i sklepu, bo należą do poprzedniego poziomu zamożności.
+ */
+function wybierzZamoznosc(zamoznoscId, resultRoll) {
+  const wealthentry = WEALTH[zamoznoscId];
+  if (!wealthentry) return;
+  equipmentWealthId = zamoznoscId;
+  equipmentWealthResult = resultRoll;
+  equipmentStartingCashRoll = rollDice(wealthentry.pieniadze.kosci);
+  equipmentChoices = {};
+  equipmentSold = [];
+  equipmentPurchased = [];
+  equipmentDescriptionExpanded = new Set();
+  renderEquipmentSection();
+}
+
+/** Czyści wybraną Zamożność i cały zależny od niej stan ekwipunku. */
+function resetWealth() {
+  equipmentWealthId = null;
+  equipmentWealthResult = null;
+  equipmentStartingCashRoll = null;
+  equipmentChoices = {};
+  equipmentSold = [];
+  equipmentPurchased = [];
+  equipmentDescriptionExpanded = new Set();
+  renderEquipmentSection();
+}
+
+/**
+ * Oblicza pełny, aktualny stan ekwipunku: rozwiązane pozycje startowe
+ * (gwarantowane + wybrane), sprzedane pozycje, zakupione pozycje i
+ * dostępną gotówkę (startowa sakiewka + wpływy ze sprzedaży + wylosowane
+ * srebrniki z Kroku 2, jeśli postać ma poziom > 0 - PG: "Wyposażenie na
+ * wyższych poziomach" - minus wydatki na zakupy). Zwraca `null`, gdy
+ * Zamożność nie została jeszcze wybrana.
+ */
+function calculateStateEquipment() {
+  if (!equipmentWealthId) return null;
+  const wealthentry = WEALTH[equipmentWealthId];
+  const guaranteed = getGuaranteedEntries(equipmentWealthId);
+  const atoms = calculateAtomsGear(equipmentWealthId);
+
+  const startingEntries = [];
+  guaranteed.forEach((p, idx) => {
+    startingEntries.push({ klucz: `g${idx}`, itemId: p.id || null, tekst: p.tekst || null, ilosc: p.ilosc || 1 });
+  });
+  atoms.forEach(atom => {
+    const wybor = equipmentChoices[atom.id];
+    if (!wybor) return;
+    if (wybor.typ === 'zwoj_zaklecie' && wybor.tradycjaId) {
+      startingEntries.push({
+        klucz: atom.id, itemId: null, ilosc: 1, atomId: atom.id, sprzedawalny: false,
+        zwojZaklecie: { tradycjaId: wybor.tradycjaId, spellId: wybor.spellId || null }
+      });
+    } else if (wybor.itemId) {
+      startingEntries.push({ klucz: atom.id, itemId: wybor.itemId, ilosc: 1, atomId: atom.id });
+    }
+  });
+
+  const soldSet = new Set(equipmentSold);
+  const ownedStarting = startingEntries.filter(p => !soldSet.has(p.klucz));
+  const soldStarting = startingEntries.filter(p => soldSet.has(p.klucz));
+
+  const unitCash = wealthentry.pieniadze.jednostka;
+  const startingCashCopperbits = equipmentStartingCashRoll != null
+    ? equipmentStartingCashRoll * CONVERTER_TO_COPPERBITS[unitCash]
+    : 0;
+  const withSaleCopperbits = soldStarting.reduce((sum, p) => {
+    if (!p.itemId) return sum;
+    return sum + priceBuybackCopperbits(getItem(p.itemId)?.cena) * p.ilosc;
+  }, 0);
+  const tooPurchasesCopperbits = equipmentPurchased.reduce((sum, z) => {
+    return sum + priceOnCopperbits(getItem(z.itemId)?.cena) * z.ilosc;
+  }, 0);
+  const withSilverLevel = (randomizedSilver || 0) * CONVERTER_TO_COPPERBITS.sr;
+
+  const cashCopperbits = startingCashCopperbits + withSaleCopperbits + withSilverLevel - tooPurchasesCopperbits;
+
+  const purchasedEntries = equipmentPurchased.map((z, idx) => ({ klucz: `z${idx}`, itemId: z.itemId, ilosc: z.ilosc }));
+
+  return {
+    wealthentry, atoms, guaranteed,
+    ownedStarting, soldStarting, purchasedEntries,
+    startingCashCopperbits, withSaleCopperbits, tooPurchasesCopperbits, withSilverLevel,
+    cashCopperbits
+  };
+}
+
+/** Renderuje sekcję wyposażenia startowego: gwarantowane pozycje i karty wyboru (jedna karta = jeden atom). */
+function renderGearStarting() {
+  const container = document.getElementById('starting-gear-section');
+  if (!container) return;
+
+  if (!equipmentWealthId) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const state = calculateStateEquipment();
+  const guaranteedHtml = state.guaranteed.map(p => {
+    const item = p.id ? getItem(p.id) : null;
+    const nazwa = item?.nazwa || p.id || p.tekst;
+    const ilosc = p.ilosc && p.ilosc > 1 ? ` (${p.ilosc}×)` : '';
+    const stats = item ? formatStatsItem(item) : null;
+    return `<li${stats ? ` title="${stats}"` : ''}>${nazwa}${ilosc}</li>`;
+  }).join('');
+
+  const atomsHtml = state.atoms.map(atom => renderCardGear(atom)).join('');
+
+  container.innerHTML = `
+    <h4>${icon('backpack')} ${t('equipment.startingGearHeading', { wealth: state.wealthentry.nazwa })}</h4>
+    <p class="hint">${t('summary.guaranteedColon')} <ul class="guaranteed-list">${guaranteedHtml}</ul></p>
+    ${atomsHtml}
+    <p class="hint">${t('equipment.startingCashColon')} <strong>${formatCopperbits(state.startingCashCopperbits)}</strong> ${t('equipment.pouchWith', { dice: state.wealthentry.pieniadze.kosci, unit: t(`equipment.unit${{ okr: 'Copperbits', md: 'Coppers' }[state.wealthentry.pieniadze.jednostka] || 'Silvers'}`) })}</p>
+    ${state.wealthentry.dodatkowyOpis ? `<p class="hint">${state.wealthentry.dodatkowyOpis}</p>` : ''}
+  `;
+
+  container.querySelectorAll('[data-select-starting]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectItemStarting(btn.dataset.selectStarting, btn.dataset.itemId);
+    });
+  });
+  container.querySelectorAll('[data-open-scroll]').forEach(btn => {
+    btn.addEventListener('click', () => openTraditionPicker(btn.dataset.openScroll, ['dowolna'], new Set(), 'ekwipunek'));
+  });
+}
+
+/** Renderuje jedną kartę wyboru wyposażenia startowego (wybor_przedmiotu albo wybor_dodatkowy). */
+function renderCardGear(atom) {
+  const wybor = equipmentChoices[atom.id];
+
+  if (atom.rodzaj === 'wybor_przedmiotu') {
+    const tiles = atom.opcje.map(itemId => {
+      const item = getItem(itemId);
+      const active = wybor?.itemId === itemId;
+      const stats = formatStatsItem(item);
+      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-select-starting="${atom.id}" data-item-id="${itemId}"${stats ? ` title="${stats}"` : ''}>${item?.nazwa || itemId}</button>`;
+    }).join('');
+    const selectedItem = wybor?.itemId ? getItem(wybor.itemId) : null;
+    const statsSelected = selectedItem ? formatStatsItem(selectedItem) : null;
+    return `
+      <div class="magic-slot-card ${wybor?.itemId ? 'complete' : ''}">
+        <p class="magic-slot-desc">Wybierz jedno: ${atom.opcje.map(id => getItem(id)?.nazwa || id).join(' / ')}${atom.opisWyboru ? ` (${atom.opisWyboru})` : ''}</p>
+        <div class="magic-slot-mode-toggle">${tiles}</div>
+        ${statsSelected ? `<p class="magic-slot-status ok">${selectedItem.nazwa}: ${statsSelected}</p>` : ''}
+      </div>
+    `;
+  }
+
+  // wybor_dodatkowy
+  const tiles = atom.opcje.map(opcja => {
+    const active = opcja.typ === 'zwoj_zaklecie' ? wybor?.typ === 'zwoj_zaklecie' : (wybor?.typ === 'przedmiot' && wybor?.itemId === opcja.id);
+    if (opcja.typ === 'zwoj_zaklecie') {
+      return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-open-scroll="${atom.id}">${opcja.etykieta}</button>`;
+    }
+    const stats = formatStatsItem(getItem(opcja.id));
+    return `<button type="button" class="btn-secondary small ${active ? 'active' : ''}" data-select-starting="${atom.id}" data-item-id="${opcja.id}"${stats ? ` title="${stats}"` : ''}>${opcja.etykieta}</button>`;
+  }).join('');
+
+  let descriptionResult = '';
+  if (wybor?.typ === 'zwoj_zaklecie' && wybor.tradycjaId) {
+    const traditionName = TRADITIONS[wybor.tradycjaId]?.nazwa || wybor.tradycjaId;
+    const spell = wybor.spellId ? SPELLS.find(s => s.id === wybor.spellId) : null;
+    descriptionResult = `<p class="magic-slot-status ok">Wybrano: ${traditionName}${spell ? ` - ${spell.nazwa}` : ' (wybierz zaklęcie kręgu 0)'}</p>`;
+  } else if (wybor?.typ === 'przedmiot' && wybor.itemId) {
+    const selectedItem = getItem(wybor.itemId);
+    const statsSelected = selectedItem ? formatStatsItem(selectedItem) : null;
+    if (statsSelected) descriptionResult = `<p class="magic-slot-status ok">${selectedItem.nazwa}: ${statsSelected}</p>`;
+  }
+
+  return `
+    <div class="magic-slot-card ${wybor ? 'complete' : ''}">
+      <p class="magic-slot-desc">${atom.opis}</p>
+      <div class="magic-slot-mode-toggle">${tiles}</div>
+      ${descriptionResult}
+    </div>
+  `;
+}
+
+/** Zatwierdza wybór w karcie "wybór jednego przedmiotu" (np. pałka/proca) wyposażenia startowego. */
+function selectItemStarting(atomId, itemId) {
+  equipmentChoices[atomId] = { typ: 'przedmiot', itemId };
+  renderEquipmentSection();
+}
+
+/** Renderuje sekcję sklepu: aktualna gotówka, posiadane przedmioty (z opcją sprzedaży) i katalog zakupów. */
+function renderShopSection() {
+  const container = document.getElementById('shop-section');
+  if (!container) return;
+
+  if (!equipmentWealthId) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const state = calculateStateEquipment();
+
+  const renderRows = (entries, zrodlo) => entries.map(p => {
+    const nazwa = p.zwojZaklecie
+      ? `Zwój (${TRADITIONS[p.zwojZaklecie.tradycjaId]?.nazwa || p.zwojZaklecie.tradycjaId}${p.zwojZaklecie.spellId ? `: ${SPELLS.find(s => s.id === p.zwojZaklecie.spellId)?.nazwa || ''}` : ''})`
+      : (p.itemId ? (getItem(p.itemId)?.nazwa || p.itemId) : p.tekst);
+    const item = p.itemId ? getItem(p.itemId) : null;
+    const canSell = zrodlo === 'startowe' ? (item && item.cena) : true;
+    const priceBuyback = item ? formatCopperbits(priceBuybackCopperbits(item.cena) * p.ilosc) : null;
+    const ilosc = p.ilosc > 1 ? ` ×${p.ilosc}` : '';
+    const stats = item ? formatStatsItem(item) : null;
+    const hasDescription = !!item?.opis;
+    const expanded = equipmentDescriptionExpanded.has(p.klucz);
+    const row = `
+      <tr>
+        <td>${nazwa}${ilosc} ${item ? renderSourceTag(item.zrodlo) : ''}</td>
+        <td>${stats || '—'}</td>
+        <td>${item ? formatPrice(item.cena) : '—'}</td>
+        <td class="equipment-table-actions">
+          ${hasDescription ? `<button type="button" class="icon-btn" data-info="${p.klucz}" title="${t('equipment.showDescription')}">${icon('info')}</button>` : ''}
+          ${canSell ? `<button type="button" class="icon-btn" data-sell="${p.klucz}" data-zrodlo="${zrodlo}" title="${zrodlo === 'startowe' ? `Sprzedaj za ${priceBuyback}` : 'Zwróć (pełny zwrot)'}">${zrodlo === 'startowe' ? icon('purse') : icon('undo')}</button>` : ''}
+        </td>
+      </tr>
+    `;
+    const rowDescription = hasDescription
+      ? `<tr class="equipment-table-desc-row" ${expanded ? '' : 'hidden'}><td colspan="4">${item.opis}</td></tr>`
+      : '';
+    return row + rowDescription;
+  }).join('');
+
+  const allEntries = [...state.ownedStarting, ...state.purchasedEntries];
+  const tableHtml = allEntries.length ? `
+    <div class="equipment-table-wrap">
+      <table class="equipment-table">
+        <thead><tr><th>${t('equipment.itemHeading')}</th><th>${t('equipment.statsHeading')}</th><th>${t('equipment.priceHeading')}</th><th></th></tr></thead>
+        <tbody id="ekwipunek-posiadane-list">
+          ${renderRows(state.ownedStarting, 'startowe')}
+          ${renderRows(state.purchasedEntries, 'kupione')}
+        </tbody>
+      </table>
+    </div>
+  ` : '<p class="hint">Brak przedmiotów.</p>';
+
+  container.innerHTML = `
+    <div class="flex-row-between">
+      <h4>${icon('stall')} ${t('equipment.shopHeading')}</h4>
+      <span id="gotowka-summary" class="inline-summary"><strong>${t('equipment.cashWithValue', { amount: formatCopperbits(state.cashCopperbits) })}</strong></span>
+    </div>
+    ${state.withSilverLevel > 0 ? `<p class="hint">Zawiera ${randomizedSilver} wylosowanych srebrników z Kroku 2 (poziom ${selectedLevel}).</p>` : ''}
+
+    <div class="flex-row-between">
+      <h5>${t('equipment.yourItems')}</h5>
+    </div>
+    ${tableHtml}
+
+    ${state.soldStarting.length ? `
+      <div class="flex-row-between"><h5>Sprzedane</h5></div>
+      <div class="equipment-tag-list">${state.soldStarting.map(p => `<span class="equipment-tag sold">${p.itemId ? getItem(p.itemId)?.nazwa : p.tekst}</span>`).join('')}</div>
+    ` : ''}
+
+    <div class="flex-row-between">
+      <h5>${t('step7.catalogHeading')}</h5>
+      <button type="button" class="btn-primary small" id="btn-open-shop">${icon('cart')} ${t('equipment.browseCatalog')}</button>
+    </div>
+  `;
+
+  container.querySelectorAll('[data-sell]').forEach(btn => {
+    btn.addEventListener('click', () => sellEntries(btn.dataset.sell, btn.dataset.zrodlo));
+  });
+  container.querySelectorAll('[data-info]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const klucz = btn.dataset.info;
+      if (equipmentDescriptionExpanded.has(klucz)) equipmentDescriptionExpanded.delete(klucz);
+      else equipmentDescriptionExpanded.add(klucz);
+      renderShopSection();
+    });
+  });
+  document.getElementById('btn-open-shop')?.addEventListener('click', () => openEquipmentPicker());
+}
+
+/** Sprzedaje (pozycja startowa, za połowę ceny) albo zwraca (pozycja kupiona, pełny zwrot) daną pozycję ekwipunku. */
+function sellEntries(klucz, zrodlo) {
+  if (zrodlo === 'startowe') {
+    if (!equipmentSold.includes(klucz)) equipmentSold.push(klucz);
+  } else if (zrodlo === 'kupione') {
+    const idx = parseInt(klucz.replace('z', ''), 10);
+    const purchase = equipmentPurchased[idx];
+    if (purchase) {
+      if (purchase.ilosc > 1) purchase.ilosc -= 1;
+      else equipmentPurchased.splice(idx, 1);
+    }
+  }
+  renderEquipmentSection();
+}
+
+/**
+ * Stan aktualnie otwartego popupu katalogu sklepu (Krok 7) - `null`, gdy
+ * popup jest zamknięty.
+ */
+let equipmentPicker = null;
+
+/** Otwiera popup katalogu przedmiotów do kupienia (kafelki z wyszukiwaniem i filtrami kategorii/rzadkości). */
+function openEquipmentPicker() {
+  equipmentPicker = { search: '', filterKategoria: null, filterRzadkosc: null, sortBy: 'nazwa', sortDir: 'asc', ukryjNiedostepne: true };
+  const overlay = document.getElementById('equipment-picker-overlay');
+  if (overlay) overlay.hidden = false;
+  renderEquipmentPickerBody();
+}
+
+/** Zamyka popup katalogu sklepu. */
+function closeEquipmentPicker() {
+  const overlay = document.getElementById('equipment-picker-overlay');
+  if (overlay) overlay.hidden = true;
+  equipmentPicker = null;
+}
+
+/** Renderuje zawartość popupu katalogu: statyczne pole wyszukiwania + dynamiczny obszar z chipami i kafelkami. */
+function renderEquipmentPickerBody() {
+  const body = document.getElementById('equipment-picker-body');
+  if (!body || !equipmentPicker) return;
+  body.innerHTML = `
+    <input type="text" class="picker-search" id="equipment-picker-search-input" placeholder="${t('equipment.searchItemShort')}">
+    <div id="equipment-picker-dynamic"></div>
+  `;
+  const input = document.getElementById('equipment-picker-search-input');
+  input.value = equipmentPicker.search;
+  input.addEventListener('input', () => {
+    equipmentPicker.search = input.value;
+    rerenderEquipmentPickerDynamic();
+  });
+  input.focus();
+  rerenderEquipmentPickerDynamic();
+}
+
+/** Przerenderowuje chipy filtrów i siatkę kafelków katalogu (pole wyszukiwania zostaje niezmienione). */
+function rerenderEquipmentPickerDynamic() {
+  const el = document.getElementById('equipment-picker-dynamic');
+  if (!el || !equipmentPicker) return;
+
+  const { search, filterKategoria, filterRzadkosc, sortBy, sortDir, ukryjNiedostepne } = equipmentPicker;
+  let wynik = EQUIPMENT.filter(i => i.cena && isSourceEnabled(i.zrodlo));
+  if (filterKategoria) wynik = wynik.filter(i => i.kategoria === filterKategoria);
+  if (filterRzadkosc) wynik = wynik.filter(i => i.rzadkosc === filterRzadkosc);
+  const searchLower = search.trim().toLowerCase();
+  if (searchLower) wynik = wynik.filter(i => `${i.nazwa} ${i.opis || ''}`.toLowerCase().includes(searchLower));
+
+  const categoriesChips = CATEGORY_CODES_EQ
+    .filter(k => EQUIPMENT.some(i => i.kategoria === k && i.cena && isSourceEnabled(i.zrodlo)))
+    .map(k => `<button type="button" class="picker-filter-chip ${filterKategoria === k ? 'active' : ''}" data-filter-category="${k}">${t(`equipment.categories.${k}`)}</button>`)
+    .join('');
+  const rarityChips = RARITY_CODES
+    .map(r => `<button type="button" class="picker-filter-chip ${filterRzadkosc === r ? 'active' : ''}" data-filter-rarity="${r}">${t(`equipment.rarity.${r}`)}</button>`)
+    .join('');
+  const sortChips = SORT_CODES
+    .map(s => `<button type="button" class="picker-filter-chip ${sortBy === s ? 'active' : ''}" data-sort-by="${s}">${t(`equipment.sort.${s}`)}${sortBy === s ? ` ${sortDir === 'desc' ? icon('chevron-down') : icon('chevron-up')}` : ''}</button>`)
+    .join('');
+
+  const state = calculateStateEquipment();
+  const ownedIds = state
+    ? new Set([...state.ownedStarting, ...state.purchasedEntries].filter(p => p.itemId).map(p => p.itemId))
+    : new Set();
+
+  let resultToDisplay = sortItems(wynik, sortBy, sortDir).map(i => {
+    const tooExpensive = !state || state.cashCopperbits < priceOnCopperbits(i.cena);
+    const owned = ownedIds.has(i.id);
+    return { i, tooExpensive, owned, niedostepny: tooExpensive || owned };
+  });
+  const allMatching = resultToDisplay.length;
+  if (ukryjNiedostepne) resultToDisplay = resultToDisplay.filter(w => !w.niedostepny);
+
+  const tiles = resultToDisplay
+    .map(({ i, tooExpensive, owned, niedostepny }) => {
+      const stats = formatStatsItem(i);
+      const reason = owned ? t('equipment.alreadyOwned') : (tooExpensive ? t('equipment.notEnoughCash') : '');
+      return `
+      <button type="button" class="picker-tile ${niedostepny ? 'disabled' : ''}" ${niedostepny ? 'disabled' : ''} data-buy="${i.id}">
+        <div class="picker-tile-header">
+          <span>${i.nazwa}</span>
+          ${renderSourceTag(i.zrodlo)}
+        </div>
+        <div class="picker-tile-meta">${t(`equipment.categories.${i.kategoria}`)} · ${i.rzadkosc ? t(`equipment.rarity.${i.rzadkosc}`) : '—'} · ${formatPrice(i.cena)}</div>
+        ${stats ? `<div class="picker-tile-stats">${stats}</div>` : ''}
+        ${i.opis ? `<p class="picker-tile-description">${i.opis}</p>` : ''}
+        ${reason ? `<div class="picker-tile-taken">${reason}</div>` : ''}
+      </button>
+    `;
+    }).join('') || '<p class="hint">Brak przedmiotów spełniających kryteria wyszukiwania.</p>';
+
+  el.innerHTML = `
+    <div class="picker-filter-chips">${categoriesChips}</div>
+    <div class="picker-filter-chips">${rarityChips}</div>
+    <div class="picker-filter-chips picker-sort-row"><span class="picker-sort-label">${t('equipment.sortColon')}</span>${sortChips}</div>
+    <div class="picker-toolbar">
+      <p class="picker-results-count hint">Znaleziono ${allMatching} przedmiotów${ukryjNiedostepne && allMatching !== resultToDisplay.length ? ` (${resultToDisplay.length} dostępnych)` : ''}</p>
+      <label class="picker-toggle-label">
+        <input type="checkbox" id="equipment-picker-hide-unavailable" ${ukryjNiedostepne ? 'checked' : ''}>
+        ${t('equipment.hideUnavailable')}
+      </label>
+    </div>
+    <div class="picker-tile-grid">${tiles}</div>
+  `;
+
+  document.getElementById('equipment-picker-hide-unavailable')?.addEventListener('change', (e) => {
+    equipmentPicker.ukryjNiedostepne = e.target.checked;
+    rerenderEquipmentPickerDynamic();
+  });
+
+  el.querySelectorAll('[data-filter-category]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.filterCategory;
+      equipmentPicker.filterKategoria = equipmentPicker.filterKategoria === val ? null : val;
+      rerenderEquipmentPickerDynamic();
+    });
+  });
+  el.querySelectorAll('[data-filter-rarity]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.filterRarity;
+      equipmentPicker.filterRzadkosc = equipmentPicker.filterRzadkosc === val ? null : val;
+      rerenderEquipmentPickerDynamic();
+    });
+  });
+  el.querySelectorAll('[data-sort-by]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.sortBy;
+      if (equipmentPicker.sortBy === val) {
+        equipmentPicker.sortDir = equipmentPicker.sortDir === 'desc' ? 'asc' : 'desc';
+      } else {
+        equipmentPicker.sortBy = val;
+        equipmentPicker.sortDir = 'asc';
+      }
+      rerenderEquipmentPickerDynamic();
+    });
+  });
+  el.querySelectorAll('[data-buy]').forEach(btn => {
+    btn.addEventListener('click', () => buyItemFromShop(btn.dataset.buy));
+  });
+}
+
+/** Kupuje przedmiot z katalogu (jeśli starcza gotówki) i przerenderowuje sklep + katalog. */
+function buyItemFromShop(itemId) {
+  const item = getItem(itemId);
+  if (!item) return;
+  const state = calculateStateEquipment();
+  if (!state || state.cashCopperbits < priceOnCopperbits(item.cena)) return;
+
+  const existing = equipmentPurchased.find(z => z.itemId === itemId);
+  if (existing) existing.ilosc += 1;
+  else equipmentPurchased.push({ itemId, ilosc: 1 });
+
+  renderShopSection();
+  rerenderEquipmentPickerDynamic();
+}
+
+// ========== BOCZNE MENU (nowa/wczytaj/wylosuj postać) ==========
+
+/**
+ * Jeden współdzielony element podpowiedzi (tooltip) dla ikon bocznego menu -
+ * budowany w JS zamiast natywnego atrybutu `title`, żeby mieć pełną kontrolę
+ * nad wyglądem i pozycją (natywne podpowiedzi przeglądarki bywają wolne,
+ * obcięte albo słabo czytelne na ciemnym tle aplikacji).
+ */
+let tooltipEl = null;
+
+/** Tworzy (jednorazowo) pływający element podpowiedzi i dopina obsługę hover/focus do elementów z atrybutem `data-tooltip`. */
+function initializeTooltips() {
+  if (!tooltipEl) {
+    tooltipEl = document.createElement('div');
+    tooltipEl.className = 'js-tooltip';
+    tooltipEl.setAttribute('role', 'tooltip');
+    document.body.appendChild(tooltipEl);
+  }
+  document.querySelectorAll('[data-tooltip]').forEach(el => {
+    if (el.dataset.tooltipBound) return;
+    el.dataset.tooltipBound = 'true';
+    el.addEventListener('mouseenter', () => showTooltip(el));
+    el.addEventListener('mouseleave', hideTooltip);
+    el.addEventListener('focus', () => showTooltip(el));
+    el.addEventListener('blur', hideTooltip);
+  });
+}
+
+/** Pokazuje podpowiedź obok wskazanego elementu, dobierając stronę (prawo/lewo/góra), żeby zmieścić się w oknie. */
+function showTooltip(el) {
+  const tekst = el.dataset.tooltip;
+  if (!tooltipEl || !tekst) return;
+  tooltipEl.textContent = tekst;
+  tooltipEl.classList.add('visible');
+
+  const rect = el.getBoundingClientRect();
+  const preferTop = window.matchMedia('(max-width: 860px)').matches;
+
+  requestAnimationFrame(() => {
+    const tw = tooltipEl.offsetWidth;
+    const th = tooltipEl.offsetHeight;
+    let left; let top;
+    if (preferTop) {
+      // Boczne menu jest poziomym paskiem u dołu ekranu - podpowiedź nad ikoną.
+      left = rect.left + rect.width / 2 - tw / 2;
+      top = rect.top - th - 10;
+    } else {
+      // Boczne menu jest pionową listwą - podpowiedź z prawej strony ikony.
+      left = rect.right + 10;
+      top = rect.top + rect.height / 2 - th / 2;
+      if (left + tw > window.innerWidth - 8) left = rect.left - tw - 10;
+    }
+    left = Math.min(Math.max(8, left), window.innerWidth - tw - 8);
+    top = Math.min(Math.max(8, top), window.innerHeight - th - 8);
+    tooltipEl.style.left = `${left}px`;
+    tooltipEl.style.top = `${top}px`;
+  });
+}
+
+/** Ukrywa aktualnie widoczną podpowiedź. */
+function hideTooltip() {
+  tooltipEl?.classList.remove('visible');
+}
+
+/**
+ * Resetuje kreator do stanu początkowego i wraca do Kroku 1. W przeciwieństwie
+ * do zwykłego "Wyczyść" w Kroku 1 (resetujWyborPochodzenia()), zeruje też
+ * dalsze kroki (profesje, kurioza, magia, ekwipunek) i odrywa bieżącą pracę
+ * od dotychczasowego zapisu w cache, żeby kolejny zapis (po dotarciu do
+ * Kroku 8) trafił do nowego wpisu zamiast nadpisać poprzednią postać.
+ */
+function newCharacter() {
+  resetChoiceOrigin();
+  renderProfessionsSection();
+  renderCuriosSection();
+  renderSpellsSection();
+  renderEquipmentSection();
+  const importFeedback = document.getElementById('import-feedback');
+  if (importFeedback) importFeedback.innerHTML = '';
+  const missingItemsWarning = document.getElementById('missing-items-warning');
+  if (missingItemsWarning) missingItemsWarning.innerHTML = '';
+  const finalFeedback = document.getElementById('final-actions-feedback');
+  if (finalFeedback) {
+    finalFeedback.className = 'final-actions-feedback';
+    finalFeedback.textContent = '';
+  }
+  currentSaveCacheId = null;
+  lastSavedSnapshot = null;
+  characterName = '';
+  const nameInput = document.getElementById('character-name');
+  if (nameInput) nameInput.value = '';
+  showStep(1);
+  updatePreviewCharacter();
+}
+
+/** Otwiera popup z listą postaci zapisanych w cache przeglądarki (localStorage). */
+function openLoadCharacterPopup() {
+  const overlay = document.getElementById('load-character-overlay');
+  if (!overlay) return;
+  overlay.hidden = false;
+  renderLoadCharacterList();
+}
+
+/** Zamyka popup listy zapisanych postaci. */
+function closeLoadCharacterPopup() {
+  const overlay = document.getElementById('load-character-overlay');
+  if (overlay) overlay.hidden = true;
+}
+
+/** Renderuje listę zapisanych postaci (najnowsze na górze) w popupie "Wczytaj postać". */
+function renderLoadCharacterList() {
+  const body = document.getElementById('load-character-body');
+  if (!body) return;
+
+  const all = Object.values(getSavedCharacters()).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
+
+  if (all.length === 0) {
+    body.innerHTML = '<p class="hint">Brak postaci zapisanych w pamięci tej przeglądarki. Postać zapisujesz przyciskiem "Zapisz postać" w Kroku 8 (Podgląd); zapis powstaje też automatycznie przy imporcie z pliku JSON.</p>';
+    return;
+  }
+
+  body.innerHTML = `
+    <div class="flex-row-between">
+      <p class="hint">${t('messages.savedCharacterCount', { count: all.length })}</p>
+      <button type="button" class="section-reset-btn" id="btn-clear-saved-characters" title="${t('messages.saves.clearAllTitle')}">${t('messages.saves.clearAll')}</button>
+    </div>
+    <div class="known-spells-list">
+      ${all.map(entry => {
+    const originId = entry.data?.wybory?.pochodzenie;
+    const pochodzenie = availableOrigin.find(p => p.id === originId)?.nazwa || originId || 'Nieznane pochodzenie';
+    const poziom = entry.data?.wybory?.poziom ?? '?';
+    const imie = entry.data?.wybory?.imie;
+    const data = entry.savedAt ? new Date(entry.savedAt).toLocaleString(localeTag()) : '';
+    return `
+          <div class="selected-item">
+            <span>${imie ? `<strong>${imie}</strong> - ` : ''}${pochodzenie}, poziom ${poziom} <em>(zapisano ${data})</em></span>
+            <button type="button" class="btn-secondary small" data-load-character="${entry.id}">Wczytaj</button>
+          </div>
+        `;
+  }).join('')}
+    </div>
+  `;
+
+  body.querySelectorAll('[data-load-character]').forEach(btn => {
+    btn.addEventListener('click', () => loadCharacterWithCache(btn.dataset.loadCharacter));
+  });
+  document.getElementById('btn-clear-saved-characters')?.addEventListener('click', clearSavedCharactersWithConfirm);
+}
+
+/** Czyści (po potwierdzeniu) wszystkie postacie zapisane w pamięci przeglądarki i odświeża listę w popupie. */
+function clearSavedCharactersWithConfirm() {
+  if (!confirm(t('messages.saves.confirmClearAll'))) return;
+  clearSavedCharacters();
+  renderLoadCharacterList();
+}
+
+/** Wczytuje wybraną zapisaną postać z cache i podpina jej id, żeby dalsze zmiany nadpisywały ten sam wpis. */
+async function loadCharacterWithCache(id) {
+  const entry = getSavedCharacters()[id];
+  if (!entry) return;
+  closeLoadCharacterPopup();
+  currentSaveCacheId = id;
+  try {
+    await importCharacter(entry.data);
+    lastSavedSnapshot = snapshotForComparison(entry.data);
+    showImportMessage('success', `${icon('check')} Postać została wczytana z pamięci przeglądarki. Przejdź przez kolejne kroki (albo od razu do Kroku 8 z górnego menu), by zweryfikować wynik.`);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(t('messages.loadFromCacheError'), err);
+    showImportMessage('error', t('messages.saves.loadUnexpectedError', { message: err.message }));
+  }
+}
+
+/** Otwiera popup wyboru poziomu przed losowaniem całej postaci (jedyna rzecz, którą wybiera użytkownik). */
+function openRandomizeCharacterPopup() {
+  const overlay = document.getElementById('randomize-character-overlay');
+  if (!overlay) return;
+  overlay.hidden = false;
+  renderRandomizeLevelGrid();
+}
+
+/** Zamyka popup wyboru poziomu przed losowaniem całej postaci. */
+function closeRandomizeCharacterPopup() {
+  const overlay = document.getElementById('randomize-character-overlay');
+  if (overlay) overlay.hidden = true;
+}
+
+/** Renderuje kafelki wyboru poziomu (0-10) w popupie "Wylosuj postać". */
+function renderRandomizeLevelGrid() {
+  const grid = document.getElementById('randomize-level-grid');
+  if (!grid) return;
+  grid.innerHTML = Array.from({ length: 11 }, (_, poziom) => {
+    const selected = randomizeCharacterLevel === poziom;
+    return `
+      <button type="button" class="picker-tile ${selected ? 'selected' : ''}" data-select-randomize-level="${poziom}">
+        <div class="picker-tile-header">
+          <span>Poziom ${poziom}</span>
+          ${selected ? `<span class="wealth-badge">${icon('check')} Wybrano</span>` : ''}
+        </div>
+        <div class="picker-tile-meta">${nameTierLevel(poziom)}</div>
+      </button>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('[data-select-randomize-level]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      randomizeCharacterLevel = parseInt(btn.dataset.selectRandomizeLevel, 10);
+      renderRandomizeLevelGrid();
+    });
+  });
+}
+
+/**
+ * Losuje absolutnie wszystkie elementy kreatora - pochodzenie i jego tabele,
+ * bonusowe atrybuty, ścieżki (nowicjusza/eksperckiej/mistrzowskiej), sloty
+ * zwiększenia atrybutów, profesje i języki, kurioza, srebrniki oraz
+ * Zamożność wraz z wynikającym z niej wyposażeniem startowym - i od razu
+ * przechodzi do Kroku 8 z podsumowaniem. Jedyny element, którego NIE losuje,
+ * to poziom postaci - decyduje o nim użytkownik w popupie otwieranym przed
+ * wywołaniem tej funkcji (zob. otwórzPopupWylosujPostać()). Krok 6 (Magia)
+ * pozostaje nierozwiązany, tak jak przy zwykłym pominięciu go przez gracza -
+ * to krok w pełni opcjonalny. Sklep w Kroku 7 też pozostaje nietknięty
+ * (żadnych dodatkowych zakupów/sprzedaży) - losowana jest wyłącznie
+ * Zamożność i gwarantowane/wybieralne pozycje startowego wyposażenia,
+ * zgodnie z zasadami podręcznika; opcja "zwój z zaklęciem" (wymagająca
+ * ręcznego wyboru tradycji/zaklęcia) jest pomijana na rzecz pozostałych
+ * dostępnych opcji.
+ */
+async function randomizeWholeCharacter(poziom) {
+  newCharacter();
+
+  // 1. Pochodzenie + jego tabele (istniejący, przetestowany losowacz z Kroku 1)
+  await randomizeOriginAndTraits();
+
+  // 2. Bonusowe atrybuty pochodzenia (np. Elf: 2 wybory)
+  document.querySelectorAll('.origin-attr-choice-select').forEach(select => {
+    const opcje = Array.from(select.options).filter(o => o.value);
+    if (!opcje.length) return;
+    select.value = opcje[Math.floor(Math.random() * opcje.length)].value;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  // 3. Poziom (0-10) - jedyna wartość niewylosowana, wybrana przez użytkownika
+  //    w popupie (zob. renderRandomizeLevelGrid()); ta sama ścieżka co zmiana
+  //    radiobuttona w Kroku 2
+  const levelInput = document.querySelector(`input[name="poziom"][value="${poziom}"]`);
+  if (levelInput) levelInput.checked = true;
+  await applyLevelChange(poziom);
+
+  // 4. Opcja poziomu 4 z pochodzenia (np. "1 zaklęcie"), jeśli dostępna
+  if (selectedLevel >= 4) {
+    const radios = Array.from(document.querySelectorAll(`input[name="origin-option-${selectedOrigin}"]`));
+    if (radios.length) {
+      const radio = radios[Math.floor(Math.random() * radios.length)];
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  // 5. Ścieżki (Krok 3) - losowa dostępna ścieżka na każdym odblokowanym progu
+  [[1, 'path-grid-1'], [3, 'path-grid-3'], [7, 'path-grid-7']].forEach(([levelChoice, gridId]) => {
+    if (selectedLevel < levelChoice) return;
+    const buttons = Array.from(document.getElementById(gridId)?.querySelectorAll('button[data-path-id]') || []);
+    if (!buttons.length) return;
+    buttons[Math.floor(Math.random() * buttons.length)].click();
+  });
+
+  // 6. Sloty zwiększenia atrybutów (Krok 4) - losowy rozdział punktów
+  const slotsAttr = calculateSlotsAttributes({
+    pathNoviceId: selectedPaths.nowicjusz || null,
+    pathExpertId: selectedPaths.ekspert || null,
+    pathMasterId: selectedPaths.mistrz || null
+  });
+  slotsAttr.forEach(slot => {
+    const selected = [];
+    for (let i = 0; i < slot.ilosc; i++) {
+      selected.push(slot.dostepne[Math.floor(Math.random() * slot.dostepne.length)]);
+    }
+    selectedAttributesSlots[slot.id] = selected;
+  });
+  renderAttributesSlotsSection();
+
+  // 7. Profesje/języki i kurioza (Krok 5) - istniejące centralne losowacze
+  renderProfessionsSection();
+  renderCuriosSection();
+  randomizeProfessionsCentrally();
+  randomizeCuriosCentrally();
+
+  // 8. Srebrniki (Krok 5) - 2k6 za każdy poziom powyżej 0, jak przycisk "Losuj srebrniki"
+  if (selectedLevel > 0) {
+    let sum = 0;
+    const rolls = [];
+    for (let i = 0; i < selectedLevel * 2; i++) {
+      const r = Math.floor(Math.random() * 6) + 1;
+      rolls.push(r);
+      sum += r;
+    }
+    randomizedSilver = sum;
+    updateWealthUi(rolls, sum);
+  }
+
+  // 9. Ekwipunek (Krok 7): Zamożność + wyposażenie startowe - BEZ sklepu
+  //    (żadnych dodatkowych zakupów/sprzedaży) i bez opcji "zwój z zaklęciem"
+  //    (wymagałaby ręcznego wyboru tradycji/zaklęcia w popupie).
+  randomizeWealth();
+  calculateAtomsGear(equipmentWealthId).forEach(atom => {
+    if (atom.rodzaj === 'wybor_przedmiotu') {
+      const itemId = atom.opcje[Math.floor(Math.random() * atom.opcje.length)];
+      selectItemStarting(atom.id, itemId);
+    } else if (atom.rodzaj === 'wybor_dodatkowy') {
+      const optionsItems = atom.opcje.filter(o => o.typ === 'przedmiot');
+      if (!optionsItems.length) return;
+      const opcja = optionsItems[Math.floor(Math.random() * optionsItems.length)];
+      selectItemStarting(atom.id, opcja.id);
+    }
+  });
+
+  // 10. Krok 8: podsumowanie (zapisuje się automatycznie w cache w pokazKrok())
+  showStep(8);
+  updatePreviewCharacter();
+}
+
+// Ten plik jest ładowany jako moduł ES (<script type="module">), więc funkcje
+// nie trafiają automatycznie do zasięgu globalnego. index.html odwołuje się
+// do poniższych funkcji przez atrybuty onclick, więc trzeba je udostępnić na window.
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.exportJSON = exportJSON;
+window.closeHelp = closeHelp;
+window.switchHelpTab = switchHelpTab;

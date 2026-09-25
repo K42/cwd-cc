@@ -1,1 +1,89 @@
-import a from"../data/professions.js";import e from"../data/curios.js";function o(){const e=[];if(a&&a.tables){[["Naukowe",a.tables.naukowe],["Pospolite",a.tables.pospolite],["Przestępcze",a.tables.przestepcze],["Wojenne",a.tables.wojenne],["Koczownicze",a.tables.koczownicze],["Religijne",a.tables.religijne]].forEach(([a,o])=>{(o||[]).forEach((o,n)=>{e.push({id:`${a.toLowerCase()}_${n+1}`,nazwa:o,kategoria:a,opis:"",zrodlo:"PG"})})})}return{kategorie:{Naukowe:{nazwa:"Naukowe"},Pospolite:{nazwa:"Pospolite"},"Przestępcze":{nazwa:"Przestępcze"},Wojenne:{nazwa:"Wojenne"},Koczownicze:{nazwa:"Koczownicze"},Religijne:{nazwa:"Religijne"}},profesje:e}}function n(){const a=[];return e&&e.tables&&Object.entries(e.tables).forEach(([e,o])=>{const n=`Tabela ${e}`;o.forEach((o,t)=>{a.push({id:`t${e}_k${t+1}`,nazwa:o,opis:"",efekt:"",wartosc:"",kategoria:n,zrodlo:"PG"})})}),{kategorie:{"Tabela 1":{nazwa:"Tabela 1"},"Tabela 2":{nazwa:"Tabela 2"},"Tabela 3":{nazwa:"Tabela 3"},"Tabela 4":{nazwa:"Tabela 4"},"Tabela 5":{nazwa:"Tabela 5"},"Tabela 6":{nazwa:"Tabela 6"}},kurioza:a}}export{o as getProfessionsUi,n as getCuriosUi};
+/**
+ * Spłaszczanie tabel profesji i kuriozów z podręcznika do list przyjaznych UI
+ * - przeniesione z dawnych endpointów GET /api/professions i GET /api/curios
+ * w src/server.js
+ */
+
+import PROFESSIONS from '../data/professions.js';
+import CURIOS from '../data/curios.js';
+
+/**
+ * Zwraca kategorie i spłaszczoną listę profesji
+ * @returns {Object} { kategorie, profesje }
+ */
+/**
+ * Kategorie profesji.
+ *
+ * `kod` to identyfikator używany w logice (zgodny z kluczami
+ * PROFESSIONS.tables i z `slot.kategorie`) oraz kluczem w pliku językowym.
+ *
+ * `prefiksId` istnieje wyłącznie po to, żeby zachować dotychczasowe `id`
+ * profesji. Wcześniej `id` powstawało z polskiej etykiety
+ * ('Przestępcze'.toLowerCase() -> 'przestępcze_1'), a te identyfikatory są
+ * zapisywane w zapamiętanych i eksportowanych postaciach - zmiana formy
+ * uniemożliwiłaby wczytanie starszych zapisów.
+ */
+const PROFESSION_CATEGORIES = [
+  { kod: 'naukowe', prefiksId: 'naukowe', tabela: 'naukowe', zrodlo: 'PG' },
+  { kod: 'pospolite', prefiksId: 'pospolite', tabela: 'pospolite', zrodlo: 'PG' },
+  { kod: 'przestepcze', prefiksId: 'przestępcze', tabela: 'przestepcze', zrodlo: 'PG' },
+  { kod: 'wojenne', prefiksId: 'wojenne', tabela: 'wojenne', zrodlo: 'PG' },
+  { kod: 'koczownicze', prefiksId: 'koczownicze', tabela: 'koczownicze', zrodlo: 'PG' },
+  { kod: 'religijne', prefiksId: 'religijne', tabela: 'religijne', zrodlo: 'PG' },
+  { kod: 'mroczniackie', prefiksId: 'mroczniackie', tabela: 'mroczniackie', zrodlo: 'PZ' }
+];
+
+function getProfessionsUi() {
+  const kategorie = {};
+  PROFESSION_CATEGORIES.forEach(({ kod }) => { kategorie[kod] = { kod }; });
+
+  const profesje = [];
+  if (PROFESSIONS && PROFESSIONS.tables) {
+    PROFESSION_CATEGORIES.forEach(({ kod, prefiksId, tabela, zrodlo }) => {
+      (PROFESSIONS.tables[tabela] || []).forEach((text, idx) => {
+        profesje.push({
+          id: `${prefiksId}_${idx + 1}`,
+          nazwa: text,
+          // Kod, nie polska etykieta - nazwę do pokazania bierze UI z pliku
+          // językowego (professions.categories.<kod>).
+          kategoria: kod,
+          opis: '',
+          zrodlo
+        });
+      });
+    });
+  }
+
+  return { kategorie, profesje };
+}
+
+/**
+ * Zwraca kategorie i spłaszczoną listę kuriozów
+ * @returns {Object} { kategorie, kurioza }
+ */
+function getCuriosUi() {
+  const kategorie = {};
+  const kurioza = [];
+  if (CURIOS && CURIOS.tables) {
+    Object.entries(CURIOS.tables).forEach(([tableNum, items]) => {
+      kategorie[tableNum] = { numerTabeli: Number(tableNum) };
+      items.forEach((text, idx) => {
+        kurioza.push({
+          id: `t${tableNum}_k${idx + 1}`,
+          nazwa: text,
+          opis: '',
+          efekt: '',
+          wartosc: '',
+          // Numer tabeli, nie gotowy napis "Tabela 3" - UI składa etykietę
+          // z pliku językowego (professions.curioTable).
+          numerTabeli: Number(tableNum),
+          zrodlo: 'PG'
+        });
+      });
+    });
+  }
+
+  return { kategorie, kurioza };
+}
+
+export { getProfessionsUi, getCuriosUi, PROFESSION_CATEGORIES };
